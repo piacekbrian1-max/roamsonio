@@ -1,0 +1,26 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RoamSonio Trip Protection</title>
+<style>body{font-family:Arial;background:#F8F5ED;color:#0B2D4A;padding:30px;max-width:900px;margin:auto}button{padding:12px 18px;background:#D4A85A;border:0;border-radius:7px;font-weight:bold}#status{margin-top:18px;padding:14px;background:#fff;border:1px solid #D9E0E7;border-radius:9px}li{margin:12px 0}</style></head>
+<body><h1>Trip Protection</h1><p>This page creates a protected, read-only baseline copy of the trips currently stored in this browser. It does not edit or delete the browser trips.</p><button id="protect">Protect These Trips</button><div id="status">Checking your account…</div><ul id="list"></ul>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
+(async function(){
+var KEY="big-thanksgiving-trips-v1";
+var sb=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy");
+var status=document.getElementById("status"), list=document.getElementById("list");
+var s=await sb.auth.getSession(); if(!s.data||!s.data.session){status.textContent="Please sign in first.";document.getElementById("protect").disabled=true;return}
+var trips=[];try{trips=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){}
+if(!Array.isArray(trips))trips=[];
+trips.forEach(function(t){var li=document.createElement("li");li.textContent=(t.name||"Unnamed trip")+" — "+((t.destinations||[]).join(" · "));list.appendChild(li)});
+status.textContent="Signed in. Found "+trips.length+" browser trip(s).";
+document.getElementById("protect").onclick=async function(){
+this.disabled=true;status.textContent="Creating protected baseline copies…";
+var ok=0,fail=[];
+for(var i=0;i<trips.length;i++){var t=trips[i];try{
+var r=await sb.rpc("roamsonio_protect_trip_baseline",{p_browser_trip_id:t.id||null,p_trip_id:t.supabaseId||null,p_trip_name:t.name||"RoamSonio Trip",p_snapshot:t});
+if(r.error)throw r.error;ok++;
+}catch(e){fail.push((t.name||"Unnamed trip")+": "+(e.message||e))}
+}
+status.textContent=fail.length?"Protected "+ok+" trip(s); failures: "+fail.join(" | "):"Protected "+ok+" trip(s). The browser copies were not changed.";
+};
+})();
+</script></body></html>
