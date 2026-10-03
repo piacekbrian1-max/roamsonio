@@ -26,21 +26,25 @@ var KEY="big-thanksgiving-trips-v1";
 function load(){
   try{
     var raw=JSON.parse(localStorage.getItem(KEY)||"[]");
-    if(!Array.isArray(raw))return[];
-    var seen={},out=[];
-    for(var i=0;i<raw.length;i++){
-      var t=raw[i]||{},name=String(t.name||"").trim().toLowerCase();
-      if(name==="atlanta test"||name==="account 2 test trip")continue;
-      var dest=(t.destinations||[]).map(function(x){return String(x||"").trim().toLowerCase()}).join("|");
-      var key=name+"||"+dest+"||"+String(t.start||"")+"||"+String(t.end||"");
-      if(seen[key])continue;
-      seen[key]=true;
-      out.push(t);
-    }
-    if(JSON.stringify(out)!==JSON.stringify(raw))localStorage.setItem(KEY,JSON.stringify(out));
-    return out;
+    return Array.isArray(raw)?raw:[];
   }catch(e){return[]}
 }
+function safetyBackup(){
+  try{
+    var raw=localStorage.getItem(KEY);
+    if(!raw)return;
+    var history=[];
+    try{history=JSON.parse(localStorage.getItem("roamsonio-trip-safety-backups-v1")||"[]")}catch(e){}
+    if(!Array.isArray(history))history=[];
+    var last=history[history.length-1];
+    if(!last||last.data!==raw){
+      history.push({savedAt:new Date().toISOString(),data:raw});
+      while(history.length>10)history.shift();
+      localStorage.setItem("roamsonio-trip-safety-backups-v1",JSON.stringify(history));
+    }
+  }catch(e){}
+}
+
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 var SB_URL="https://vqtqchxoecrahtrnoocy.supabase.co";
 var SB_KEY="sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy";
@@ -69,6 +73,8 @@ async function recoverTrip(id){
     render();
   }catch(e){st.textContent="The trip could not be recovered yet: "+(e.message||e)}
 }
+window.recoverTrip=recoverTrip;
+safetyBackup();
 function render(){var el=document.getElementById("tripList"),a=load();el.innerHTML="";if(!a.length){el.innerHTML='<div class="empty">No saved trips yet. Build your first new trip.</div>';return}
 for(var i=a.length-1;i>=0;i--){var t=a[i],d=document.createElement("div");d.className="trip";d.innerHTML="<div><b>"+esc(t.name)+"</b><small>"+esc((t.destinations||[]).join(" · "))+" · "+(t.days||"")+" days · "+esc(t.status||"Planning")+"</small></div><div><button onclick='openTrip("+JSON.stringify(t.id)+")'>Open trip</button> "+(!t.supabaseId?"<button onclick='recoverTrip("+JSON.stringify(t.id)+")'>Save to account</button> ":"")+"<button onclick='deleteTrip("+JSON.stringify(t.id)+")'>Delete</button></div>";el.appendChild(d)}}
 window.openTrip=function(id){var a=[];try{a=JSON.parse(localStorage.getItem("big-thanksgiving-trips-v1")||"[]")}catch(e){}var t=a.find(function(x){return x.id===id})||{};var d=(t.destinations||[])[0]||"";sessionStorage.setItem("openTripId",id);location.href="trip-workspace.html?id="+encodeURIComponent(id)+"&destination="+encodeURIComponent(d)+"&v=500-"+Date.now()};
