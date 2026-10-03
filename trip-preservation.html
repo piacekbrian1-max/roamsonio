@@ -70,7 +70,7 @@ var KEY="big-thanksgiving-trips-v1";
 var SB_URL="https://vqtqchxoecrahtrnoocy.supabase.co";
 var SB_KEY="sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy";
 var sb=supabase.createClient(SB_URL,SB_KEY);
-var localTrips=[],serverTrips=[],auditRows=[],session=null,recoveryLog=[];
+var localTrips=[],serverTrips=[],auditRows=[],session=null,recoveryLog=[],isMasterAdmin=false;
 
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 function readLocal(){try{var a=JSON.parse(localStorage.getItem(KEY)||"[]");return Array.isArray(a)?a:[]}catch(e){return[]}}
@@ -117,6 +117,7 @@ function render(){
 async function recoverAllSafe(){
  var status=document.getElementById("status");
  if(!session){status.className="status bad";status.textContent="Sign in before recovering trips.";return}
+ if(isMasterAdmin){status.className="status bad";status.textContent="Master Admin recovery is disabled here. Sign in to the intended normal user account before recovering browser trips.";return}
  var raw=localStorage.getItem(KEY); if(raw){try{var backups=JSON.parse(localStorage.getItem("roamsonio-trip-safety-backups-v1")||"[]");if(!Array.isArray(backups))backups=[];backups.push({savedAt:new Date().toISOString(),data:raw});while(backups.length>10)backups.shift();localStorage.setItem("roamsonio-trip-safety-backups-v1",JSON.stringify(backups));}catch(e){}}
  status.className="status";status.textContent="Recovering only trips that can be safely identified as missing. Existing server trips will not be overwritten.";recoveryLog=[];
  var created=0,linked=0,skipped=0,conflicts=0;
@@ -160,8 +161,10 @@ async function start(){
  var r=await sb.auth.getSession();session=r.data&&r.data.session||null;
  if(!session){document.getElementById("denied").style.display="block";return}
  document.getElementById("denied").style.display="none";document.getElementById("dashboard").style.display="block";
- document.getElementById("identity").textContent="Signed in as "+(session.user.email||session.user.id)+".";
+ var roleCheck=await sb.rpc("roamsonio_is_master_admin");isMasterAdmin=!roleCheck.error&&roleCheck.data===true;
+ document.getElementById("identity").textContent="Signed in as "+(session.user.email||session.user.id)+(isMasterAdmin?" · Master Admin mode — recovery disabled":"");
  document.getElementById("accountLink").href="account.html";
+ if(isMasterAdmin){var rb=document.getElementById("recoverAllBtn");rb.disabled=true;rb.style.opacity=".5";rb.title="Use the normal user account for browser-trip recovery";}
  document.getElementById("authLink").textContent="Sign Out";document.getElementById("authLink").href="#";
  document.getElementById("authLink").onclick=async function(e){e.preventDefault();await sb.auth.signOut();location.href="login.html?return=trip-preservation.html"};
  await audit();
