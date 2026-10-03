@@ -24,9 +24,12 @@ function renderTrips(){
   var dates=(x.start_date||x.end_date)?((x.start_date||"—")+" → "+(x.end_date||"—")):"—";
   var snap=x.trip_snapshot||null;
   var details=snap?"<details><summary>View trip details</summary><div style='margin-top:8px;line-height:1.55'><b>Days:</b> "+esc(snap.days||"—")+"<br><b>Travelers:</b> "+esc(snap.travelers||"—")+"<br><b>Status:</b> "+esc(snap.status||"—")+"<br><b>Planning mode:</b> "+esc(snap.planningMode||"—")+"</div></details>":"<span class='muted'>No trip snapshot</span>";
-  var action=(masterId&&x.owner_id===masterId)?"<button class='refreshBtn' style='height:30px;padding:0 9px' onclick='transferTrip("+"\'"+esc(x.trip_id)+"\'"+")'>Transfer</button>":"—";
+  var action=(masterId&&x.owner_id===masterId)?"<button type='button' class='refreshBtn transferTripBtn' data-transfer-trip='"+esc(x.trip_id)+"' style='height:30px;padding:0 9px'>Transfer</button>":"—";
   return "<tr><td><b>"+esc(x.trip_name||"Unnamed trip")+"</b><br><span class='muted'>"+esc(x.trip_id)+"</span><div style='margin-top:7px'>"+details+"</div></td><td>"+esc(x.owner_name||"Unnamed user")+"</td><td>"+esc(x.owner_email||"—")+"</td><td>"+esc(dest)+"</td><td>"+esc(dates)+"</td><td><span class='pill'>"+esc(x.visibility||"—")+"</span></td><td>"+(x.created_at?new Date(x.created_at).toLocaleString():"—")+"</td><td>"+action+"</td></tr>";
-}).join(""):"<tr><td colspan='7' class='empty'>No trips match your search.</td></tr>";
+}).join(""):"<tr><td colspan='8' class='empty'>No trips match your search.</td></tr>";
+ document.querySelectorAll(".transferTripBtn").forEach(function(btn){
+   btn.addEventListener("click",function(){window.transferTrip(btn.getAttribute("data-transfer-trip"));});
+ });
 }
 async function loadUsers(){
  const {data,error}=await client.rpc("roamsonio_admin_users");
@@ -34,6 +37,7 @@ async function loadUsers(){
  allUsers=(Array.isArray(data)?data:[]).filter(x=>!x.admin_active&&x.user_id!==masterId);
  const sel=document.getElementById("transferTarget");
  sel.innerHTML="<option value=''>Transfer Master-owned trip to…</option>"+allUsers.map(x=>"<option value='"+esc(x.user_id)+"'>"+esc(x.display_name||x.email||x.user_id)+" · "+esc(x.email||"")+"</option>").join("");
+ if(!allUsers.length){sel.disabled=true;document.getElementById("status").textContent="No eligible normal-user target accounts were found.";document.getElementById("status").className="status show";}
 }
 async function loadTrips(){
  const {data,error}=await client.rpc("roamsonio_admin_trips");
@@ -44,15 +48,23 @@ async function loadTrips(){
  renderTrips();
 }
 window.transferTrip=async function(tripId){
+ const status=document.getElementById("status");
+ status.className="status show";
+ status.textContent="Preparing transfer…";
  const target=document.getElementById("transferTarget").value;
- if(!target){alert("Select the destination user first.");return}
+ if(!target){status.textContent="Please select the normal RoamSonio user in the “Transfer Master-owned trip to…” dropdown first.";document.getElementById("transferTarget").focus();return}
  const trip=allTrips.find(x=>x.trip_id===tripId);
- if(!trip)return;
- if(!confirm("Transfer this trip to the selected user? The trip ID and snapshot will be preserved. Nothing will be deleted or recreated."))return;
+ if(!trip){status.textContent="Trip could not be found in the current list.";return}
+ if(!confirm("Transfer “"+(trip.trip_name||"trip")+"” to the selected user? The existing trip ID and snapshot will be preserved. Nothing will be deleted or recreated."))return;
+ const btn=[...document.querySelectorAll(".transferTripBtn")].find(b=>b.getAttribute("data-transfer-trip")===tripId);
+ if(btn){btn.disabled=true;btn.textContent="Transferring…";}
  const {data,error}=await client.rpc("roamsonio_transfer_trip",{p_trip_id:tripId,p_target_user_id:target});
- const status=document.getElementById("status");status.className="status show";
- if(error){status.textContent="Transfer failed: "+error.message;return}
- status.textContent="Transferred "+(trip.trip_name||"trip")+" safely. Trip ID and snapshot were preserved.";
+ if(error){
+   status.textContent="Transfer failed: "+error.message;
+   if(btn){btn.disabled=false;btn.textContent="Transfer";}
+   return
+ }
+ status.textContent="Transfer complete: "+(trip.trip_name||"trip")+" is now owned by the selected user. Trip ID and snapshot were preserved.";
  await loadTrips();
 };
 (async()=>{if(!await secureStart())return;const ss=await client.auth.getSession();masterId=ss.data&&ss.data.session?ss.data.session.user.id:null;await loadUsers();await loadTrips();document.getElementById("tripSearch").addEventListener("input",renderTrips);document.getElementById("visibilityFilter").addEventListener("change",renderTrips);document.getElementById("refreshBtn").addEventListener("click",loadTrips)})().catch(e=>{document.getElementById("status").textContent=e.message;document.getElementById("status").className="status show"});
