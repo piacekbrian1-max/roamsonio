@@ -67,7 +67,7 @@ document.getElementById("googleBtn").onclick=async()=>{
   status("Connecting to Google…");
   const {error}=await client.auth.signInWithOAuth({
     provider:"google",
-    options:{redirectTo:location.origin+"/roamsonio/master-account.html"}
+    options:{redirectTo:location.origin+"/roamsonio/master-auth-callback.html"}
   });
   if(error) status(error.message);
 };
