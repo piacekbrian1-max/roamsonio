@@ -602,7 +602,22 @@ document.addEventListener("keydown",function(e){if(e.key==="Escape")closeTripMen
 var KEY="big-thanksgiving-trips-v1";
 var params=new URLSearchParams(location.search),id=params.get("id")||sessionStorage.getItem("openTripId");
 function load(){try{return JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){return[]}}
-var trips=load(),urlDestination=(params.get("destination")||"").trim(),trip=trips.find(function(t){return t.id===id});if(!trip&&urlDestination){var u=slug(urlDestination);trip=trips.find(function(t){var d=slug((t.destinations||[])[0]||""),n=slug(t.name||"");return d===u||d.indexOf(u)>=0||u.indexOf(d)>=0||n.indexOf(u)>=0})}if(trip&&urlDestination){trip.destinations=[urlDestination];if(!trip.name||trip.name==="Trip")trip.name=urlDestination+" Trip";}
+var trips=load(),urlDestination=(params.get("destination")||"").trim(),trip=trips.find(function(t){return t.id===id});if(!trip&&urlDestination){var u=slug(urlDestination);trip=trips.find(function(t){var d=slug((t.destinations||[])[0]||""),n=slug(t.name||"");return d===u||d.indexOf(u)>=0||u.indexOf(d)>=0||n.indexOf(u)>=0})}
+function safetySnapshot(){
+  try{
+    var raw=localStorage.getItem(KEY);
+    if(!raw)return;
+    var history=[];try{history=JSON.parse(localStorage.getItem("roamsonio-trip-safety-backups-v1")||"[]")}catch(e){}
+    if(!Array.isArray(history))history=[];
+    var last=history[history.length-1];
+    if(!last||last.data!==raw){
+      history.push({savedAt:new Date().toISOString(),source:"trip-workspace",data:raw});
+      while(history.length>10)history.shift();
+      localStorage.setItem("roamsonio-trip-safety-backups-v1",JSON.stringify(history));
+    }
+  }catch(e){}
+}
+safetySnapshot();
 /*
  * CANONICAL NEW ORLEANS MASTER RECOVERY
  * Keep the approved five-day New Orleans build as the structural master.
@@ -1026,12 +1041,13 @@ plan.push({day:i+1,date:isoDay(i),destination:destination,area:area,title:(desti
 }
 return plan;
 }
-function ensureRoamsonioFramework(){trip.frameworkVersion="roamsonio-v2";trip.planningMode=trip.planningMode||"guided";if(!trip.customPlans)trip.customPlans={};save()}
-function ensureOriginalPlan(){
-if(!trip.originalPlan||!Array.isArray(trip.originalPlan)||!trip.originalPlan.length){
-trip.originalPlan=makeOriginalPlan();
-save();
+function ensureRoamsonioFramework(){
+  /* Read-only compatibility check. Never rewrite a saved trip during page load. */
+  return trip;
 }
+function ensureOriginalPlan(){
+  /* A missing original plan is data to recover, not permission to generate and save over it. */
+  return Array.isArray(trip.originalPlan)?trip.originalPlan:[];
 }
 function buildSmartPlan(){
 var plan=makeOriginalPlan();
@@ -1066,13 +1082,10 @@ for(var i=0;i<Math.max(ds.length,1);i++){var d=ds[i]||"Your destination";var x=d
 }
 function renderPlan(){
 var e=document.getElementById("smartPlan");e.innerHTML="";
-if(trip.smartVersion!==2){buildSmartPlan();return}
 var placeholderPlan=Array.isArray(trip.plan)&&trip.plan.some(function(d){return String(d&&d.morning||"").trim().toLowerCase()==="a"||String(d&&d.afternoon||"").trim().toLowerCase()==="b"||String(d&&d.evening||"").trim().toLowerCase()==="c"});
-if(!trip.plan||!trip.plan.length||placeholderPlan){
-  trip.plan=makeOriginalPlan();
-  trip.originalPlan=clonePlan(trip.plan);
-  trip.days=trip.plan.length;
-  save();
+if(!Array.isArray(trip.plan)||!trip.plan.length){
+  e.innerHTML="<div class='empty' style='padding:24px'>No saved itinerary data is present in this trip record. RoamSonio did not generate or overwrite it. Use the recovery tools before making changes.</div>";
+  return;
 }
 for(var i=0;i<trip.plan.length;i++){(function(d,idx){
 var x=document.createElement("article");x.className="smartDay";var ev=d.event?"<span class='tag'>Date-specific event</span>":"<span class='tag'>Smart day</span>";
