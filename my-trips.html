@@ -50,6 +50,18 @@ var SB_URL="https://vqtqchxoecrahtrnoocy.supabase.co";
 var SB_KEY="sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy";
 var sb=supabase.createClient(SB_URL,SB_KEY);
 async function getSession(){try{var r=await sb.auth.getSession();return r.data&&r.data.session||null}catch(e){return null}}
+async function backfillMissingSnapshots(){
+  var session=await getSession();
+  if(!session)return;
+  var a=load();
+  for(var i=0;i<a.length;i++){
+    var t=a[i];
+    if(!t||!t.supabaseId)continue;
+    try{
+      await sb.rpc("roamsonio_backfill_trip_snapshot",{p_trip_id:t.supabaseId,p_snapshot:t});
+    }catch(e){}
+  }
+}
 async function recoverTrip(id){
   var a=load(),t=a.find(function(x){return x.id===id});
   if(!t)return;
@@ -75,6 +87,7 @@ async function recoverTrip(id){
 }
 window.recoverTrip=recoverTrip;
 safetyBackup();
+backfillMissingSnapshots();
 function render(){var el=document.getElementById("tripList"),a=load();el.innerHTML="";if(!a.length){el.innerHTML='<div class="empty">No saved trips yet. Build your first new trip.</div>';return}
 for(var i=a.length-1;i>=0;i--){var t=a[i],d=document.createElement("div");d.className="trip";d.innerHTML="<div><b>"+esc(t.name)+"</b><small>"+esc((t.destinations||[]).join(" · "))+" · "+(t.days||"")+" days · "+esc(t.status||"Planning")+"</small></div><div><button onclick='openTrip("+JSON.stringify(t.id)+")'>Open trip</button> "+(!t.supabaseId?"<button onclick='recoverTrip("+JSON.stringify(t.id)+")'>Save to account</button> ":"")+"<button onclick='deleteTrip("+JSON.stringify(t.id)+")'>Delete</button></div>";el.appendChild(d)}}
 window.openTrip=function(id){var a=[];try{a=JSON.parse(localStorage.getItem("big-thanksgiving-trips-v1")||"[]")}catch(e){}var t=a.find(function(x){return x.id===id})||{};var d=(t.destinations||[])[0]||"";sessionStorage.setItem("openTripId",id);location.href="trip-workspace.html?id="+encodeURIComponent(id)+"&destination="+encodeURIComponent(d)+"&v=500-"+Date.now()};
