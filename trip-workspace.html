@@ -630,7 +630,7 @@ if(id==="trip-template"){
 }
 if(!trip){location.href="my-trips.html";return}
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
-async function recoverFullTrip(){
+window.recoverFullTrip=async function recoverFullTrip(){
   var btn=document.getElementById("recoverTripButton");
   if(!trip||!trip.supabaseId){alert("This trip is not linked to a saved account trip yet.");return}
   if(!confirm("Recover the complete saved trip from your RoamSonio account? Your current browser copy will be backed up first. Nothing in your account will be deleted or overwritten."))return;
