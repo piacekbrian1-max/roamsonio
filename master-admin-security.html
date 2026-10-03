@@ -50,7 +50,7 @@ input{width:100%;padding:14px;border:1px solid #CBD5DF;border-radius:7px;backgro
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy");
+const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy"), { auth: { storageKey: "roamsonio-master-auth", persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } };
 function showStatus(msg,good=false){
   const el=document.getElementById("enrollStatus");
   if(!el)return;
