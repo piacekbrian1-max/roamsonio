@@ -74,3 +74,52 @@ revoke all on function public.roamsonio_capture_trip_version() from public;
 
 comment on table public.roamsonio_trip_versions is
   'Immutable recovery history containing the prior trip record before each UPDATE or DELETE.';
+
+
+create or replace function public.roamsonio_admin_trip_versions(p_trip_id uuid)
+returns table(
+  version_id bigint,
+  trip_id uuid,
+  operation text,
+  owner_id uuid,
+  family_id uuid,
+  name text,
+  visibility text,
+  surprise_mode boolean,
+  trip_snapshot jsonb,
+  captured_at timestamptz,
+  actor_user_id uuid
+)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if auth.uid() is null
+     or not public.roamsonio_is_master_admin()
+     or (auth.jwt()->>'aal') <> 'aal2'
+  then
+    raise exception 'Master Admin AAL2 required';
+  end if;
+
+  return query
+  select
+    v.version_id,
+    v.trip_id,
+    v.operation,
+    v.owner_id,
+    v.family_id,
+    v.name,
+    v.visibility,
+    v.surprise_mode,
+    v.trip_snapshot,
+    v.captured_at,
+    v.actor_user_id
+  from public.roamsonio_trip_versions v
+  where v.trip_id=p_trip_id
+  order by v.captured_at desc;
+end;
+$$;
+
+revoke all on function public.roamsonio_admin_trip_versions(uuid) from public;
+grant execute on function public.roamsonio_admin_trip_versions(uuid) to authenticated;
