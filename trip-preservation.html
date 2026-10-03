@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>RoamSonio · Trip Preservation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0B2D4A;--gold:#D4A85A;--ivory:#F8F5ED;--paper:#FFFDF9;--slate:#58718A;--line:#D9E0E7;--green:#315B3B;--red:#7B3028}
+*{box-sizing:border-box}html,body{margin:0;max-width:100%;overflow-x:hidden}
+body{background:var(--ivory);color:var(--navy);font-family:"DM Sans",Arial,sans-serif}
+a{text-decoration:none;color:inherit}.rsTop{position:sticky;top:0;z-index:1000;width:100%;min-height:68px;background:rgba(248,245,237,.98);border-bottom:1px solid var(--line);backdrop-filter:blur(14px)}
+.rsNav{width:100%;max-width:1440px;margin:auto;min-height:68px;padding:0 20px;display:flex;align-items:center;gap:18px}
+.rsBrand{display:flex;align-items:center;gap:10px;flex:0 0 auto}.rsMark{width:42px;height:42px;border:2px solid var(--gold);border-radius:10px;display:grid;place-items:center;background:var(--ivory)}
+.rsMark svg{width:32px;height:32px}.rsBrand strong{font:600 22px/1.05 "Playfair Display",serif;white-space:nowrap}.rsRoam{color:var(--navy)}.rsSonio{color:var(--gold)}
+.rsBrand small{display:block;margin-top:3px;color:var(--slate);font:700 7px/1.1 "DM Sans";letter-spacing:.18em;white-space:nowrap}
+.rsLinks{display:flex;align-items:center;justify-content:flex-end;gap:13px;flex:1;min-width:0;flex-wrap:wrap}.rsLinks a{font:700 11px/1.1 "DM Sans";white-space:nowrap;color:var(--navy)}
+.rsAuthBtn{padding:8px 11px;border:1px solid var(--gold);border-radius:7px;background:var(--gold)}
+.wrap{width:min(1240px,calc(100% - 36px));margin:auto;padding:34px 0 70px}.ey{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#A47C2F;font-weight:800}
+h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px}.intro{max-width:820px;color:var(--slate);font-size:13px;line-height:1.65}
+.notice{margin-top:18px;padding:14px 16px;border-radius:10px;background:#F1EADB;border:1px solid #E1D4B9;color:#5F5137;font-size:10px;line-height:1.55}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px}.num{font:600 31px/1 "Playfair Display"}.card small{display:block;margin-top:7px;color:var(--slate);font-size:8px;text-transform:uppercase;letter-spacing:.08em}
+.section{margin-top:22px;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px}.section h2{font:600 27px/1.1 "Playfair Display";margin:0 0 5px}.section p{color:var(--slate);font-size:10px;line-height:1.5}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.btn{border:1px solid var(--line);background:#fff;padding:10px 13px;border-radius:7px;font:800 9px/1 "DM Sans";letter-spacing:.08em;text-transform:uppercase;cursor:pointer}.btn.primary{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+.status{margin-top:14px;padding:11px 13px;border-radius:9px;background:#eef3f6;color:var(--slate);font-size:10px;line-height:1.5}.status.good{background:#E8F2E8;color:var(--green)}.status.bad{background:#F7E5E2;color:var(--red)}
+.table{display:grid;gap:8px;margin-top:14px}.row{display:grid;grid-template-columns:1.2fr .8fr .8fr .8fr .8fr;gap:8px;padding:11px 12px;border:1px solid #E4E8EC;border-radius:9px;background:#fff;align-items:center}.row.header{background:#F1EADB;border-color:#E1D4B9;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.row span{font-size:9px;min-width:0;overflow-wrap:anywhere}.muted{color:var(--slate)}.pill{display:inline-block;padding:5px 7px;border-radius:99px;background:#E9D9B7;color:#5F5137;font-size:7px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}.pill.good{background:#E8F2E8;color:var(--green)}.pill.bad{background:#F7E5E2;color:var(--red)}
+.details{display:none;margin-top:-2px;margin-bottom:8px;padding:14px;border:1px solid var(--line);border-radius:9px;background:#fbfaf6}.details pre{white-space:pre-wrap;word-break:break-word;font:8px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;max-height:360px;overflow:auto;margin:0}
+.denied{max-width:620px;margin:70px auto;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:30px;text-align:center}
+@media(max-width:800px){.rsNav{padding:8px 11px;min-height:62px;align-items:flex-start}.rsTop{min-height:62px}.rsBrand strong{font-size:18px}.rsMark{width:34px;height:34px;flex-basis:34px}.rsMark svg{width:26px;height:26px}.rsBrand small{font-size:5px}.rsLinks{gap:6px 8px}.rsLinks a{font-size:9px}.wrap{width:calc(100% - 24px);padding-top:24px}.grid{grid-template-columns:1fr 1fr}.row{grid-template-columns:1.3fr .8fr .8fr}.row span:nth-child(4),.row span:nth-child(5){display:none}}
+@media(max-width:430px){.grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header class="rsTop"><div class="rsNav">
+<a class="rsBrand" href="index.html" aria-label="RoamSonio home"><span class="rsMark"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#F8F5ED"/><circle cx="45" cy="18" r="8" fill="#D4A85A"/><path d="M10 46 25 29l8 9 8-12 13 20H10Z" fill="#0B2D4A"/><path d="M17 20c8-7 18-8 27-4 5 2 8 5 10 9" fill="none" stroke="#D4A85A" stroke-width="3" stroke-linecap="round"/></svg></span><span><strong><span class="rsRoam">Roam</span><span class="rsSonio">Sonio</span></strong><small>DREAM IT. PLAN IT. LIVE IT.</small></span></a>
+<nav class="rsLinks"><a href="index.html">My RoamSonio</a><a href="my-trips.html">My Trips</a><a href="build-trip.html">Build Your Trip</a><a href="travel-desk.html">Travel Desk</a><a href="account.html" id="accountLink">My Account</a><a href="login.html?return=trip-preservation.html" id="authLink">Sign In</a></nav>
+</div></header>
+
+<main id="app">
+<div class="denied" id="denied"><div class="ey">RoamSonio Preservation</div><h1>Trip Preservation</h1><p class="intro" style="margin:0 auto">Sign in to inspect your browser trips and account trips. This page is read-only and will not delete, rebuild, or overwrite any trip.</p></div>
+<div class="wrap" id="dashboard" style="display:none">
+<div class="ey">RoamSonio · Recovery & Preservation</div>
+<h1>Trip Preservation</h1>
+<p class="intro">This diagnostic compares the detailed trip copies in this browser with the durable trips stored in your RoamSonio account. It is intentionally read-only so we can identify what is missing before restoring anything.</p>
+<div class="notice"><strong>Protection is active.</strong> Do not rebuild or delete any trip while this audit is running. No repair operation is performed from this page.</div>
+
+<section class="grid">
+<div class="card"><div class="num" id="localCount">—</div><small>Browser Trips</small></div>
+<div class="card"><div class="num" id="serverCount">—</div><small>Account Trips</small></div>
+<div class="card"><div class="num" id="snapshotCount">—</div><small>Trips With Snapshots</small></div>
+<div class="card"><div class="num" id="issueCount">—</div><small>Needs Review</small></div>
+</section>
+
+<section class="section">
+<h2>Read-only audit</h2><p id="identity">Checking signed-in account…</p>
+<div class="actions"><button class="btn primary" id="refreshBtn">Run audit again</button><button class="btn" id="downloadBtn">Export audit JSON</button></div>
+<div class="status" id="status">Reading your existing trip records. Nothing will be changed.</div>
+<div class="table" id="table"></div>
+</section>
+</div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+"use strict";
+var KEY="big-thanksgiving-trips-v1";
+var SB_URL="https://vqtqchxoecrahtrnoocy.supabase.co";
+var SB_KEY="sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy";
+var sb=supabase.createClient(SB_URL,SB_KEY);
+var localTrips=[],serverTrips=[],auditRows=[],session=null;
+
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function readLocal(){try{var a=JSON.parse(localStorage.getItem(KEY)||"[]");return Array.isArray(a)?a:[]}catch(e){return[]}}
+function textVal(v){if(v==null)return"";if(typeof v==="string")return v;try{return JSON.stringify(v)}catch(e){return""}}
+function hasObject(v){return v&&typeof v==="object"&&!Array.isArray(v)}
+function completeness(t){
+ var checks={
+  destinations:Array.isArray(t.destinations)&&t.destinations.length>0,
+  dates:!!(t.start||t.end||t.startDate||t.endDate),
+  itinerary:hasObject(t.plan)||Array.isArray(t.plan),
+  travelers:!!(t.travelers||t.travelersCount||t.partySize),
+  originalPlan:hasObject(t.originalPlan)||Array.isArray(t.originalPlan),
+  smartVersion:hasObject(t.smartVersion)||Array.isArray(t.smartVersion)
+ };
+ var total=Object.keys(checks).length,good=Object.values(checks).filter(Boolean).length;
+ return {checks:checks,good:good,total:total};
+}
+function serverMap(){var m={};serverTrips.forEach(function(t){if(t.id)m[t.id]=t});return m}
+function keyForLocal(t){return t.supabaseId||t.id||""}
+function render(){
+ var table=document.getElementById("table"),m=serverMap(),html='<div class="row header"><span>Trip</span><span>Browser</span><span>Server</span><span>Snapshot</span><span>Review</span></div>',issues=0,snap=0;
+ auditRows=[];
+ localTrips.forEach(function(t){
+  var s=t.supabaseId?m[t.supabaseId]:null;
+  var c=completeness(t),review=!s||!s.trip_snapshot||c.good<c.total;
+  if(review)issues++;
+  auditRows.push({source:"browser",local_id:t.id||null,supabase_id:t.supabaseId||null,name:t.name||"",destinations:t.destinations||[],start:t.start||t.startDate||null,end:t.end||t.endDate||null,completeness:c,server:s||null});
+  html+='<div class="row"><span><strong>'+esc(t.name||"Unnamed trip")+'</strong><br><span class="muted">'+esc((t.destinations||[]).join(" · "))+'</span></span><span><span class="pill '+(c.good===c.total?"good":"bad")+'">'+c.good+"/"+c.total+'</span></span><span>'+ (s?'<span class="pill good">Found</span>':'<span class="pill bad">Missing</span>')+'</span><span>'+ (s&&s.trip_snapshot?'<span class="pill good">Saved</span>':'<span class="pill bad">None</span>')+'</span><span>'+ (review?'<span class="pill bad">Review</span>':'<span class="pill good">OK</span>')+'</span></div>';
+  html+='<div class="details" id="detail-'+esc(t.id||"x")+'"><pre>'+esc(JSON.stringify(t,null,2))+'</pre></div>';
+ });
+ var localIds=localTrips.map(function(t){return t.supabaseId}).filter(Boolean),localServerIds={};localIds.forEach(function(id){localServerIds[id]=1});
+ serverTrips.filter(function(s){return !localServerIds[s.id]}).forEach(function(s){
+   issues++;
+   auditRows.push({source:"server-only",server:s});
+   html+='<div class="row"><span><strong>'+esc(s.name||"Unnamed trip")+'</strong><br><span class="muted">Server record only</span></span><span><span class="pill bad">No browser copy</span></span><span><span class="pill good">Found</span></span><span>'+(s.trip_snapshot?'<span class="pill good">Saved</span>':'<span class="pill bad">None</span>')+'</span><span><span class="pill bad">Review</span></span></div>';
+ });
+ serverTrips.forEach(function(s){if(s.trip_snapshot)snap++});
+ document.getElementById("localCount").textContent=localTrips.length;
+ document.getElementById("serverCount").textContent=serverTrips.length;
+ document.getElementById("snapshotCount").textContent=snap;
+ document.getElementById("issueCount").textContent=issues;
+ table.innerHTML=html;
+}
+async function audit(){
+ var status=document.getElementById("status");
+ status.className="status";status.textContent="Reading existing browser and account trip records…";
+ localTrips=readLocal();
+ var r=await sb.from("trips").select("id,owner_id,name,visibility,surprise_mode,created_at,updated_at,trip_snapshot").order("created_at",{ascending:false});
+ if(r.error){serverTrips=[];status.className="status bad";status.textContent="Browser data was read, but account trips could not be read: "+r.error.message;render();return}
+ serverTrips=r.data||[];
+ render();
+ var issues=Number(document.getElementById("issueCount").textContent||0);
+ status.className=issues?"status":"status good";
+ status.textContent=issues?("Audit complete. "+issues+" record(s) need review. No data was changed."):"Audit complete. No discrepancies were detected in the copies we can inspect. No data was changed.";
+}
+async function start(){
+ var r=await sb.auth.getSession();session=r.data&&r.data.session||null;
+ if(!session){document.getElementById("denied").style.display="block";return}
+ document.getElementById("denied").style.display="none";document.getElementById("dashboard").style.display="block";
+ document.getElementById("identity").textContent="Signed in as "+(session.user.email||session.user.id)+".";
+ document.getElementById("accountLink").href="account.html";
+ document.getElementById("authLink").textContent="Sign Out";document.getElementById("authLink").href="#";
+ document.getElementById("authLink").onclick=async function(e){e.preventDefault();await sb.auth.signOut();location.href="login.html?return=trip-preservation.html"};
+ await audit();
+}
+document.getElementById("refreshBtn").onclick=audit;
+document.getElementById("downloadBtn").onclick=function(){
+ var payload={exportedAt:new Date().toISOString(),account:session?session.user.id:null,localTripCount:localTrips.length,serverTripCount:serverTrips.length,audit:auditRows};
+ var blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="roamsonio-trip-preservation-"+new Date().toISOString().slice(0,10)+".json";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url)},1000);
+};
+start();
+})();
+</script>
+</body>
+</html>
