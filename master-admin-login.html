@@ -60,7 +60,7 @@ p{color:var(--slate);font-size:11px;line-height:1.65;margin:0 auto 24px;max-widt
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy", { auth: { storageKey: "roamsonio-master-auth", persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: "pkce" } });
+const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy", { auth: { storageKey: "roamsonio-master-auth", persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
 const statusBox=document.getElementById("status");
 function status(msg){statusBox.textContent=msg;statusBox.classList.add("show")}
 document.getElementById("googleBtn").onclick=async()=>{
