@@ -55,7 +55,7 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
 
 <section class="section">
 <h2>Read-only audit</h2><p id="identity">Checking signed-in account…</p>
-<div class="actions"><button class="btn primary" id="refreshBtn">Run audit again</button><button class="btn" id="downloadBtn">Export audit JSON</button></div>
+<div class="actions"><button class="btn primary" id="refreshBtn">Run audit again</button><button class="btn primary" id="recoverAllBtn">Recover all safe trips</button><button class="btn" id="downloadBtn">Export audit JSON</button></div>
 <div class="status" id="status">Reading your existing trip records. Nothing will be changed.</div>
 <div class="table" id="table"></div>
 </section>
@@ -70,7 +70,7 @@ var KEY="big-thanksgiving-trips-v1";
 var SB_URL="https://vqtqchxoecrahtrnoocy.supabase.co";
 var SB_KEY="sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy";
 var sb=supabase.createClient(SB_URL,SB_KEY);
-var localTrips=[],serverTrips=[],auditRows=[],session=null;
+var localTrips=[],serverTrips=[],auditRows=[],session=null,recoveryLog=[];
 
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 function readLocal(){try{var a=JSON.parse(localStorage.getItem(KEY)||"[]");return Array.isArray(a)?a:[]}catch(e){return[]}}
@@ -114,6 +114,36 @@ function render(){
  document.getElementById("issueCount").textContent=issues;
  table.innerHTML=html;
 }
+async function recoverAllSafe(){
+ var status=document.getElementById("status");
+ if(!session){status.className="status bad";status.textContent="Sign in before recovering trips.";return}
+ var raw=localStorage.getItem(KEY); if(raw){try{var backups=JSON.parse(localStorage.getItem("roamsonio-trip-safety-backups-v1")||"[]");if(!Array.isArray(backups))backups=[];backups.push({savedAt:new Date().toISOString(),data:raw});while(backups.length>10)backups.shift();localStorage.setItem("roamsonio-trip-safety-backups-v1",JSON.stringify(backups));}catch(e){}}
+ status.className="status";status.textContent="Recovering only trips that can be safely identified as missing. Existing server trips will not be overwritten.";recoveryLog=[];
+ var created=0,linked=0,skipped=0,conflicts=0;
+ for(var i=0;i<localTrips.length;i++){
+   var t=localTrips[i], match=null;
+   if(t.supabaseId) match=serverTrips.find(function(s){return s.id===t.supabaseId})||null;
+   if(match){
+     var same=match.trip_snapshot&&JSON.stringify(match.trip_snapshot)===JSON.stringify(t);
+     if(same){linked++;recoveryLog.push({name:t.name,status:"already linked",trip_id:match.id});}
+     else{conflicts++;recoveryLog.push({name:t.name,status:"conflict: existing server trip differs",trip_id:match.id});}
+     continue;
+   }
+   var exact=serverTrips.find(function(s){return s.trip_snapshot&&JSON.stringify(s.trip_snapshot)===JSON.stringify(t)})||null;
+   if(exact){t.supabaseId=exact.id;t.recoveredToAccountAt=t.recoveredToAccountAt||new Date().toISOString();linked++;recoveryLog.push({name:t.name,status:"linked to existing identical server copy",trip_id:exact.id});continue}
+   var possible=serverTrips.find(function(s){return String(s.name||"").trim()===String(t.name||"").trim()&&s.trip_snapshot==null})||null;
+   if(possible){conflicts++;recoveryLog.push({name:t.name,status:"possible existing server match; not duplicated",trip_id:possible.id});continue}
+   try{
+     var rr=await sb.rpc("roamsonio_recover_trip",{p_name:t.name||"RoamSonio Trip",p_snapshot:t});
+     if(rr.error)throw rr.error;
+     t.supabaseId=rr.data;t.recoveredToAccountAt=new Date().toISOString();created++;recoveryLog.push({name:t.name,status:"recovered",trip_id:rr.data});
+   }catch(e){skipped++;recoveryLog.push({name:t.name,status:"not recovered: "+(e.message||e)});}
+ }
+ localStorage.setItem(KEY,JSON.stringify(localTrips));
+ await audit();
+ status.className=conflicts||skipped?"status":"status good";
+ status.textContent="Recovery complete. "+created+" trip(s) added, "+linked+" linked/already safe, "+conflicts+" held for review, "+skipped+" not recovered. Nothing was overwritten or deleted.";
+}
 async function audit(){
  var status=document.getElementById("status");
  status.className="status";status.textContent="Reading existing browser and account trip records…";
@@ -137,6 +167,7 @@ async function start(){
  await audit();
 }
 document.getElementById("refreshBtn").onclick=audit;
+document.getElementById("recoverAllBtn").onclick=recoverAllSafe;
 document.getElementById("downloadBtn").onclick=function(){
  var payload={exportedAt:new Date().toISOString(),account:session?session.user.id:null,localTripCount:localTrips.length,serverTripCount:serverTrips.length,audit:auditRows};
  var blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");
