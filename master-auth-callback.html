@@ -9,16 +9,10 @@ h1{font-family:Georgia,serif;font-size:34px;margin:0 0 12px}p{color:#58718A;line
 </style></head><body><main class="card"><h1>Securing Master Admin</h1><p id="status">Completing the secure Google sign-in…</p></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy",{auth:{storageKey:"roamsonio-master-auth",persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce"}});
+const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy",{auth:{storageKey:"roamsonio-master-auth",persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const status=document.getElementById("status");
 (async()=>{
   try{
-    const code=new URLSearchParams(location.search).get("code");
-    if(code){
-      const flowId=new URLSearchParams(location.search).get("sb_flow_id");
-      const result=await client.auth.exchangeCodeForSession(code,flowId?{flowId}:undefined);
-      if(result.error) throw result.error;
-    }
     const session=await client.auth.getSession();
     if(session.error) throw session.error;
     if(!session.data.session) throw new Error("Master Admin session was not established.");
