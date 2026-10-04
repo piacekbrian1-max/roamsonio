@@ -616,7 +616,7 @@ var trips=load(),trip=trips.find(function(t){return t.id===id})||trips[trips.len
  * ratings, travel logistics, train/group controls and responsive UI remain
  * from the restored feature build.
  */
-if(id==="febaebf6-7369-4922-b069-c745eee8c16f"){
+if(id==="febaebf6-7369-4922-b069-c745eee8c16f" && !trips.some(function(t){return t.id===id})){
   var nolaDates=["2027-01-16","2027-01-17","2027-01-18","2027-01-19","2027-01-20"];
   var nolaDays=[
     ["Carnival kickoff + French Quarter","French Quarter + Jackson Square","French Market + Mississippi Riverfront","Local Creole/Cajun dinner + live music"],
