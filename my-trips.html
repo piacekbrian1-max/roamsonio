@@ -23,24 +23,40 @@ client.auth.onAuthStateChange(function(e,s){if(s){authLink.textContent="My Accou
 })();
 (function(){
 var KEY="big-thanksgiving-trips-v1";
-function load(){
-  try{
-    var raw=JSON.parse(localStorage.getItem(KEY)||"[]");
-    return Array.isArray(raw)?raw:[];
-  }catch(e){return[]}
+var BACKUP_KEY="roamsonio-trip-safety-backups-v1";
+
+function parseArray(raw){
+  try{var a=JSON.parse(raw||"[]");return Array.isArray(a)?a:[]}catch(e){return[]}
 }
+function loadPrimary(){return parseArray(localStorage.getItem(KEY))}
+function loadBackups(){
+  var history=parseArray(localStorage.getItem(BACKUP_KEY));
+  return history.slice().reverse();
+}
+function findProtectedTrips(){
+  var primary=loadPrimary();
+  if(primary.length)return {trips:primary,source:"browser",backup:null};
+  var backups=loadBackups();
+  for(var i=0;i<backups.length;i++){
+    var trips=parseArray(backups[i]&&backups[i].data);
+    if(trips.length)return {trips:trips,source:"protected-backup",backup:backups[i]};
+  }
+  return {trips:[],source:"none",backup:null};
+}
+function load(){return findProtectedTrips().trips}
+
 function safetyBackup(){
   try{
     var raw=localStorage.getItem(KEY);
     if(!raw)return;
-    var history=[];
-    try{history=JSON.parse(localStorage.getItem("roamsonio-trip-safety-backups-v1")||"[]")}catch(e){}
-    if(!Array.isArray(history))history=[];
+    var current=parseArray(raw);
+    if(!current.length)return;
+    var history=parseArray(localStorage.getItem(BACKUP_KEY));
     var last=history[history.length-1];
     if(!last||last.data!==raw){
-      history.push({savedAt:new Date().toISOString(),data:raw});
+      history.push({savedAt:new Date().toISOString(),source:"my-trips",data:raw});
       while(history.length>10)history.shift();
-      localStorage.setItem("roamsonio-trip-safety-backups-v1",JSON.stringify(history));
+      localStorage.setItem(BACKUP_KEY,JSON.stringify(history));
     }
   }catch(e){}
 }
@@ -49,11 +65,35 @@ function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").
 var SB_URL="https://vqtqchxoecrahtrnoocy.supabase.co";
 var SB_KEY="sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy";
 var sb=supabase.createClient(SB_URL,SB_KEY);
-async function getSession(){try{var r=await sb.auth.getSession();return r.data&&r.data.session||null}catch(e){return null}}
+
+async function getSession(){
+  try{var r=await sb.auth.getSession();return r.data&&r.data.session||null}catch(e){return null}
+}
+
+function showStatus(msg,good){
+  var st=document.getElementById("recoveryStatus");
+  st.style.display="block";
+  st.className="empty";
+  st.style.borderStyle="solid";
+  st.style.background=good?"#E8F2E8":"#F1EADB";
+  st.style.color=good?"#315B3B":"#5F5137";
+  st.innerHTML=msg;
+}
+
+function restoreProtectedBrowserCopy(){
+  var state=findProtectedTrips();
+  if(state.source!=="protected-backup"||!state.trips.length)return false;
+  var safe=JSON.parse(JSON.stringify(state.trips));
+  localStorage.setItem(KEY,JSON.stringify(safe));
+  showStatus("<b>Protected browser copy restored.</b> "+safe.length+" original trip(s) are back in My Trips. The protected backup was not deleted.",true);
+  render();
+  return true;
+}
+
 async function backfillMissingSnapshots(){
   var session=await getSession();
   if(!session)return;
-  var a=load();
+  var a=loadPrimary();
   for(var i=0;i<a.length;i++){
     var t=a[i];
     if(!t||!t.supabaseId)continue;
@@ -62,38 +102,90 @@ async function backfillMissingSnapshots(){
     }catch(e){}
   }
 }
+
 async function recoverTrip(id){
   var a=load(),t=a.find(function(x){return x.id===id});
   if(!t)return;
   var st=document.getElementById("recoveryStatus");
-  st.style.display="block";st.textContent="Saving "+(t.name||"this trip")+" to your RoamSonio account…";
+  st.style.display="block";
+  st.className="empty";
+  st.style.borderStyle="solid";
+  st.textContent="Recovering the original "+(t.name||"trip")+" into your RoamSonio account…";
   var session=await getSession();
-  if(!session){st.textContent="Sign in to recover this trip to your RoamSonio account.";return}
+  if(!session){
+    st.textContent="Sign in to recover this trip to your RoamSonio account.";
+    return;
+  }
   try{
-    var r=await sb.from("trips").insert({
-      owner_id:session.user.id,
-      name:t.name||((t.destinations||[])[0]||"RoamSonio Trip")+" Adventure",
-      visibility:"private",
-      surprise_mode:false,
-      trip_snapshot:t
-    }).select("id").single();
+    var r=await sb.rpc("roamsonio_restore_browser_trip",{
+      p_browser_trip_id:String(t.supabaseId||t.id||""),
+      p_name:t.name||"RoamSonio Trip",
+      p_snapshot:t
+    });
     if(r.error)throw r.error;
-    t.supabaseId=r.data.id;
+    var result=r.data;
+    if(typeof result==="string")result=JSON.parse(result);
+    if(!result||!result.id)throw new Error("The account recovery service returned no saved trip ID.");
+
+    t.supabaseId=result.id;
     t.recoveredToAccountAt=new Date().toISOString();
-    localStorage.setItem(KEY,JSON.stringify(a));
-    st.textContent="Success — "+(t.name||"Trip")+" is now saved to the account. Master Admin can see it in Trips.";
+    var primary=loadPrimary();
+    var idx=primary.findIndex(function(x){return x.id===t.id});
+    if(idx>=0)primary[idx]=t;else primary.push(t);
+    localStorage.setItem(KEY,JSON.stringify(primary));
+
+    st.className="empty";
+    st.style.background="#E8F2E8";
+    st.style.color="#315B3B";
+    st.innerHTML="<b>Recovery successful.</b> "+esc(t.name||"Trip")+" is restored to your account using the original browser data. Existing complete server data was not overwritten.";
     render();
-  }catch(e){st.textContent="The trip could not be recovered yet: "+(e.message||e)}
+  }catch(e){
+    st.style.background="#F7E5E2";
+    st.style.color="#7B3028";
+    st.textContent="Recovery could not be completed. Nothing was deleted or overwritten. "+(e.message||e);
+  }
 }
 window.recoverTrip=recoverTrip;
+window.restoreProtectedBrowserCopy=restoreProtectedBrowserCopy;
+
 safetyBackup();
-backfillMissingSnapshots();
-function render(){var el=document.getElementById("tripList"),a=load();el.innerHTML="";if(!a.length){el.innerHTML='<div class="empty">No saved trips yet. Build your first new trip.</div>';return}
-for(var i=a.length-1;i>=0;i--){var t=a[i],d=document.createElement("div");d.className="trip";d.innerHTML="<div><b>"+esc(t.name)+"</b><small>"+esc((t.destinations||[]).join(" · "))+" · "+(t.days||"")+" days · "+esc(t.status||"Planning")+"</small></div><div><button onclick='openTrip("+JSON.stringify(t.id)+")'>Open trip</button> "+(!t.supabaseId?"<button onclick='recoverTrip("+JSON.stringify(t.id)+")'>Save to account</button> ":"")+"<button onclick='deleteTrip("+JSON.stringify(t.id)+")'>Delete</button></div>";el.appendChild(d)}}
-window.openTrip=function(id){var a=[];try{a=JSON.parse(localStorage.getItem("big-thanksgiving-trips-v1")||"[]")}catch(e){}var t=a.find(function(x){return x.id===id})||{};var d=(t.destinations||[])[0]||"";sessionStorage.setItem("openTripId",id);location.href="trip-workspace.html?id="+encodeURIComponent(id)+"&destination="+encodeURIComponent(d)+"&v=500-"+Date.now()};
-window.deleteTrip=function(id){if(!confirm("Delete this saved trip?"))return;var a=load().filter(function(t){return t.id!==id});localStorage.setItem(KEY,JSON.stringify(a));render()};
+
+function render(){
+  var el=document.getElementById("tripList"),state=findProtectedTrips(),a=state.trips;
+  el.innerHTML="";
+
+  if(state.source==="protected-backup"&&a.length){
+    showStatus("<b>Recovery copy found.</b> RoamSonio found "+a.length+" original trip(s) in the protected browser backup. <button type='button' onclick='restoreProtectedBrowserCopy()' style='margin-left:8px;border:1px solid #D4A85A;background:#D4A85A;color:#0B2D4A;border-radius:7px;padding:8px 10px;font-weight:800;cursor:pointer'>Restore original trips</button>",false);
+  }
+
+  if(!a.length){
+    el.innerHTML='<div class="empty">No saved trips are currently visible. RoamSonio will check protected recovery copies before asking you to rebuild anything.</div>';
+    return;
+  }
+
+  for(var i=a.length-1;i>=0;i--){
+    var t=a[i],d=document.createElement("div");
+    d.className="trip";
+    var hasServer=t.supabaseId;
+    d.innerHTML="<div><b>"+esc(t.name||"Unnamed trip")+"</b><small>"+esc((t.destinations||[]).join(" · "))+" · "+(t.days||"")+" days · "+esc(t.status||"Planning")+"</small></div><div><button onclick='openTrip("+JSON.stringify(t.id)+")'>Open trip</button> <button onclick='recoverTrip("+JSON.stringify(t.id)+")'>"+(hasServer?"Restore original data":"Recover to account")+"</button> <button onclick='deleteTrip("+JSON.stringify(t.id)+" )'>Delete</button></div>";
+    el.appendChild(d);
+  }
+}
+window.openTrip=function(id){
+  var a=load(),t=a.find(function(x){return x.id===id})||{};
+  var d=(t.destinations||[])[0]||"";
+  sessionStorage.setItem("openTripId",id);
+  location.href="trip-workspace.html?id="+encodeURIComponent(id)+"&destination="+encodeURIComponent(d)+"&v=501-"+Date.now();
+};
+window.deleteTrip=function(id){
+  if(!confirm("Delete this saved trip? This will remove only the browser copy. Protected recovery backups are not deleted."))return;
+  var a=load().filter(function(t){return t.id!==id});
+  localStorage.setItem(KEY,JSON.stringify(a));
+  render();
+};
+
 render();
-})();
+backfillMissingSnapshots();
 </script><style id="roamsonio-auth-nav">
 .rsLinks{gap:14px!important;flex-wrap:wrap!important}
 .rsLinks .rsAuthBtn{padding:8px 11px!important;border:1px solid #D4A85A!important;border-radius:7px!important;background:#D4A85A!important;color:#0B2D4A!important}
