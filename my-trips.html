@@ -422,6 +422,16 @@ window.openTrip=function(id){
     return;
   }
 
+  // New Orleans uses the preserved, known-good feature build from the
+  // repository history rather than the generic workspace renderer.
+  var nolaId="febaebf6-7369-4922-b069-c745eee8c16f";
+  var isNola=String(id)===nolaId || String(t.supabaseId||"")===nolaId ||
+             String(t.name||"").trim()==="New Orleans · Jan 16–20, 2027";
+  if(isNola){
+    location.href="new-orleans.html?id="+encodeURIComponent(nolaId)+"&v=restored-"+Date.now();
+    return;
+  }
+
   location.href="trip-workspace.html?id="+encodeURIComponent(id)+"&destination="+encodeURIComponent(d)+"&v=501-"+Date.now();
 };
 window.deleteTrip=function(id){
