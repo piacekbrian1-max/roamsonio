@@ -9,6 +9,14 @@
   },
   "versions": [
     {
+      "sha": "d30e099cbbc75a83f4b516b26b887b3419303a60",
+      "date": "2026-10-04",
+      "title": "Fix New Orleans Edit Trip button initialization",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Changes only New Orleans Edit Trip initialization so the button and editor bind after the full page has loaded. No trip data, itinerary, routing, recovery, or other trip pages changed. Awaiting user validation."
+    },
+    {
       "sha": "c9216503f2871cf7b399f4cf29419b1ae037545f",
       "date": "2026-10-04",
       "title": "Add safe Edit Trip button to New Orleans",
