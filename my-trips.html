@@ -330,6 +330,19 @@ window.openTrip=function(id){
   var a=load(),t=a.find(function(x){return x.id===id})||{};
   var d=(t.destinations||[])[0]||"";
   sessionStorage.setItem("openTripId",id);
+
+  // European Thanksgiving 2026 was the original trip built before the
+  // reusable trip-template system. Keep its original, complete experience
+  // as the authoritative page instead of opening the reduced generic
+  // trip-workspace snapshot.
+  var europeId="a636626a-e7b2-4337-b950-be9682edde63";
+  var isEurope=String(id)===europeId || String(t.supabaseId||"")===europeId ||
+               String(t.name||"").trim()==="European Thanksgiving Adventure 2026";
+  if(isEurope){
+    location.href="current-trip.html";
+    return;
+  }
+
   location.href="trip-workspace.html?id="+encodeURIComponent(id)+"&destination="+encodeURIComponent(d)+"&v=501-"+Date.now();
 };
 window.deleteTrip=function(id){
