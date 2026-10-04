@@ -313,17 +313,35 @@ async function render(){
   if(accountTrips.length){
     var merged=a.slice();
     var replaced=0;
-    for(var ai=0;ai<accountTrips.length;ai++){
-      var at=accountTrips[ai];
-      var match=-1;
-      for(var mi=0;mi<merged.length;mi++){
-        var mt=merged[mi];
-        if((at.supabaseId&&mt.supabaseId&&String(at.supabaseId)===String(mt.supabaseId)) ||
-           (at.supabaseId&&String(at.supabaseId)===String(mt.id)) ||
-           (at.id&&String(at.id)===String(mt.id))){
-          match=mi;break;
-        }
+
+    // Match durable/account copies to browser copies by server ID first, then
+    // by the trip's stable visible identity. Recovery runs can produce a new
+    // browser wrapper ID even when they refer to the same saved journey.
+    function tripIdentity(t){
+      t=t||{};
+      if(t.supabaseId)return "server:"+String(t.supabaseId);
+      var name=String(t.name||"").trim().toLowerCase();
+      var start=String(t.start||"").trim();
+      var end=String(t.end||"").trim();
+      var dest=Array.isArray(t.destinations)?t.destinations.map(String).join("|").trim().toLowerCase():"";
+      return "trip:"+name+"|"+start+"|"+end+"|"+dest;
+    }
+
+    function findMatch(list,target){
+      var targetServer=target&&target.supabaseId?String(target.supabaseId):"";
+      for(var i=0;i<list.length;i++){
+        var x=list[i]||{};
+        if(targetServer && x.supabaseId && String(x.supabaseId)===targetServer)return i;
       }
+      var key=tripIdentity(target);
+      for(var j=0;j<list.length;j++){
+        if(tripIdentity(list[j])===key)return j;
+      }
+      return -1;
+    }
+
+    for(var ai=0;ai<accountTrips.length;ai++){
+      var at=accountTrips[ai],match=findMatch(merged,at);
       if(match>=0){
         // Prefer whichever copy is richer. The account snapshot is not
         // necessarily the original full trip; protected browser copies may
@@ -335,14 +353,34 @@ async function render(){
         if(accountBytes>browserBytes){
           merged[match]=at;
           replaced++;
+        }else if(at.supabaseId && !browserCopy.supabaseId){
+          browserCopy.supabaseId=at.supabaseId;
         }
-      }else{merged.push(at);}
+      }else{
+        merged.push(at);
+      }
     }
-    a=merged;
+
+    // Final safety pass: collapse any duplicate copies already present in
+    // browser storage. Keep the richest copy so this is a de-duplication only;
+    // it does not rebuild or discard the underlying trip data.
+    var unique=[],seen={};
+    for(var ui=0;ui<merged.length;ui++){
+      var ut=merged[ui],uk=tripIdentity(ut);
+      var prior=seen[uk];
+      if(prior===undefined){
+        seen[uk]=unique.length;
+        unique.push(ut);
+      }else{
+        var prev=unique[prior];
+        if(JSON.stringify(ut||{}).length>JSON.stringify(prev||{}).length)unique[prior]=ut;
+      }
+    }
+    a=unique;
     localStorage.setItem(KEY,JSON.stringify(a));
-    showStatus("<b>Original account data loaded.</b> RoamSonio refreshed "+accountTrips.length+" durable trip snapshot(s) from your account. Existing incomplete browser copies were replaced; nothing was rebuilt or deleted.",true);
+    showStatus("<b>Original account data loaded.</b> RoamSonio refreshed "+accountTrips.length+" durable trip snapshot(s) and removed duplicate browser wrappers from the My Trips list. No trip data was rebuilt or deleted.",true);
     dg=diagnostic();
-    dEl.innerHTML="<b>Recovery source: RoamSonio account</b><br>"+accountTrips.length+" durable trip snapshot(s) loaded. <b>"+replaced+"</b> existing browser trip(s) were refreshed from their original account snapshots.";
+    dEl.innerHTML="<b>Recovery source: RoamSonio account</b><br>"+accountTrips.length+" durable trip snapshot(s) loaded. <b>"+replaced+"</b> browser copy/copies were refreshed. Duplicate wrappers were collapsed to one copy per saved journey.";
   }
 
   if(!a.length){
