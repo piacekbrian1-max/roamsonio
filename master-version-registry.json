@@ -103,6 +103,14 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Adds editable review fields for trip name, start date, end date, and destinations to the existing generic trip-workspace Edit Trip shell. Fields load from the current trip object and are reset on close; no save handler or trip mutation was added. Awaiting live validation."
+    },
+    {
+      "sha": "a39c80d0e346a3425bee1b2bffa8076e514f13e3",
+      "date": "2026-10-04",
+      "title": "Add safe Edit Trip save behavior",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds Save changes and Cancel to the generic Edit Trip shell. Save updates only trip name, start date, end date, destinations, revision, and updatedAt in the existing saved trip object; it does not rebuild itinerary or suggestions. Awaiting live persistence validation."
     }
   ]
 }
