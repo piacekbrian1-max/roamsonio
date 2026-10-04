@@ -10,7 +10,7 @@ html,body{max-width:100%;overflow-x:hidden}*,*::before,*::after{box-sizing:borde
 </style></head><body>
 <header class="rsTop"><div class="rsNav"><a class="rsBrand" href="index.html" aria-label="RoamSonio home"><span class="rsMark"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#F8F5ED"/><circle cx="45" cy="18" r="8" fill="#D4A85A"/><path d="M10 46 25 29l8 9 8-12 13 20H10Z" fill="#0B2D4A"/><path d="M17 20c8-7 18-8 27-4 5 2 8 5 10 9" fill="none" stroke="#D4A85A" stroke-width="3" stroke-linecap="round"/></svg></span><span><strong><span class="rsRoam">Roam</span><span class="rsSonio">Sonio</span></strong><small>DREAM IT. PLAN IT. LIVE IT.</small></span></a><nav class="rsLinks" aria-label="Primary navigation"><a href="index.html">My RoamSonio</a><a href="my-trips.html">My Trips</a><a href="build-trip.html">Build Your Trip</a><a href="travel-desk.html">Travel Desk</a><a href="about.html">About Us</a><a href="account.html" id="rsAccountLink">My Account</a><a href="login.html?return=my-trips.html" id="rsAuthLink" class="rsAuthBtn">Sign In</a></nav></div></header>
 <header class="hero"><div class="ey">ROAMSONIO · YOUR TRAVEL LIBRARY</div><h1><span id="tripOwnerName">My</span> Trips</h1><p id="tripOwnerIntro">Your saved journeys are kept separate from the current trip. Open a trip to work with its own plans, memories and journal, or start something completely new.</p><div class="actions"><a class="btn" href="index.html">Home</a><a class="btn primary" href="build-trip.html">Build a new trip</a><a class="btn" href="current-trip.html">Current trip</a><a class="btn" href="trip-preservation.html">Trip preservation</a></div></header>
-<main class="wrap"><section class="panel"><div class="ey">Saved journeys</div><h2 class="serif">Your trips</h2><p>Trips saved in this browser appear here. Opening one takes you to that trip's workspace instead of changing the current trip page.</p><div id="recoveryStatus" class="empty" style="display:none;margin-bottom:12px"></div><div id="tripDiagnostic" class="empty" style="display:none;margin-bottom:12px"></div><div id="liveAccountTest" class="empty" style="margin-bottom:12px;background:#F8F5ED"><b>Live account test</b><br><small>This is read-only. It checks the signed-in Supabase identity, the recovery function, and the three known missing trip records.</small><br><button type="button" onclick="runLiveAccountTest()" style="margin-top:10px;border:1px solid #D4A85A;background:#D4A85A;color:#0B2D4A;border-radius:7px;padding:9px 12px;font-weight:800;cursor:pointer">Run live account test</button><div id="liveAccountTestResult" style="margin-top:12px;text-align:left"></div></div><div id="tripList" class="tripList"></div></section></main>
+<main class="wrap"><section class="panel"><div class="ey">Saved journeys</div><h2 class="serif">Your trips</h2><p>Trips saved in this browser appear here. Opening one takes you to that trip's workspace instead of changing the current trip page.</p><div id="recoveryStatus" class="empty" style="display:none;margin-bottom:12px"></div><div id="tripDiagnostic" class="empty" style="display:none;margin-bottom:12px"></div><div id="liveAccountTest" class="empty" style="margin-bottom:12px;background:#F8F5ED"><b>Live account test</b><br><small>This is read-only. It checks the signed-in Supabase identity, the recovery function, and the three known missing trip records.</small><br><button type="button" id="runLiveAccountTestBtn" style="margin-top:10px;border:1px solid #D4A85A;background:#D4A85A;color:#0B2D4A;border-radius:7px;padding:9px 12px;font-weight:800;cursor:pointer">Run live account test</button><div id="liveAccountTestResult" style="margin-top:12px;text-align:left"></div></div><div id="tripList" class="tripList"></div></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
@@ -329,6 +329,19 @@ window.runLiveAccountTest=async function(){
   }catch(e){lines.push("<b>Test failed:</b> "+esc(e.message||e));}
   box.innerHTML=lines.join("<br>");
 };
+document.addEventListener("DOMContentLoaded",function(){
+  var liveBtn=document.getElementById("runLiveAccountTestBtn");
+  if(liveBtn){
+    liveBtn.addEventListener("click",function(e){
+      e.preventDefault();
+      if(typeof window.runLiveAccountTest==="function") window.runLiveAccountTest();
+      else {
+        var box=document.getElementById("liveAccountTestResult");
+        if(box)box.innerHTML="<span style='color:#7B3028'>Diagnostic script did not initialize.</span>";
+      }
+    });
+  }
+});
 window.openTrip=function(id){
   var a=load(),t=a.find(function(x){return x.id===id})||{};
   var d=(t.destinations||[])[0]||"";
