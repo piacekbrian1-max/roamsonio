@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "rule": "Every new RoamSonio development version must be added here before it can become a production checkpoint. A version marked ISSUE or FAILED must never be used as a rollback target.",
+  "statuses": {
+    "SUCCESS": "User-tested and approved as working; eligible for rollback.",
+    "TESTING": "Deployed or in progress but not yet user-approved; not eligible for rollback.",
+    "ISSUE": "User reported a problem; never use as a rollback target.",
+    "FAILED": "Deployment or validation failed; never use as a rollback target."
+  },
+  "versions": [
+    {"sha":"7fd55ab4f85bfa85e7ae4aff5b06ce894e12c3fc","date":"2026-10-04","title":"Restore known-good trip state after failed destination-food experiment","status":"SUCCESS","rollbackEligible":true,"notes":"Exact restored build. User confirmed trips returned."},
+    {"sha":"f28b80e21f4ec2c5ea16903b49d7788c62e00319","date":"2026-10-04","title":"Expand generic destination food source types","status":"ISSUE","rollbackEligible":false,"notes":"User reported trips disappeared. Do not roll back to this version."},
+    {"sha":"6f5293a78d721e983e52bc58efe60354a1398653","date":"2026-10-04","title":"Fix deleting saved test trips","status":"FAILED","rollbackEligible":false,"notes":"GitHub Pages deployment failed during weather snapshot."},
+    {"sha":"96ba6799a06f8d9aeb892e287202a6b5426229e6","date":"2026-10-04","title":"Retry transient weather snapshot requests","status":"SUCCESS","rollbackEligible":true,"notes":"Deployment succeeded and user confirmed it worked."},
+    {"sha":"3ecd116db3acc3a6c96d0f7588675ee7ffd8c235","date":"2026-10-04","title":"Separate generic destination food lanes","status":"SUCCESS","rollbackEligible":true,"notes":"User reported partial improvement; later work proceeded from this baseline."},
+    {"sha":"6eb9dffa3f74cc64bc128ed15a761f171ad65584","date":"2026-10-04","title":"Use destination knowledge in generic destination guide","status":"SUCCESS","rollbackEligible":true,"notes":"User declared destination work complete."},
+    {"sha":"776df6e3818df8641758ee7746d266d98a08462e","date":"2026-10-04","title":"Add Historical Versions tab to Master Account","status":"TESTING","rollbackEligible":false,"notes":"Deployment succeeded; awaiting user validation of the tab."},
+    {"sha":"e977caff5869d13053e6c0b98e17effb53e610c1","date":"2026-10-04","title":"Make Historical Versions link visible in Versioning","status":"TESTING","rollbackEligible":false,"notes":"Latest versioning UI change; awaiting deployment and user validation."}
+  ]
+}
