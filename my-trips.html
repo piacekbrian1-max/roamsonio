@@ -424,6 +424,15 @@ window.openTrip=function(id){
 
   // New Orleans uses the preserved, known-good feature build from the
   // repository history rather than the generic workspace renderer.
+  // Atlanta Test uses the reusable trip template with its existing saved data.
+  var atlantaTestId="16f08031-885a-45d6-a79e-480fb1d39c67";
+  var isAtlantaTest=String(id)===atlantaTestId || String(t.supabaseId||"")===atlantaTestId ||
+                    String(t.name||"").trim()==="Atlanta Test";
+  if(isAtlantaTest){
+    location.href="trip-template.html?id="+encodeURIComponent(id)+"&v=atlanta-test-"+Date.now();
+    return;
+  }
+
   var nolaId="febaebf6-7369-4922-b069-c745eee8c16f";
   var isNola=String(id)===nolaId || String(t.supabaseId||"")===nolaId ||
              String(t.name||"").trim()==="New Orleans · Jan 16–20, 2027";
