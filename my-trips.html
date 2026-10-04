@@ -348,14 +348,14 @@ async function render(){
     for(var ai=0;ai<accountTrips.length;ai++){
       var at=accountTrips[ai],match=findMatch(merged,at);
       if(match>=0){
-        // Prefer whichever copy is richer. The account snapshot is not
-        // necessarily the original full trip; protected browser copies may
-        // contain itinerary, stay, flight, budget and planning fields that
-        // were never written into the durable snapshot.
+        // Never choose a trip copy by JSON size. That can replace a newer
+        // editable trip with an older snapshot that happens to contain more fields.
+        // Until both copies carry explicit version metadata, preserve the browser
+        // copy and only fill in the durable identifier.
         var browserCopy=merged[match];
-        var browserBytes=JSON.stringify(browserCopy||{}).length;
-        var accountBytes=JSON.stringify(at||{}).length;
-        if(accountBytes>browserBytes){
+        var browserRevision=Number(browserCopy&&browserCopy.revision)||0;
+        var accountRevision=Number(at&&at.revision)||0;
+        if(accountRevision>0 && accountRevision>browserRevision){
           merged[match]=at;
           replaced++;
         }else if(at.supabaseId && !browserCopy.supabaseId){
