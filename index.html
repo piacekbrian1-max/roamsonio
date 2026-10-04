@@ -175,6 +175,13 @@ function tripHref(t){
   if(isEurope){
     return "current-trip.html";
   }
+  var isAtlanta=id==="16f08031-885a-45d6-a79e-480fb1d39c67" ||
+    name==="Atlanta Test" ||
+    dests.some(function(d){return String(d||"").trim().toLowerCase()==="atlanta"});
+  if(isAtlanta){
+    var atlantaServerId=id==="16f08031-885a-45d6-a79e-480fb1d39c67" ? id : String(t&&t.supabaseId||"").trim();
+    return "trip-workspace.html?id="+encodeURIComponent(id)+"&supabaseId="+encodeURIComponent(atlantaServerId||"16f08031-885a-45d6-a79e-480fb1d39c67")+"&destination=Atlanta&v=atlanta-home-"+Date.now();
+  }
   return "trip-workspace.html?id="+encodeURIComponent(id);
 }
 function photo(t){
@@ -191,6 +198,15 @@ function openTrip(id){
   if(isNola){
     sessionStorage.setItem("openTripId",nolaId);
     location.href="new-orleans.html?id="+encodeURIComponent(nolaId)+"&v=restored";
+    return;
+  }
+  var atlantaId="16f08031-885a-45d6-a79e-480fb1d39c67";
+  var isAtlantaOpen=String(id||"").trim()===atlantaId ||
+    String(t.name||"").trim()==="Atlanta Test" ||
+    dests.some(function(d){return String(d||"").trim().toLowerCase()==="atlanta"});
+  if(isAtlantaOpen){
+    sessionStorage.setItem("openTripId",id);
+    location.href="trip-workspace.html?id="+encodeURIComponent(id)+"&supabaseId="+encodeURIComponent(String(t.supabaseId||"")||atlantaId)+"&destination=Atlanta&v=atlanta-home-"+Date.now();
     return;
   }
   var d=(t.destinations||[])[0]||"";
