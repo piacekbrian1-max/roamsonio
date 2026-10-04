@@ -9,12 +9,28 @@
   },
   "versions": [
     {
+      "sha": "0a565c93e2d5b3f24f6693df67c0d40058c602ea",
+      "date": "2026-10-04",
+      "title": "Fix New Orleans Edit Trip access to trip state",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Uses a small New Orleans edit API so the editor can access the existing trip state and canonical save/render functions. No trip data, itinerary generation, routing, recovery logic, or other trip pages changed. Awaiting user validation."
+    },
+    {
+      "sha": "506f0aa4a76ff3e0d4cc0f2d01eab418be63b3c8",
+      "date": "2026-10-04",
+      "title": "Make New Orleans Edit Trip functional",
+      "status": "ISSUE",
+      "rollbackEligible": false,
+      "notes": "User reported the New Orleans Edit Trip controls were not functioning. Do not use this version as a rollback target."
+    },
+    {
       "sha": "d30e099cbbc75a83f4b516b26b887b3419303a60",
       "date": "2026-10-04",
       "title": "Fix New Orleans Edit Trip button initialization",
-      "status": "TESTING",
+      "status": "ISSUE",
       "rollbackEligible": false,
-      "notes": "Changes only New Orleans Edit Trip initialization so the button and editor bind after the full page has loaded. No trip data, itinerary, routing, recovery, or other trip pages changed. Awaiting user validation."
+      "notes": "User reported the Edit Trip editor still shows 'The trip is still loading' and changes do not update the New Orleans trip. Do not use this version as a rollback target."
     },
     {
       "sha": "c9216503f2871cf7b399f4cf29419b1ae037545f",
