@@ -159,17 +159,37 @@ function loadPersistentTrips(){
 }
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 function tripHref(t){
-  var id=String(t&&t.id||"");
+  var id=String(t&&t.id||"").trim();
   var name=String(t&&t.name||"").trim();
-  if(id==="febaebf6-7369-4922-b069-c745eee8c16f" || name==="New Orleans · Jan 16–20, 2027"){
-    return "new-orleans.html?id=febaebf6-7369-4922-b069-c745eee8c16f";
+  var dests=Array.isArray(t&&t.destinations)?t.destinations:[];
+  var isNola=id==="febaebf6-7369-4922-b069-c745eee8c16f" ||
+    name==="New Orleans · Jan 16–20, 2027" ||
+    dests.some(function(d){return String(d||"").trim().toLowerCase()==="new orleans"});
+  if(isNola){
+    return "new-orleans.html?id=febaebf6-7369-4922-b069-c745eee8c16f&v=restored";
   }
   return "trip-workspace.html?id="+encodeURIComponent(id);
 }
 function photo(t){
 var ds=(t.destinations||[]);for(var i=0;i<ds.length;i++){var k=ds[i].toLowerCase();if(k.indexOf("trnava")>=0)return images.trnava;if(k.indexOf("prague")>=0)return images.prague;if(k.indexOf("pilsen")>=0)return images.pilsen;if(k.indexOf("hlub")>=0)return images.hluboka;if(k.indexOf("vienna")>=0)return images.vienna;if(k.indexOf("atlanta")>=0)return images.atlanta;if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return images.neworleans}return images.prague
 }
-function openTrip(id){var a=[];try{a=JSON.parse(localStorage.getItem("big-thanksgiving-trips-v1")||"[]")}catch(e){}var t=a.find(function(x){return x.id===id})||{};var d=(t.destinations||[])[0]||"";sessionStorage.setItem("openTripId",id);location.href="trip-workspace.html?id="+encodeURIComponent(id)+"&destination="+encodeURIComponent(d)}
+function openTrip(id){
+  var a=[];try{a=JSON.parse(localStorage.getItem("big-thanksgiving-trips-v1")||"[]")}catch(e){}
+  var t=a.find(function(x){return x.id===id})||{};
+  var nolaId="febaebf6-7369-4922-b069-c745eee8c16f";
+  var dests=Array.isArray(t.destinations)?t.destinations:[];
+  var isNola=String(id||"").trim()===nolaId ||
+    String(t.name||"").trim()==="New Orleans · Jan 16–20, 2027" ||
+    dests.some(function(d){return String(d||"").trim().toLowerCase()==="new orleans"});
+  if(isNola){
+    sessionStorage.setItem("openTripId",nolaId);
+    location.href="new-orleans.html?id="+encodeURIComponent(nolaId)+"&v=restored";
+    return;
+  }
+  var d=(t.destinations||[])[0]||"";
+  sessionStorage.setItem("openTripId",id);
+  location.href="trip-workspace.html?id="+encodeURIComponent(id)+"&destination="+encodeURIComponent(d);
+}
 function parseDate(s){return s?new Date(s+"T00:00:00"):null}
 function daysUntil(s){var d=parseDate(s),n=new Date();n.setHours(0,0,0,0);return d?Math.ceil((d-n)/86400000):null}
 function tripState(t){var n=new Date();n.setHours(0,0,0,0),a=parseDate(t.start),b=parseDate(t.end);if(!a||!b)return"Planning";if(n<a)return"Upcoming";if(n<=b)return"Active";return"Past"}
