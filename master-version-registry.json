@@ -9,12 +9,20 @@
   },
   "versions": [
     {
+      "sha": "3ece2540a749841452e79b1a791777c03d437a5b",
+      "date": "2026-10-04",
+      "title": "Normalize New Orleans identity across dashboard and My Trips",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "One logical trip-identity fix across index.html and my-trips.html. New Orleans copies now use a stable identity based on its permanent ID/date range, renamed copies are preferred over the default name when duplicates exist, and opening New Orleans preserves the selected trip ID. No trip content, itinerary, recovery source, or other destination was intentionally changed."
+    },
+    {
       "sha": "68cdd2ea9423cd444f8ef1fb26a0a93490666d6a",
       "date": "2026-10-04",
       "title": "Keep New Orleans edits matched to the same trip",
-      "status": "TESTING",
+      "status": "ISSUE",
       "rollbackEligible": false,
-      "notes": "Adds only a stable New Orleans trip identity to My Trips merging so a renamed New Orleans trip cannot be treated as a separate journey from its existing account snapshot. No trip data, itinerary, routing, recovery source, or other trip pages changed. Gatlinburg image issue intentionally not changed in this step."
+      "notes": "User retested and the same New Orleans duplicate/reversion problem remained; replaced by the broader stable-identity normalization change."
     },
     {
       "sha": "ec3fe88aafee0df6277a316c704ddd8088165c48",
