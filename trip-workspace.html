@@ -640,7 +640,9 @@ if((String(id)===atlantaDurableId||String(serverId)===atlantaDurableId||slug(url
     if(asnap){
       asnap.id=(trip&&trip.id)||id||atlantaDurableId;
       asnap.supabaseId=atlantaDurableId;
-      if(!trip||JSON.stringify(asnap).length>JSON.stringify(trip).length)trip=asnap;
+      var localRevision=Number(trip&&trip.revision)||0;
+      var durableRevision=Number(asnap&&asnap.revision)||0;
+      if(!trip||durableRevision>localRevision)trip=asnap;
       else if(!trip.supabaseId)trip.supabaseId=atlantaDurableId;
     }
   }catch(e){console.warn("Atlanta durable load unavailable:",e)}
