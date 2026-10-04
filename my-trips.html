@@ -98,6 +98,24 @@ function restoreProtectedBrowserCopy(){
   return true;
 }
 
+async function loadAccountTripCopies(){
+  if(!sb)return [];
+  var session=await getSession();
+  if(!session)return [];
+  try{
+    var r=await sb.from("trips").select("id,name,owner_id,visibility,trip_snapshot,created_at,updated_at").eq("owner_id",session.user.id).order("created_at",{ascending:false});
+    if(r.error)throw r.error;
+    return (r.data||[]).filter(function(row){return row&&row.trip_snapshot&&typeof row.trip_snapshot==="object"}).map(function(row){
+      var t=JSON.parse(JSON.stringify(row.trip_snapshot));
+      t.id=t.id||row.id;
+      t.supabaseId=row.id;
+      t.name=t.name||row.name||"RoamSonio Trip";
+      t.recoveredFromAccountAt=new Date().toISOString();
+      return t;
+    });
+  }catch(e){console.warn("Account trip recovery read failed:",e);return []}
+}
+
 async function backfillMissingSnapshots(){
   var session=await getSession();
   if(!session)return;
@@ -197,7 +215,7 @@ window.restoreProtectedBrowserCopy=restoreProtectedBrowserCopy;
 
 safetyBackup();
 
-function render(){
+async function render(){
   var el=document.getElementById("tripList"),state=findProtectedTrips(),a=state.trips;
   el.innerHTML="";
   var dg=diagnostic(),dEl=document.getElementById("tripDiagnostic");
@@ -213,8 +231,17 @@ function render(){
   }
 
   if(!a.length){
-    el.innerHTML='<div class="empty">No saved trips are currently visible. RoamSonio will check protected recovery copies before asking you to rebuild anything.</div>';
-    return;
+    var accountTrips=await loadAccountTripCopies();
+    if(accountTrips.length){
+      a=accountTrips;
+      localStorage.setItem(KEY,JSON.stringify(accountTrips));
+      showStatus("<b>Account recovery copy found.</b> RoamSonio found "+accountTrips.length+" saved trip snapshot(s) in your account and restored them to this browser. No trip was rebuilt.",true);
+      dg=diagnostic();
+      dEl.innerHTML="<b>Recovery source: RoamSonio account</b><br>"+accountTrips.length+" durable trip snapshot(s) were found and copied back into My Trips.";
+    }else{
+      el.innerHTML='<div class="empty">No saved trips are currently visible, and no durable trip snapshots were returned for this account.</div>';
+      return;
+    }
   }
 
   for(var i=a.length-1;i>=0;i--){
