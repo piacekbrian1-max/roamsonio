@@ -428,7 +428,7 @@ window.openTrip=function(id){
   var isAtlantaTest=String(id)===atlantaTestId || String(t.supabaseId||"")===atlantaTestId ||
                     String(t.name||"").trim()==="Atlanta Test";
   if(isAtlantaTest){
-    location.href="trip-workspace.html?id="+encodeURIComponent(id)+"&destination="+encodeURIComponent(d||"Atlanta")+"&v=atlanta-restored-"+Date.now();
+    location.href="trip-workspace.html?id="+encodeURIComponent(id)+"&supabaseId="+encodeURIComponent(t.supabaseId||"16f08031-885a-45d6-a79e-480fb1d39c67")+"&destination="+encodeURIComponent(d||"Atlanta")+"&v=atlanta-restored-"+Date.now();
     return;
   }
 
