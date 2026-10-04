@@ -9,12 +9,20 @@
   },
   "versions": [
     {
+      "sha": "ec3fe88aafee0df6277a316c704ddd8088165c48",
+      "date": "2026-10-04",
+      "title": "Fix New Orleans Edit Trip field loading",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Changes only the Edit Trip field loader to use the existing New Orleans trip-state API. No trip data, itinerary, routing, recovery logic, or other trip pages changed. Awaiting user validation."
+    },
+    {
       "sha": "0a565c93e2d5b3f24f6693df67c0d40058c602ea",
       "date": "2026-10-04",
       "title": "Fix New Orleans Edit Trip access to trip state",
-      "status": "TESTING",
+      "status": "ISSUE",
       "rollbackEligible": false,
-      "notes": "Uses a small New Orleans edit API so the editor can access the existing trip state and canonical save/render functions. No trip data, itinerary generation, routing, recovery logic, or other trip pages changed. Awaiting user validation."
+      "notes": "User reported the Edit Trip fields did not load existing dates/destinations and saving was blocked by blank required dates. Do not use this version as a rollback target."
     },
     {
       "sha": "506f0aa4a76ff3e0d4cc0f2d01eab418be63b3c8",
