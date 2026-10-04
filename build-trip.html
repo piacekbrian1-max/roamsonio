@@ -129,7 +129,7 @@ body{padding-top:68px!important}
 <div class="grid">
 <div class="field"><label>Trip name</label><input id="name" value="My New Adventure"></div><div class="field"><label>Travelers</label><input id="travelers" type="number" min="1" value="2"></div>
 <div class="field"><label>Start date</label><input id="start" type="date"></div><div class="field"><label>End date</label><input id="end" type="date"></div>
-<div class="field full"><label>Where are you going?</label><input id="dest" placeholder="New Orleans"></div>
+<div class="field full"><label>Where are you going?</label><input id="dest" placeholder="New Orleans"><div class="status">RoamSonio identifies the destination before building the trip. For ambiguous names, you will be asked to choose the correct location. Location lookup uses OpenStreetMap data.</div></div>
 <div class="field"><label>Who is traveling?</label><select id="groupType"><option>Adults only</option><option>Family with kids</option><option>Mixed ages / extended family</option><option>Friends / couples</option></select></div>
 <div class="field"><label>Kids' ages, if any</label><input id="kidsAges" placeholder="Example: 7, 12 or leave blank"></div>
 <div class="field"><label>How are you getting around?</label><select id="transport"><option>Walking + public transit</option><option>Rental car</option><option>Rideshare + walking</option><option>Mostly walking</option><option>Not sure yet</option></select></div>
@@ -171,6 +171,46 @@ function selected(){var n=document.querySelectorAll(".chip.active"),a=[];for(var
 function maps(q){return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(q)}
 function web(q){return "https://www.google.com/search?q="+encodeURIComponent(q)}
 function slug(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}
+var LOCATION_CACHE_KEY="roamsonio-destination-cache-v1";
+function normalizeLocationQuery(s){return String(s||"").trim().toLowerCase().replace(/\\s+/g," ")}
+async function resolveDestination(raw){
+  var q=normalizeLocationQuery(raw);
+  if(!q)return null;
+  var cached;
+  try{cached=JSON.parse(localStorage.getItem(LOCATION_CACHE_KEY)||"{}")}catch(e){cached={}}
+  if(cached[q])return cached[q];
+  var url="https://nominatim.openstreetmap.org/search?format=geocodejson&addressdetails=1&limit=5&accept-language=en&q="+encodeURIComponent(raw);
+  var response;
+  try{response=await fetch(url,{headers:{"Accept":"application/json"}})}catch(e){throw new Error("Location lookup is temporarily unavailable. Please try again with the city, state/province and country.")}
+  if(!response.ok)throw new Error("Location lookup is temporarily unavailable. Please try again.");
+  var data=await response.json(),features=Array.isArray(data&&data.features)?data.features:[];
+  if(!features.length)throw new Error("We couldn't identify that destination. Add the city, state/province and country, then try again.");
+  var candidates=features.map(function(f){
+    var p=f&&f.properties||{},g=p.geocoding||{},a=g||{};
+    return {
+      provider:"openstreetmap",
+      providerId:g.osm_type&&g.osm_id?(String(g.osm_type)+":"+String(g.osm_id)):(g.place_id?String(g.place_id):""),
+      name:g.name||raw,
+      displayName:g.label||raw,
+      city:g.city||g.town||g.village||g.municipality||g.name||"",
+      state:g.state||g.region||"",
+      country:g.country||"",
+      countryCode:g.country_code||"",
+      latitude:f.geometry&&f.geometry.coordinates?Number(f.geometry.coordinates[1]):null,
+      longitude:f.geometry&&f.geometry.coordinates?Number(f.geometry.coordinates[0]):null,
+      type:g.type||""
+    };
+  });
+  var first=candidates[0];
+  var firstName=normalizeLocationQuery(first.name||raw);
+  var alternatives=candidates.filter(function(x){return normalizeLocationQuery(x.name||"")===firstName&&normalizeLocationQuery(x.displayName||"")!==normalizeLocationQuery(first.displayName||"");});
+  if(alternatives.length){
+    var labels=[first].concat(alternatives).map(function(x){return x.displayName}).filter(Boolean);
+    throw new Error("This destination has multiple possible locations: "+labels.slice(0,3).join(" | ")+" . Please enter the city with its state/province or country.");
+  }
+  try{cached[q]=first;localStorage.setItem(LOCATION_CACHE_KEY,JSON.stringify(cached))}catch(e){}
+  return first;
+}
 function catalog(dest){
 var s=slug(dest);
 if(s.indexOf("gatlinburg")>=0||s.indexOf("gatlinberg")>=0)return {
@@ -219,13 +259,19 @@ for(var i=0;i<d;i++){
  if(family)note+=" "+(ages.length?"Use the kids' ages ("+ages.join(", ")+") to fine-tune attraction timing.":"Favor shorter activity blocks and easy breaks.");
  out.push({day:i+1,title:focus,morning:a,afternoon:b,evening:food,area:area,note:note})
 }return out}
-window.buildTrip=function(){
+window.buildTrip=async function(){
 var dest=document.getElementById("dest").value.trim(),d=days();
 if(!dest||!d){document.getElementById("status").textContent="Add a destination and start/end dates first.";return}
-var c=catalog(dest),ps=selected(),must=arr(document.getElementById("must").value),avoid=arr(document.getElementById("avoid").value);
+var status=document.getElementById("status");
+status.textContent="Identifying your destination…";
+var locationIdentity;
+try{locationIdentity=await resolveDestination(dest)}catch(e){status.textContent=e&&e.message?e.message:"We couldn't identify that destination. Please refine the location.";return}
+var resolvedName=locationIdentity.city||locationIdentity.name||dest;
+var c=catalog(resolvedName),ps=selected(),must=arr(document.getElementById("must").value),avoid=arr(document.getElementById("avoid").value);
 var group=document.getElementById("groupType").value,kids=document.getElementById("kidsAges").value,energy=document.getElementById("energy").value,evening=document.getElementById("evening").value;
 var plan=dayPlan(c,d,document.getElementById("pace").value,document.getElementById("mobility").value,ps,must,group,kids,evening,energy);
-var t={id:"trip-"+Date.now(),name:document.getElementById("name").value||c.city+" Adventure",frameworkVersion:"roamsonio-v2",planningMode:"guided",travelers:parseInt(document.getElementById("travelers").value,10)||2,start:document.getElementById("start").value,end:document.getElementById("end").value,destinations:[c.city],mustSee:must,preferences:ps,days:d,status:"Built — editable",transport:document.getElementById("transport").value,pace:document.getElementById("pace").value,foodBudget:document.getElementById("foodbudget").value,stay:document.getElementById("stay").value,homeBase:document.getElementById("homeBase").value,stayLink:document.getElementById("stayLink").value,flights:document.getElementById("flights").value,flightLink:document.getElementById("flightLink").value,mobility:document.getElementById("mobility").value,groupType:group,kidsAges:kids,energy:energy,evening:evening,dietary:document.getElementById("dietary").value,avoid:avoid,occasion:document.getElementById("occasion").value,areas:c.areas,plan:plan,localFood:c.local,food:c.food,sights:c.sights,resources:c.resources,weatherQuery:c.weather,camsQuery:c.cams,eventQuery:c.events,created:new Date().toISOString(),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),revision:1};
+var enteredName=document.getElementById("name").value.trim(),tripName=enteredName&&enteredName!=="My New Adventure"?enteredName:c.city+" Adventure";
+var t={id:"trip-"+Date.now(),name:tripName,frameworkVersion:"roamsonio-v2",planningMode:"guided",travelers:parseInt(document.getElementById("travelers").value,10)||2,start:document.getElementById("start").value,end:document.getElementById("end").value,destinations:[c.city],destinationIdentity:locationIdentity,mustSee:must,preferences:ps,days:d,status:"Built — editable",transport:document.getElementById("transport").value,pace:document.getElementById("pace").value,foodBudget:document.getElementById("foodbudget").value,stay:document.getElementById("stay").value,homeBase:document.getElementById("homeBase").value,stayLink:document.getElementById("stayLink").value,flights:document.getElementById("flights").value,flightLink:document.getElementById("flightLink").value,mobility:document.getElementById("mobility").value,groupType:group,kidsAges:kids,energy:energy,evening:evening,dietary:document.getElementById("dietary").value,avoid:avoid,occasion:document.getElementById("occasion").value,areas:c.areas,plan:plan,localFood:c.local,food:c.food,sights:c.sights,resources:c.resources,weatherQuery:c.weather,camsQuery:c.cams,eventQuery:c.events,created:new Date().toISOString(),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),revision:1};
 var a;try{a=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){a=[]}
 var same=a.find(function(x){
   return String(x.name||"").trim().toLowerCase()===String(t.name||"").trim().toLowerCase() &&
