@@ -95,6 +95,14 @@
       "status": "SUCCESS",
       "rollbackEligible": true,
       "notes": "User confirmed the Edit Trip button is visible. Deployment succeeded and the non-mutating shell is approved as working. No trip data, itinerary, persistence, recovery, destination data, or suggestions changed."
+    },
+    {
+      "sha": "2f53efe34ecb8fb6e1eb694291e51f1237702efe",
+      "date": "2026-10-04",
+      "title": "Add non-saving Edit Trip fields",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds editable review fields for trip name, start date, end date, and destinations to the existing generic trip-workspace Edit Trip shell. Fields load from the current trip object and are reset on close; no save handler or trip mutation was added. Awaiting live validation."
     }
   ]
 }
