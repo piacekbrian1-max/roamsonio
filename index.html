@@ -168,6 +168,13 @@ function tripHref(t){
   if(isNola){
     return "new-orleans.html?id=febaebf6-7369-4922-b069-c745eee8c16f&v=restored";
   }
+  var isEurope=id==="a636626a-e7b2-4337-b950-be9682edde63" ||
+    id==="european-thanksgiving-adventure-2026" ||
+    name==="European Thanksgiving Adventure 2026" ||
+    dests.some(function(d){return ["trnava","prague","pilsen","hluboka nad vltavou","hluboká nad vltavou"].indexOf(String(d||"").trim().toLowerCase())>=0});
+  if(isEurope){
+    return "current-trip.html";
+  }
   return "trip-workspace.html?id="+encodeURIComponent(id);
 }
 function photo(t){
