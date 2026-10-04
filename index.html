@@ -158,6 +158,14 @@ function loadPersistentTrips(){
   }catch(e){return[]}
 }
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function tripHref(t){
+  var id=String(t&&t.id||"");
+  var name=String(t&&t.name||"").trim();
+  if(id==="febaebf6-7369-4922-b069-c745eee8c16f" || name==="New Orleans · Jan 16–20, 2027"){
+    return "new-orleans.html?id=febaebf6-7369-4922-b069-c745eee8c16f";
+  }
+  return "trip-workspace.html?id="+encodeURIComponent(id);
+}
 function photo(t){
 var ds=(t.destinations||[]);for(var i=0;i<ds.length;i++){var k=ds[i].toLowerCase();if(k.indexOf("trnava")>=0)return images.trnava;if(k.indexOf("prague")>=0)return images.prague;if(k.indexOf("pilsen")>=0)return images.pilsen;if(k.indexOf("hlub")>=0)return images.hluboka;if(k.indexOf("vienna")>=0)return images.vienna;if(k.indexOf("atlanta")>=0)return images.atlanta;if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return images.neworleans}return images.prague
 }
@@ -246,7 +254,7 @@ var box=document.getElementById("upcomingTrips");if(!box)return;
 var list=all.filter(function(x){return x.state==="Upcoming"}).map(function(x){return x.t});
 if(current&&current.start&&tripState(current)==="Upcoming"&&!list.some(function(t){return t.id===current.id}))list.push(current);
 list.sort(function(a,b){var da=parseDate(a.start),db=parseDate(b.start);return (da?da.getTime():Infinity)-(db?db.getTime():Infinity)});
-box.innerHTML=list.length?list.map(function(t,i){var d=daysUntil(t.start),dest=(t.destinations||[]).join(" · "),date=t.start&&t.end?t.start+" → "+t.end:(t.start||"Dates not set");return "<article class='upcomingCard' style=\"--upcoming-image:url('"+photo(t)+"')\"><div class='upcomingBody'><div class='upcomingOrder'>"+(i+1)+" · Upcoming</div><h3>"+esc(t.name||"Untitled trip")+"</h3><div class='upcomingDest'>"+esc(dest)+"</div><div class='upcomingDate'><strong>"+(d===null?"Dates not set":d===0?"Today":d+" days")+"</strong>"+(d===null?"":" until departure")+"</div><div class='upcomingMeta'><span>"+esc(date)+"</span><span>"+(t.travelers||"—")+" travelers</span></div><a class='upcomingAction' href='trip-workspace.html?id="+encodeURIComponent(t.id)+"'>Open trip</a></div></article>"}).join(""):"<div class='upcomingEmpty'>No scheduled trips yet. Start a new journey and it will appear here automatically, ordered by departure date.</div>";
+box.innerHTML=list.length?list.map(function(t,i){var d=daysUntil(t.start),dest=(t.destinations||[]).join(" · "),date=t.start&&t.end?t.start+" → "+t.end:(t.start||"Dates not set");return "<article class='upcomingCard' style=\"--upcoming-image:url('"+photo(t)+"')\"><div class='upcomingBody'><div class='upcomingOrder'>"+(i+1)+" · Upcoming</div><h3>"+esc(t.name||"Untitled trip")+"</h3><div class='upcomingDest'>"+esc(dest)+"</div><div class='upcomingDate'><strong>"+(d===null?"Dates not set":d===0?"Today":d+" days")+"</strong>"+(d===null?"":" until departure")+"</div><div class='upcomingMeta'><span>"+esc(date)+"</span><span>"+(t.travelers||"—")+" travelers</span></div><a class='upcomingAction' href='"+tripHref(t)+"'>Open trip</a></div></article>"}).join(""):"<div class='upcomingEmpty'>No scheduled trips yet. Start a new journey and it will appear here automatically, ordered by departure date.</div>";
 }
 function renderNextJourney(saved,current,upcoming,attention){
 var box=document.getElementById("nextJourney");if(!box)return;
@@ -272,12 +280,12 @@ function renderCards(list,emptyText){
  return list.length?list.map(function(x){
    var t=x.t,r=x.r,d=daysUntil(t.start),pct=Math.round(r.done/r.total*100);
    var date=t.start&&t.end?t.start+" → "+t.end:(t.start||"Dates not set");
-   return "<a class='tripRowCard' href='trip-workspace.html?id="+encodeURIComponent(t.id)+"' aria-label='Open "+esc(t.name||"Untitled trip")+"'><div class='tripRowPhoto' style=\"background-image:url('" + photo(t) + "')\"></div><div class='tripRowBody'><div class='ey'>" +(r.missing.length?"UPCOMING · PLANNING":"UPCOMING · READY")+"</div><h3>"+esc(t.name||"Untitled trip")+"</h3><div class='tripRowDest'>"+esc((t.destinations||[]).join(" · "))+"</div><div class='tripRowCountdown'><strong>"+(d===null?"Dates not set":d===0?"Today":d+" days")+"</strong>"+(d===null?"":" <span>until departure</span>")+"</div><div class='tripRowMeta'><span>"+esc(date)+"</span><span>"+(t.travelers||"—")+" travelers</span></div><div class='tripRowReady'>Planning readiness · "+r.done+"/"+r.total+"</div><div class='tripRowProgress'><i style='width:"+pct+"%'></i></div><span class='tripRowAction'>Open trip</span></div></a>";
+   return "<a class='tripRowCard' href='"+tripHref(t)+"' aria-label='Open "+esc(t.name||"Untitled trip")+"'><div class='tripRowPhoto' style=\"background-image:url('" + photo(t) + "')\"></div><div class='tripRowBody'><div class='ey'>" +(r.missing.length?"UPCOMING · PLANNING":"UPCOMING · READY")+"</div><h3>"+esc(t.name||"Untitled trip")+"</h3><div class='tripRowDest'>"+esc((t.destinations||[]).join(" · "))+"</div><div class='tripRowCountdown'><strong>"+(d===null?"Dates not set":d===0?"Today":d+" days")+"</strong>"+(d===null?"":" <span>until departure</span>")+"</div><div class='tripRowMeta'><span>"+esc(date)+"</span><span>"+(t.travelers||"—")+" travelers</span></div><div class='tripRowReady'>Planning readiness · "+r.done+"/"+r.total+"</div><div class='tripRowProgress'><i style='width:"+pct+"%'></i></div><span class='tripRowAction'>Open trip</span></div></a>";
  }).join(""):"<div class='tripRowsEmpty'>"+emptyText+"</div>";
 }
 readyBox.innerHTML=renderCards(ready,"No upcoming trip is completely ready yet. When a trip reaches the core planning threshold, it will appear here.");
 planningBox.innerHTML=renderCards(planning,"No upcoming trips need planning attention right now.");
-grid.innerHTML=all.filter(function(x){return x.state!=="Upcoming"}).sort(sortByDate).map(function(x){var t=x.t;return "<article class='dashTrip'><div class='dashTripPhoto' style=\"background-image:url('"+photo(t)+"')\"><span class='dashTripStatus'>"+esc(x.state)+"</span></div><div class='dashTripBody'><h3>"+esc(t.name||"Untitled trip")+"</h3><div class='dashTripDest'>"+esc((t.destinations||[]).join(" · "))+"</div><div class='dashTripActions'><a class='primary' href='trip-workspace.html?id="+encodeURIComponent(t.id)+"'>Open trip</a></div></div></article>"}).join("")||"<div class='empty' style='grid-column:1/-1'>Your past and saved trips will appear here.</div>";
+grid.innerHTML=all.filter(function(x){return x.state!=="Upcoming"}).sort(sortByDate).map(function(x){var t=x.t;return "<article class='dashTrip'><div class='dashTripPhoto' style=\"background-image:url('"+photo(t)+"')\"><span class='dashTripStatus'>"+esc(x.state)+"</span></div><div class='dashTripBody'><h3>"+esc(t.name||"Untitled trip")+"</h3><div class='dashTripDest'>"+esc((t.destinations||[]).join(" · "))+"</div><div class='dashTripActions'><a class='primary' href='"+tripHref(t)+"'>Open trip</a></div></div></article>"}).join("")||"<div class='empty' style='grid-column:1/-1'>Your past and saved trips will appear here.</div>";
 }
 function load(){return loadPersistentTrips()}
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
@@ -320,7 +328,7 @@ function renderHomeRoamSonio(){
     if(!items.length)continue;
     total+=items.length;
     items.sort(function(a,b){return (b.rating||0)-(a.rating||0)||a.name.localeCompare(b.name)});
-    html+="<div class='rwTripGroup'><div class='rwTripGroupHead'><div><small>"+esc((t.destinations||[]).join(" · "))+"</small><h3>"+esc(t.name||"Untitled trip")+"</h3></div><a href='trip-workspace.html?id="+encodeURIComponent(t.id)+"'>Open trip</a></div><div class='rwHomeGrid'>";
+    html+="<div class='rwTripGroup'><div class='rwTripGroupHead'><div><small>"+esc((t.destinations||[]).join(" · "))+"</small><h3>"+esc(t.name||"Untitled trip")+"</h3></div><a href='"+tripHref(t)+"'>Open trip</a></div><div class='rwHomeGrid'>";
     items.forEach(function(x){
       var stars=x.rating?"★".repeat(Math.min(5,x.rating))+"☆".repeat(Math.max(0,5-x.rating)):"Not rated";
       html+="<article class='rwHomeCard'><div class='type'>"+esc(x.type)+" · "+esc(x.category)+"</div><h4>"+esc(x.name)+"</h4><div class='rwHomeMeta'>"+esc(x.destination||"This trip")+"</div><div class='rwHomeStars'>"+stars+(x.rating?" <span style='font-size:9px;color:var(--ink)'>"+x.rating+"/5</span>":"")+"</div><div class='rwHomeFlags'>"+(x.favorite?"<span class='rwHomeFlag'>Favorite</span>":"")+(x.recommend?"<span class='rwHomeFlag'>Would recommend</span>":"")+(x.visited?"<span class='rwHomeFlag'>Visited</span>":"")+"</div>"+(x.note?"<div class='rwHomeNote'>"+esc(x.note)+"</div>":"")+"</article>";
