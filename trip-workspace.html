@@ -2287,4 +2287,45 @@ e.innerHTML="";for(var i=0;i<rs.length;i++){var a=document.createElement("a");a.
 ensureRoamsonioFramework();ensureOriginalPlan();renderHeader();renderRoute();renderDestinations();renderPlan();renderGuide();renderEvents();renderWeather();renderCams();renderTravel();renderBudget();renderMemories();renderResources();var shareTripButton=document.getElementById("shareTripButton");if(shareTripButton)shareTripButton.href="share-trip.html?id="+encodeURIComponent(trip.id);var recoverButton=document.getElementById("recoverTripButton");if(recoverButton){recoverButton.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(typeof window.recoverFullTrip==="function"){window.recoverFullTrip()}else{alert("Recovery is still loading. Please wait a moment and try again.")}})}
 })();
 </script>
-</body></html>
+<script>
+(function(){
+  function attachRecoveryRescue(){
+    var b=document.getElementById("recoverTripButton");
+    if(!b||b.dataset.rescueBound==="1")return;
+    b.dataset.rescueBound="1";
+    b.addEventListener("click",async function(e){
+      e.preventDefault();e.stopImmediatePropagation();
+      if(!confirm("Recover the complete saved trip from your RoamSonio account? Your current browser copy will be backed up first."))return;
+      b.disabled=true;b.textContent="Recovering…";
+      try{
+        var key="big-thanksgiving-trips-v1",all=[];
+        try{all=JSON.parse(localStorage.getItem(key)||"[]")}catch(x){}
+        var params=new URLSearchParams(location.search),id=params.get("id")||sessionStorage.getItem("openTripId");
+        var local=Array.isArray(all)?all.find(function(t){return t.id===id}):null;
+        if(!local)throw new Error("The trip is not available in this browser copy.");
+        var sb=window.supabase&&window.supabase.createClient?window.supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy"):null;
+        if(!sb)throw new Error("The account recovery service did not load.");
+        var sr=await sb.auth.getSession(),sess=sr.data&&sr.data.session;
+        if(!sess||!sess.user)throw new Error("Your RoamSonio account session is not active.");
+        var tripId=local.supabaseId||local.id;
+        var rr=await sb.rpc("roamsonio_recover_trip",{p_trip_id:tripId});
+        if(rr.error)throw rr.error;
+        var p=rr.data;if(typeof p==="string")p=JSON.parse(p);
+        if(!p||!p.trip_snapshot)throw new Error("No complete saved snapshot was returned.");
+        var recovered=JSON.parse(JSON.stringify(p.trip_snapshot));
+        recovered.id=local.id;recovered.supabaseId=p.id||tripId;
+        if(!recovered.name&&p.name)recovered.name=p.name;
+        localStorage.setItem(key,JSON.stringify(all.map(function(t){return t.id===local.id?recovered:t})));
+        sessionStorage.setItem("openTripId",recovered.id);
+        alert("Complete trip recovered successfully.");
+        location.reload();
+      }catch(err){
+        console.error("Recovery rescue:",err);
+        alert("Recovery reached the account service, but could not complete.\\n\\n"+(err&&err.message?err.message:String(err)));
+        b.disabled=false;b.textContent="Recover full trip";
+      }
+    },true);
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",attachRecoveryRescue);else attachRecoveryRescue();
+})();
+</script></body></html>
