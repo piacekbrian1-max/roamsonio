@@ -137,14 +137,45 @@ atlanta:"https://commons.wikimedia.org/wiki/Special:FilePath/Atlanta%20Skyline%2
 function cleanSavedTrips(a){
   if(!Array.isArray(a))return [];
   var seen={},out=[];
+  function stableKey(t){
+    t=t||{};
+    var name=String(t.name||"").trim().toLowerCase();
+    var dests=Array.isArray(t.destinations)?t.destinations.map(function(x){return String(x||"").trim().toLowerCase()}):[];
+    var isNola=String(t.id||"") === "febaebf6-7369-4922-b069-c745eee8c16f" ||
+      String(t.supabaseId||"") === "febaebf6-7369-4922-b069-c745eee8c16f" ||
+      (dests.indexOf("new orleans")>=0 && String(t.start||"")==="2027-01-16" && String(t.end||"")==="2027-01-20");
+    if(isNola)return "known:new-orleans-2027";
+    var dest=dests.join("|");
+    return name+"||"+dest+"||"+String(t.start||"")+"||"+String(t.end||"");
+  }
+  function preferred(a,b){
+    if(!a)return b;
+    if(!b)return a;
+    var ar=Number(a.revision)||0,br=Number(b.revision)||0;
+    if(br>ar)return b;
+    if(ar>br)return a;
+    var au=String(a.updatedAt||""),bu=String(b.updatedAt||"");
+    if(bu&&(!au||bu>au))return b;
+    if(au&&(!bu||au>bu))return a;
+    var nolaKey=stableKey(a)==="known:new-orleans-2027"&&stableKey(b)==="known:new-orleans-2027";
+    if(nolaKey){
+      var defaultName="new orleans · jan 16–20, 2027";
+      var an=String(a.name||"").trim().toLowerCase(),bn=String(b.name||"").trim().toLowerCase();
+      if(an===defaultName&&bn!==defaultName)return b;
+      if(bn===defaultName&&an!==defaultName)return a;
+    }
+    return a;
+  }
   for(var i=0;i<a.length;i++){
     var t=a[i]||{},name=String(t.name||"").trim().toLowerCase();
     if(name==="atlanta test"||name==="account 2 test trip")continue;
-    var dest=(t.destinations||[]).map(function(x){return String(x||"").trim().toLowerCase()}).join("|");
-    var key=name+"||"+dest+"||"+String(t.start||"")+"||"+String(t.end||"");
-    if(seen[key])continue;
-    seen[key]=true;
-    out.push(t);
+    var key=stableKey(t),prior=seen[key];
+    if(prior===undefined){
+      seen[key]=out.length;
+      out.push(t);
+    }else{
+      out[prior]=preferred(out[prior],t);
+    }
   }
   return out;
 }
@@ -207,7 +238,7 @@ function tripHref(t){
     name==="New Orleans · Jan 16–20, 2027" ||
     dests.some(function(d){return String(d||"").trim().toLowerCase()==="new orleans"});
   if(isNola){
-    return "new-orleans.html?id=febaebf6-7369-4922-b069-c745eee8c16f&v=restored";
+    return "new-orleans.html?id="+encodeURIComponent(id)+"&v=nola-stable";
   }
   var isEurope=id==="a636626a-e7b2-4337-b950-be9682edde63" ||
     id==="european-thanksgiving-adventure-2026" ||
@@ -237,8 +268,8 @@ function openTrip(id){
     String(t.name||"").trim()==="New Orleans · Jan 16–20, 2027" ||
     dests.some(function(d){return String(d||"").trim().toLowerCase()==="new orleans"});
   if(isNola){
-    sessionStorage.setItem("openTripId",nolaId);
-    location.href="new-orleans.html?id="+encodeURIComponent(nolaId)+"&v=restored";
+    sessionStorage.setItem("openTripId",id);
+    location.href="new-orleans.html?id="+encodeURIComponent(id)+"&v=nola-stable";
     return;
   }
   var atlantaId="16f08031-885a-45d6-a79e-480fb1d39c67";
