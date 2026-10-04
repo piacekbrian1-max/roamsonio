@@ -108,9 +108,17 @@
       "sha": "a39c80d0e346a3425bee1b2bffa8076e514f13e3",
       "date": "2026-10-04",
       "title": "Add safe Edit Trip save behavior",
+      "status": "ISSUE",
+      "rollbackEligible": false,
+      "notes": "User reported that after deployment all trips disappeared from My Trips. Per rollback protocol, this version is permanently ineligible as a rollback target and was reverted to the immediately prior tested Edit Trip fields version."
+    },
+    {
+      "sha": "4553620431be1299a257f68cb61b51acc4097e86",
+      "date": "2026-10-04",
+      "title": "Rollback failed Edit Trip save behavior to last tested version",
       "status": "TESTING",
       "rollbackEligible": false,
-      "notes": "Adds Save changes and Cancel to the generic Edit Trip shell. Save updates only trip name, start date, end date, destinations, revision, and updatedAt in the existing saved trip object; it does not rebuild itinerary or suggestions. Awaiting live persistence validation."
+      "notes": "Reverts the failed Save Changes experiment to the exact prior trip-workspace version 2f53efe34ecb8fb6e1eb694291e51f1237702efe. No other trip logic intentionally changed. Awaiting deployment and user confirmation that My Trips is restored."
     }
   ]
 }
