@@ -119,6 +119,14 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Reverts the failed Save Changes experiment to the exact prior trip-workspace version 2f53efe34ecb8fb6e1eb694291e51f1237702efe. No other trip logic intentionally changed. Awaiting deployment and user confirmation that My Trips is restored."
+    },
+    {
+      "sha": "9cb11c6bca15f60ce9985d3584dadc8a3b0da9f6",
+      "date": "2026-10-04",
+      "title": "Fix Edit Trip save to use canonical persistence",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Reintroduces Save changes using the existing canonical save() routine, which updates local storage, revision/updatedAt, safety snapshot, and durable Supabase snapshot when available. No My Trips code changed. Awaiting live validation."
     }
   ]
 }
