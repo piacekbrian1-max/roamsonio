@@ -72,7 +72,12 @@ function safetyBackup(){
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 var SB_URL="https://vqtqchxoecrahtrnoocy.supabase.co";
 var SB_KEY="sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy";
-var sb=null;\ntry{if(window.supabase&&typeof window.supabase.createClient==="function"){sb=window.supabase.createClient(SB_URL,SB_KEY);}}catch(e){sb=null;}
+var sb=null;
+try{
+  if(window.supabase&&typeof window.supabase.createClient==="function"){
+    sb=window.supabase.createClient(SB_URL,SB_KEY);
+  }
+}catch(e){sb=null;}
 
 async function getSession(){
   try{var r=await sb.auth.getSession();return r.data&&r.data.session||null}catch(e){return null}
@@ -109,6 +114,7 @@ async function loadAccountTripCopies(){
     if(typeof rows==="string"){
       try{rows=JSON.parse(rows)}catch(e){rows=[]}
     }
+    if(rows && !Array.isArray(rows) && Array.isArray(rows.items))rows=rows.items;
     if(!Array.isArray(rows))rows=[];
     return rows.filter(function(row){
       return row&&row.trip_snapshot&&typeof row.trip_snapshot==="object";
@@ -241,7 +247,15 @@ async function render(){
   }
 
   if(!a.length){
-    var accountTrips=await loadAccountTripCopies();
+    var accountTrips=[];
+    try{
+      accountTrips=await loadAccountTripCopies();
+    }catch(e){
+      var msg=e&&e.message?e.message:String(e);
+      dEl.innerHTML="<b>Account recovery error</b><br>"+esc(msg)+"<br><small>The saved database records were not changed.</small>";
+      el.innerHTML='<div class="empty">RoamSonio could not read the durable trip snapshots. Nothing was deleted or rebuilt.</div>';
+      return;
+    }
     if(accountTrips.length){
       a=accountTrips;
       localStorage.setItem(KEY,JSON.stringify(accountTrips));
