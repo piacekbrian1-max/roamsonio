@@ -199,7 +199,7 @@ body{padding-top:68px!important}
 
 <header id="home" class="hero">
 <div class="coverGrid">
-  <div class="coverMain"><img src="images/prague-christmas.jpg" alt="Prague Old Town Square Christmas tree"><div class="coverCaption"><div class="eyebrow">A family holiday journey · Advent 2026</div><h1>European Thanksgiving <span>at Christmas</span></h1><p>Four days of family time in Trnava begin a festive road journey through Central Europe: Prague’s illuminated Old Town and Christmas markets, a Pilsen brewery night, and a final winter visit to Hluboká nad Vltavou before returning to Vienna Airport.</p><div class="heroActions"><a class="btn primary" href="#itinerary">Explore the journey</a><a class="btn" href="https://www.google.com/maps/dir/Vienna+International+Airport,+Austria/Trnava,+Slovakia/Prague,+Czechia/Pilsen,+Czechia/Hluboká+nad+Vltavou,+Czechia/Vienna+International+Airport,+Austria" target="_blank">Open route map</a></div></div></div>
+  <div class="coverMain"><img src="images/prague-christmas.jpg" alt="Prague Old Town Square Christmas tree"><div class="coverCaption"><div class="eyebrow">A family holiday journey · Advent 2026</div><h1>European Thanksgiving <span>at Christmas</span></h1><p>Four days of family time in Trnava begin a festive road journey through Central Europe: Prague’s illuminated Old Town and Christmas markets, a Pilsen brewery night, and a final winter visit to Hluboká nad Vltavou before returning to Vienna Airport.</p><div class="heroActions"><a class="btn primary" href="#itinerary">Explore the journey</a><a class="btn" href="https://www.google.com/maps/dir/Vienna+International+Airport,+Austria/Trnava,+Slovakia/Prague,+Czechia/Pilsen,+Czechia/Hluboká+nad+Vltavou,+Czechia/Vienna+International+Airport,+Austria" target="_blank">Open route map</a><button type="button" class="btn" id="editTripButton">Edit trip</button></div></div></div>
   <div class="coverSide">
     <div><img src="images/trnava-advent.jpg" alt="Trnava Advent"><div class="coverMini">Trnava · Advent & Family</div></div>
     <div><img src="images/pilsen-christmas.jpg" alt="Pilsen Christmas market"><div class="coverMini">Pilsen · Christmas Market</div></div>
@@ -216,6 +216,16 @@ body{padding-top:68px!important}
 <div class="countCard"><div class="label">Countdown to departure · Nov 25, 2026 · 1:10 PM</div><div class="count"><div><b id=d>—</b><span>Days</span></div><div><b id=h>—</b><span>Hours</span></div><div><b id=m>—</b><span>Minutes</span></div><div><b id=s>—</b><span>Seconds</span></div></div><div class="heroRoute">VIE → TRNAVA → PRAGUE → PILSEN → HLUBOKÁ → VIE</div></div>
 </div>
 </header>
+<div id="editTripShell" style="display:none;max-width:1500px;width:94%;margin:18px auto 0;background:#fffdf9;border:1px solid #D9E0E7;border-radius:12px;padding:22px;box-shadow:0 18px 50px #0B2D4A14">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+    <div>
+      <div class="kicker">TRIP EDITOR</div>
+      <h2 style="font:600 32px/1.1 &quot;Playfair Display&quot;,serif;margin:6px 0">Edit this trip</h2>
+      <p style="margin:0;color:#4F6B8A;font-size:12px;line-height:1.5">Edit mode is ready. The next step will add editable trip details and update suggestions from the changes you make.</p>
+    </div>
+    <button type="button" class="btn" id="closeEditTripButton" style="background:#0B2D4A;color:white;border-color:#0B2D4A">Close</button>
+  </div>
+</div>
 
 <main>
 <section id="dashboard" class="dash">
@@ -903,5 +913,16 @@ document.addEventListener("DOMContentLoaded",function(){TripPlanner.init()});
     window.addEventListener("resize",function(){if(window.innerWidth>600)close();});
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initPersistentNav);else initPersistentNav();
+})();
+</script>
+<script id="roamsonio-edit-trip-shell-script">
+(function(){
+  function initEditTripShell(){
+    var open=document.getElementById("editTripButton"),shell=document.getElementById("editTripShell"),close=document.getElementById("closeEditTripButton");
+    if(!open||!shell||!close)return;
+    open.addEventListener("click",function(){shell.style.display="block";shell.scrollIntoView({behavior:"smooth",block:"start"});});
+    close.addEventListener("click",function(){shell.style.display="none";});
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initEditTripShell);else initEditTripShell();
 })();
 </script></body></html>
