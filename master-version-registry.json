@@ -9,6 +9,14 @@
   },
   "versions": [
     {
+      "sha": "c9216503f2871cf7b399f4cf29419b1ae037545f",
+      "date": "2026-10-04",
+      "title": "Add safe Edit Trip button to New Orleans",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds the Edit Trip button and non-mutating shell to the New Orleans routed trip page. Deployment succeeded. User reports Edit buttons show but are not yet functional; this version is not rollback eligible."
+    },
+    {
       "sha": "bb030998bfabdb7e00acd269496b863438495e21",
       "date": "2026-10-04",
       "title": "Fix trip workspace script loading for Edit Trip shell",
