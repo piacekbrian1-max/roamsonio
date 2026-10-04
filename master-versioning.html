@@ -38,6 +38,7 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
 <div class="wrap" id="dashboard" style="display:none">
 <div class="ey">RoamSonio Operations · Protection Protocol</div><h1>Versioning & Rollback</h1>
 <p class="intro">The production safety record for RoamSonio code changes. Every change must have a known-good restore point before work begins, and a failed experiment can never become the new production baseline.</p>
+<div class="actions"><a class="btn primary" href="master-version-history.html">Historical Versions →</a></div>
 <section class="section"><h2>Current Production Checkpoint</h2><p>This checkpoint identifies the version that should be restored if a new code change causes a regression.</p>
 <div class="checkpoint"><div class="box safe"><small>Known-good restore point</small><strong>7fd55ab4f85bfa85e7ae4aff5b06ce894e12c3fc</strong></div><div class="box"><small>Purpose</small><strong>Exact rollback after failed destination-food experiment</strong></div><div class="box"><small>Status</small><strong class="safe">Trips verified back and available</strong></div></div>
 </section>
