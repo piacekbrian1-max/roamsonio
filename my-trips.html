@@ -321,7 +321,8 @@ async function render(){
       // These are the three known original saved journeys. Older browser
       // wrappers sometimes lost their server ID or date fields, so for these
       // known names the visible trip name is the stable recovery identity.
-      if(name==="new orleans · jan 16–20, 2027")return "known:new-orleans-2027";
+      var nolaStableId="febaebf6-7369-4922-b069-c745eee8c16f";
+      if(String(t.id||"")===nolaStableId || String(t.supabaseId||"")===nolaStableId || (name.indexOf("new orleans")===0 && String(t.start||"")==="2027-01-16" && String(t.end||"")==="2027-01-20"))return "known:new-orleans-2027";
       if(name==="european thanksgiving adventure 2026")return "known:europe-2026";
       if(name==="new trip test")return "known:new-trip-test";
 
