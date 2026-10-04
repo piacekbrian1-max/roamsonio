@@ -247,6 +247,87 @@ resources:["https://www.neworleans.com/plan/january-in-new-orleans/","https://ww
 holiday:true};
 return {city:dest,areas:[dest+" historic center","central neighborhood","local market district","arts / culture district","scenic or outdoor area"],sights:["Historic center","Signature landmark","Main museum or cultural site","Local neighborhood walk","Scenic viewpoint or park","Local market or food hall","Signature cultural experience"],food:["Traditional local restaurant","Neighborhood restaurant","Market / casual food stop","Independent café or bakery","Destination dinner","Special-occasion option"],local:["Neighborhood favorite","Local café or bakery","Independent restaurant","Local market","Current events / local calendar"],events:dest+" events",weather:dest+" weather",cams:dest+" live webcam",resources:[],holiday:false}
 }
+/* Generic destination knowledge layer.
+   Curated city catalogs remain optional enhancements; new destinations use open data automatically. */
+var DESTINATION_KNOWLEDGE_KEY="roamsonio-destination-knowledge-v1";
+function destinationKnowledgeKey(identity){
+  return String(identity&&identity.providerId||"")+"|"+String(identity&&identity.latitude||"")+"|"+String(identity&&identity.longitude||"");
+}
+function readDestinationKnowledge(key){
+  try{
+    var all=JSON.parse(localStorage.getItem(DESTINATION_KNOWLEDGE_KEY)||"{}");
+    return all[key]||null;
+  }catch(e){return null}
+}
+function writeDestinationKnowledge(key,value){
+  try{
+    var all=JSON.parse(localStorage.getItem(DESTINATION_KNOWLEDGE_KEY)||"{}");
+    all[key]=value;
+    localStorage.setItem(DESTINATION_KNOWLEDGE_KEY,JSON.stringify(all));
+  }catch(e){}
+}
+function uniqueNamed(items){
+  var seen={},out=[];
+  for(var i=0;i<(items||[]).length;i++){
+    var x=items[i],name=String(x&&x.name||x||"").trim(),k=name.toLowerCase();
+    if(name&& !seen[k]){seen[k]=1;out.push(x)}
+  }
+  return out;
+}
+async function fetchDestinationKnowledge(identity){
+  var key=destinationKnowledgeKey(identity),cached=readDestinationKnowledge(key);
+  if(cached)return cached;
+  var lat=Number(identity&&identity.latitude),lon=Number(identity&&identity.longitude);
+  if(!isFinite(lat)||!isFinite(lon))return null;
+  var knowledge={identity:identity,areas:[],thingsToDo:[],food:[],photos:[],sources:[],generatedAt:new Date().toISOString()};
+  var south=lat-0.055,north=lat+0.055,west=lon-0.075,east=lon+0.075;
+  var q='[out:json][timeout:25];(nwr["amenity"="restaurant"]('+south+','+west+','+north+','+east+');nwr["amenity"="cafe"]('+south+','+west+','+north+','+east+');nwr["amenity"="bar"]('+south+','+west+','+north+','+east+');nwr["amenity"="food_court"]('+south+','+west+','+north+','+east+');nwr["tourism"="attraction"]('+south+','+west+','+north+','+east+');nwr["tourism"="museum"]('+south+','+west+','+north+','+east+');nwr["tourism"="gallery"]('+south+','+west+','+north+','+east+');nwr["tourism"="viewpoint"]('+south+','+west+','+north+','+east+');nwr["tourism"="zoo"]('+south+','+west+','+north+','+east+');nwr["leisure"="park"]('+south+','+west+','+north+','+east+');nwr["shop"="mall"]('+south+','+west+','+north+','+east+'););out center tags;';
+  try{
+    var or=await fetch("https://overpass-api.de/api/interpreter",{method:"POST",headers:{"Content-Type":"text/plain"},body:q});
+    if(or.ok){
+      var od=await or.json(),els=Array.isArray(od&&od.elements)?od.elements:[];
+      for(var i=0;i<els.length;i++){
+        var tags=els[i].tags||{},name=String(tags.name||"").trim();
+        if(!name)continue;
+        var amen=String(tags.amenity||""),tour=String(tags.tourism||""),leis=String(tags.leisure||""),shop=String(tags.shop||"");
+        var item={name:name,category:tour||amen||leis||shop,source:"OpenStreetMap"};
+        if(amen==="restaurant"||amen==="cafe"||amen==="bar"||amen==="food_court")knowledge.food.push(item);
+        else knowledge.thingsToDo.push(item);
+        if(tags["addr:suburb"]||tags["addr:neighbourhood"])knowledge.areas.push(tags["addr:suburb"]||tags["addr:neighbourhood"]);
+      }
+      knowledge.sources.push("OpenStreetMap / Overpass");
+    }
+  }catch(e){}
+  knowledge.food=uniqueNamed(knowledge.food).slice(0,24);
+  knowledge.thingsToDo=uniqueNamed(knowledge.thingsToDo).slice(0,30);
+  knowledge.areas=uniqueNamed(knowledge.areas).slice(0,12);
+  try{
+    var wu="https://en.wikipedia.org/w/api.php?action=query&generator=geosearch&ggscoord="+encodeURIComponent(lat+"|"+lon)+"&ggsradius=10000&ggslimit=12&ggsnamespace=0&prop=coordinates|pageimages&piprop=thumbnail&pithumbsize=1200&format=json&origin=*";
+    var wr=await fetch(wu);
+    if(wr.ok){
+      var wd=await wr.json(),pages=wd&&wd.query&&wd.query.pages||{};
+      Object.keys(pages).forEach(function(k){
+        var p=pages[k],src=p&&p.thumbnail&&p.thumbnail.source;
+        if(src)knowledge.photos.push({title:p.title||"",url:src,source:"Wikimedia"});
+      });
+      knowledge.photos=knowledge.photos.slice(0,12);
+      knowledge.sources.push("Wikimedia Commons / Wikipedia geosearch");
+    }
+  }catch(e){}
+  if(knowledge.food.length||knowledge.thingsToDo.length||knowledge.photos.length||knowledge.areas.length)writeDestinationKnowledge(key,knowledge);
+  return knowledge;
+}
+function applyDestinationKnowledge(c,knowledge){
+  if(!knowledge)return c;
+  var next={};
+  for(var k in c)next[k]=c[k];
+  if(knowledge.areas.length)next.areas=knowledge.areas;
+  if(knowledge.thingsToDo.length)next.sights=knowledge.thingsToDo.map(function(x){return x.name});
+  if(knowledge.food.length)next.food=knowledge.food.map(function(x){return x.name});
+  next.photos=knowledge.photos||[];
+  return next;
+}
+
 function dayPlan(c,d,pace,mobility,prefs,must,group,kids,evening,energy){
 var out=[],family=group==="Family with kids"||group==="Mixed ages / extended family",ages=arr(kids);
 for(var i=0;i<d;i++){
@@ -267,11 +348,15 @@ status.textContent="Identifying your destination…";
 var locationIdentity;
 try{locationIdentity=await resolveDestination(dest)}catch(e){status.textContent=e&&e.message?e.message:"We couldn't identify that destination. Please refine the location.";return}
 var resolvedName=locationIdentity.city||locationIdentity.name||dest;
-var c=catalog(resolvedName),ps=selected(),must=arr(document.getElementById("must").value),avoid=arr(document.getElementById("avoid").value);
+var c=catalog(resolvedName);
+status.textContent="Building destination knowledge…";
+var destinationKnowledge=await fetchDestinationKnowledge(locationIdentity);
+c=applyDestinationKnowledge(c,destinationKnowledge);
+var ps=selected(),must=arr(document.getElementById("must").value),avoid=arr(document.getElementById("avoid").value);
 var group=document.getElementById("groupType").value,kids=document.getElementById("kidsAges").value,energy=document.getElementById("energy").value,evening=document.getElementById("evening").value;
 var plan=dayPlan(c,d,document.getElementById("pace").value,document.getElementById("mobility").value,ps,must,group,kids,evening,energy);
 var enteredName=document.getElementById("name").value.trim(),tripName=enteredName&&enteredName!=="My New Adventure"?enteredName:c.city+" Adventure";
-var t={id:"trip-"+Date.now(),name:tripName,frameworkVersion:"roamsonio-v2",planningMode:"guided",travelers:parseInt(document.getElementById("travelers").value,10)||2,start:document.getElementById("start").value,end:document.getElementById("end").value,destinations:[c.city],destinationIdentity:locationIdentity,mustSee:must,preferences:ps,days:d,status:"Built — editable",transport:document.getElementById("transport").value,pace:document.getElementById("pace").value,foodBudget:document.getElementById("foodbudget").value,stay:document.getElementById("stay").value,homeBase:document.getElementById("homeBase").value,stayLink:document.getElementById("stayLink").value,flights:document.getElementById("flights").value,flightLink:document.getElementById("flightLink").value,mobility:document.getElementById("mobility").value,groupType:group,kidsAges:kids,energy:energy,evening:evening,dietary:document.getElementById("dietary").value,avoid:avoid,occasion:document.getElementById("occasion").value,areas:c.areas,plan:plan,localFood:c.local,food:c.food,sights:c.sights,resources:c.resources,weatherQuery:c.weather,camsQuery:c.cams,eventQuery:c.events,created:new Date().toISOString(),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),revision:1};
+var t={id:"trip-"+Date.now(),name:tripName,frameworkVersion:"roamsonio-v2",planningMode:"guided",travelers:parseInt(document.getElementById("travelers").value,10)||2,start:document.getElementById("start").value,end:document.getElementById("end").value,destinations:[c.city],destinationIdentity:locationIdentity,destinationKnowledge:destinationKnowledge||null,mustSee:must,preferences:ps,days:d,status:"Built — editable",transport:document.getElementById("transport").value,pace:document.getElementById("pace").value,foodBudget:document.getElementById("foodbudget").value,stay:document.getElementById("stay").value,homeBase:document.getElementById("homeBase").value,stayLink:document.getElementById("stayLink").value,flights:document.getElementById("flights").value,flightLink:document.getElementById("flightLink").value,mobility:document.getElementById("mobility").value,groupType:group,kidsAges:kids,energy:energy,evening:evening,dietary:document.getElementById("dietary").value,avoid:avoid,occasion:document.getElementById("occasion").value,areas:c.areas,plan:plan,localFood:c.local,food:c.food,sights:c.sights,resources:c.resources,weatherQuery:c.weather,camsQuery:c.cams,eventQuery:c.events,created:new Date().toISOString(),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),revision:1};
 var a;try{a=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){a=[]}
 var same=a.find(function(x){
   return String(x.name||"").trim().toLowerCase()===String(t.name||"").trim().toLowerCase() &&
