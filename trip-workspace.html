@@ -724,6 +724,11 @@ window.recoverFullTrip=async function recoverFullTrip(){
 
 async function save(){
   var a=load(),i=a.findIndex(function(t){return t.id===trip.id});
+  var previous=i>=0?a[i]:null;
+  var previousRevision=Number(previous&&previous.revision)||0;
+  var currentRevision=Number(trip.revision)||0;
+  trip.revision=Math.max(previousRevision,currentRevision)+1;
+  trip.updatedAt=new Date().toISOString();
   if(i>=0)a[i]=trip;else a.push(trip);
   localStorage.setItem(KEY,JSON.stringify(a));
   sessionStorage.setItem("openTripId",trip.id);
