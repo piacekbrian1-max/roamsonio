@@ -35,11 +35,32 @@ function loadBackups(){
 }
 function findProtectedTrips(){
   var primary=loadPrimary();
-  if(primary.length)return {trips:primary,source:"browser",backup:null};
   var backups=loadBackups();
-  for(var i=0;i<backups.length;i++){
-    var trips=parseArray(backups[i]&&backups[i].data);
-    if(trips.length)return {trips:trips,source:"protected-backup",backup:backups[i]};
+
+  // Build the richest browser copy of each trip from BOTH current storage
+  // and every preserved safety backup. The account snapshot can be smaller
+  // than the original browser trip, so never discard a richer browser copy.
+  var byKey={},order=[];
+  function addTrips(trips,source,backup){
+    for(var i=0;i<trips.length;i++){
+      var t=trips[i]||{},key=String(t.supabaseId||t.id||t.name||("trip-"+i));
+      var bytes=JSON.stringify(t||{}).length;
+      if(!byKey[key]||bytes>byKey[key].bytes){
+        if(!byKey[key])order.push(key);
+        byKey[key]={trip:t,bytes:bytes,source:source,backup:backup||null};
+      }
+    }
+  }
+  addTrips(primary,"browser",null);
+  for(var bi=0;bi<backups.length;bi++){
+    addTrips(parseArray(backups[bi]&&backups[bi].data),"protected-backup",backups[bi]);
+  }
+
+  var richest=order.map(function(k){return byKey[k].trip});
+  if(primary.length)return {trips:richest,source:"browser",backup:null};
+  for(var oi=order.length-1;oi>=0;oi--){
+    var entry=byKey[order[oi]];
+    if(entry&&entry.source==="protected-backup")return {trips:richest,source:"protected-backup",backup:entry.backup};
   }
   return {trips:[],source:"none",backup:null};
 }
@@ -303,8 +324,19 @@ async function render(){
           match=mi;break;
         }
       }
-      if(match>=0){merged[match]=at;replaced++;}
-      else{merged.push(at);}
+      if(match>=0){
+        // Prefer whichever copy is richer. The account snapshot is not
+        // necessarily the original full trip; protected browser copies may
+        // contain itinerary, stay, flight, budget and planning fields that
+        // were never written into the durable snapshot.
+        var browserCopy=merged[match];
+        var browserBytes=JSON.stringify(browserCopy||{}).length;
+        var accountBytes=JSON.stringify(at||{}).length;
+        if(accountBytes>browserBytes){
+          merged[match]=at;
+          replaced++;
+        }
+      }else{merged.push(at);}
     }
     a=merged;
     localStorage.setItem(KEY,JSON.stringify(a));
