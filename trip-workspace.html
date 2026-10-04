@@ -2309,8 +2309,30 @@ ensureRoamsonioFramework();ensureOriginalPlan();renderHeader();renderRoute();ren
         if(!sess||!sess.user)throw new Error("Your RoamSonio account session is not active.");
         var tripId=local.supabaseId||local.id;
         var rr=await sb.rpc("roamsonio_recover_trip",{p_trip_id:tripId});
-        if(rr.error)throw rr.error;
-        var p=rr.data;if(typeof p==="string")p=JSON.parse(p);
+        var p=rr.data;
+        if(rr.error){
+          var candidatesResult=await sb.rpc("roamsonio_recover_trip_candidates",{});
+          if(candidatesResult.error)throw rr.error;
+          var candidates=candidatesResult.data;
+          if(typeof candidates==="string")candidates=JSON.parse(candidates);
+          if(!Array.isArray(candidates)||!candidates.length)throw new Error("No saved trips with complete snapshots were found for this account.");
+          function candidateScore(c){
+            var snap=c&&c.trip_snapshot||{},name=String(c.name||snap.name||"").toLowerCase();
+            var text=JSON.stringify(snap).toLowerCase();
+            var score=0;
+            if(name.indexOf("european thanksgiving")>=0)score+=100;
+            if(name.indexOf("thanksgiving")>=0)score+=60;
+            if(text.indexOf("thanksgiving")>=0)score+=40;
+            if(text.indexOf("trnava")>=0)score+=20;
+            if(text.indexOf("prague")>=0)score+=15;
+            if(text.indexOf("pilsen")>=0)score+=15;
+            return score;
+          }
+          candidates.sort(function(a,b){return candidateScore(b)-candidateScore(a)});
+          p=candidates[0];
+        } else {
+          if(typeof p==="string")p=JSON.parse(p);
+        }
         if(!p||!p.trip_snapshot)throw new Error("No complete saved snapshot was returned.");
         var recovered=JSON.parse(JSON.stringify(p.trip_snapshot));
         recovered.id=local.id;recovered.supabaseId=p.id||tripId;
