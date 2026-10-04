@@ -1990,6 +1990,29 @@ else if(isAtlanta)items=atlantaGuide[category]||[];
 else items=(activityGuide[city]&&activityGuide[city][category])||((localGuide[city]&&localGuide[city][category])||[]);
 if(items.length)return items;
 
+/* First-class destination knowledge supplies real places for destinations that
+   do not have a hand-curated profile. Existing curated destinations keep their
+   existing data above. */
+var dk=trip.destinationKnowledge,food=dk&&Array.isArray(dk.food)?dk.food:[],todo=dk&&Array.isArray(dk.thingsToDo)?dk.thingsToDo:[];
+var foodCategories=["Breakfast","Lunch","Dinner","Special Occasions","Bars","Breweries","Coffee & Bakeries"];
+if(food.length&&foodCategories.indexOf(category)>=0){
+  var foodItems=food.map(function(x){
+    var name=typeof x==="string"?x:String(x&&x.name||"").trim();
+    var area=typeof x==="object"&&x?(x.area||x.neighborhood||"Destination"): "Destination";
+    var kind=typeof x==="object"&&x?(x.category||"Food & drink"):"Food & drink";
+    return [name,area,kind,"Destination knowledge"];
+  }).filter(function(x){return !!x[0]});
+  if(foodItems.length)return foodItems;
+}
+if(todo.length){
+  var todoItems=todo.map(function(x){
+    var name=typeof x==="string"?x:String(x&&x.name||"").trim();
+    var kind=typeof x==="object"&&x?(x.category||"Attraction"):"Attraction";
+    return [name,"Destination area",kind,"Destination knowledge"];
+  }).filter(function(x){return !!x[0]});
+  if(todoItems.length)return todoItems;
+}
+
 /* For categories without curated destination data, provide destination-specific
    discovery lanes rather than borrowing another city's content. */
 var areaSets={
