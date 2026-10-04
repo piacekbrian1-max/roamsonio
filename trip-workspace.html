@@ -632,38 +632,36 @@ if(!trip){location.href="my-trips.html";return}
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 window.recoverFullTrip=async function recoverFullTrip(){
   var btn=document.getElementById("recoverTripButton");
-  if(!trip||!trip.supabaseId){alert("This trip is not linked to a saved account trip yet.");return}
+  if(!trip){alert("This trip could not be loaded.");return}
   if(!confirm("Recover the complete saved trip from your RoamSonio account? Your current browser copy will be backed up first. Nothing in your account will be deleted or overwritten."))return;
   if(btn){btn.disabled=true;btn.textContent="Recovering…"}
   try{
     safetySnapshot();
     var sessionResult=await rsWorkspaceAuth.auth.getSession();
     var session=sessionResult.data&&sessionResult.data.session;
-    if(!session||!session.user){throw new Error("Your RoamSonio session is no longer active.")}
-    var result=await rsWorkspaceAuth.from("trips")
-      .select("id,name,trip_snapshot,owner_id")
-      .eq("id",trip.supabaseId)
-      .eq("owner_id",session.user.id)
-      .maybeSingle();
-    if(result.error)throw result.error;
-    if(!result.data)throw new Error("The saved trip could not be found in your account.");
-    if(!result.data.trip_snapshot)throw new Error("This trip does not have a complete saved snapshot yet.");
-    var recovered;
-    try{recovered=JSON.parse(JSON.stringify(result.data.trip_snapshot))}catch(e){throw new Error("The saved trip snapshot could not be read.")}
+    if(!session||!session.user)throw new Error("Your RoamSonio session is no longer active.");
+    var tripId=trip.supabaseId||trip.id;
+    if(!tripId)throw new Error("This trip has no saved account ID.");
+    var rpc=await rsWorkspaceAuth.rpc("roamsonio_recover_trip",{p_trip_id:tripId});
+    if(rpc.error)throw rpc.error;
+    var payload=rpc.data;
+    if(typeof payload==="string"){try{payload=JSON.parse(payload)}catch(e){}}
+    if(!payload||!payload.trip_snapshot)throw new Error("The saved trip does not contain a complete snapshot.");
+    var recovered=JSON.parse(JSON.stringify(payload.trip_snapshot));
     if(!recovered||typeof recovered!=="object"||Array.isArray(recovered))throw new Error("The saved trip snapshot is invalid.");
     recovered.id=trip.id;
-    recovered.supabaseId=result.data.id;
-    if(!recovered.name&&result.data.name)recovered.name=result.data.name;
+    recovered.supabaseId=payload.id||tripId;
+    if(!recovered.name&&payload.name)recovered.name=payload.name;
     var all=load(),idx=all.findIndex(function(t){return t.id===trip.id});
     if(idx>=0)all[idx]=recovered;else all.push(recovered);
     localStorage.setItem(KEY,JSON.stringify(all));
     sessionStorage.setItem("openTripId",recovered.id);
     safetySnapshot();
-    alert("Complete trip recovered from your saved account snapshot. Your browser copy was backed up first.");
+    alert("Complete trip recovered. Your previous browser copy was backed up first.");
     location.reload();
   }catch(e){
     console.error("Full trip recovery failed:",e);
-    alert("I could not recover the full trip yet. Nothing was overwritten.\n\n"+(e&&e.message?e.message:"Please try again."));
+    alert("Recovery could not be completed. Nothing was overwritten.\\n\\n"+(e&&e.message?e.message:"Please try again."));
     if(btn){btn.disabled=false;btn.textContent="Recover full trip"}
   }
 }
