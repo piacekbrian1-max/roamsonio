@@ -1087,7 +1087,12 @@ if(d.indexOf("atlanta")>=0||n.indexOf("atlanta")>=0)return profile.atlanta;
 return null;
 }
 function destinationImage(name,i){
-var k=slug(name),tn=slug(trip.name||"");if(k.indexOf("new orleans")<0&&tn.indexOf("new orleans")>=0)k="new orleans";if(k.indexOf("atlanta")<0&&tn.indexOf("atlanta")>=0)k="atlanta";if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return i%3===0?imgs.neworleans:i%3===1?imgs.neworleans2:imgs.neworleans3;
+var k=slug(name),tn=slug(trip.name||""),dk=trip.destinationKnowledge,photos=dk&&Array.isArray(dk.photos)?dk.photos:[];
+if(photos.length){
+  var p=photos[i%photos.length],u=typeof p==="string"?p:p&&p.url;
+  if(u)return u;
+}
+if(k.indexOf("new orleans")<0&&tn.indexOf("new orleans")>=0)k="new orleans";if(k.indexOf("atlanta")<0&&tn.indexOf("atlanta")>=0)k="atlanta";if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return i%3===0?imgs.neworleans:i%3===1?imgs.neworleans2:imgs.neworleans3;
 if(k.indexOf("prague")>=0)return imgs.prague;if(k.indexOf("trnava")>=0)return imgs.trnava;if(k.indexOf("pilsen")>=0)return imgs.pilsen;if(k.indexOf("hlub")>=0)return imgs.hluboka;if(k.indexOf("vienna")>=0)return imgs.vienna;if(k.indexOf("atlanta")>=0)return imgs.atlanta;return imgs.prague}
 function baseLabel(){return (trip.homeBase||document.getElementById("homeBase").value||trip.stay||"").trim()||"Downtown / city center"}
 function interestScore(area,slot){
