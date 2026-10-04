@@ -201,16 +201,12 @@ function render(){
   var el=document.getElementById("tripList"),state=findProtectedTrips(),a=state.trips;
   el.innerHTML="";
   var dg=diagnostic(),dEl=document.getElementById("tripDiagnostic");
-  if(!a.length){
-    dEl.style.display="block";
-    dEl.className="empty";
-    dEl.style.borderStyle="solid";
-    dEl.style.background="#F1EADB";
-    dEl.style.color="#5F5137";
-    dEl.innerHTML="<b>Browser recovery diagnostic</b><br>Current trip storage: <b>"+dg.primaryCount+"</b> trip(s). Protected backup: <b>"+(dg.backupExists?"found":"not found")+"</b> ("+dg.backupEntries+" backup record"+(dg.backupEntries===1?"":"s")+", "+dg.backupTrips+" trip(s) in the newest non-empty backup).<br><small>Nothing has been deleted by this screen.</small>";
-  }else{
-    dEl.style.display="none";
-  }
+  dEl.style.display="block";
+  dEl.className="empty";
+  dEl.style.borderStyle="solid";
+  dEl.style.background="#F1EADB";
+  dEl.style.color="#5F5137";
+  dEl.innerHTML="<b>Browser recovery diagnostic</b><br>Current trip storage: <b>"+dg.primaryCount+"</b> trip(s). Protected backup: <b>"+(dg.backupExists?"found":"not found")+"</b> ("+dg.backupEntries+" backup record"+(dg.backupEntries===1?"":"s")+", "+dg.backupTrips+" trip(s) in the newest non-empty backup).<br><small>The Current Trip page uses separate current-trip data; seeing it does not mean the saved-trip library was deleted.</small>";
 
   if(state.source==="protected-backup"&&a.length){
     showStatus("<b>Recovery copy found.</b> RoamSonio found "+a.length+" original trip(s) in the protected browser backup. <button type='button' onclick='restoreProtectedBrowserCopy()' style='margin-left:8px;border:1px solid #D4A85A;background:#D4A85A;color:#0B2D4A;border-radius:7px;padding:8px 10px;font-weight:800;cursor:pointer'>Restore original trips</button>",false);
