@@ -448,7 +448,68 @@ body{padding-top:74px!important}
 <div class="weatherLead" id="weatherLead"><div class="weatherLeadIntro"><b>Trip weather</b><span>Current conditions · stay averages</span></div></div>
 </header>
 
-<div id="editTripShell" style="display:none;max-width:1500px;width:94%;margin:18px auto 0;background:#fffdf9;border:1px solid #D9E0E7;border-radius:12px;padding:22px;box-shadow:0 18px 50px #0B2D4A14"><div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap"><div><div class="kicker">TRIP EDITOR</div><h2 style="font:600 32px/1.1 &quot;Playfair Display&quot;,serif;margin:6px 0">Edit this trip</h2><p style="margin:0;color:#4F6B8A;font-size:12px;line-height:1.5">Edit the core trip details below. Saving updates the existing trip only; itinerary and suggestions will be regenerated separately in the next step.</p></div><button type="button" class="btn" id="closeEditTripButton" style="background:#0B2D4A;color:white;border-color:#0B2D4A">Close</button></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:20px"><label style="font-size:12px;color:#4F6B8A">Trip name<input id="editTripName" type="text" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label><label style="font-size:12px;color:#4F6B8A">Start date<input id="editTripStart" type="date" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label><label style="font-size:12px;color:#4F6B8A">End date<input id="editTripEnd" type="date" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label><label style="grid-column:1/-1;font-size:12px;color:#4F6B8A">Destinations <span style="color:#8A6A35">(comma separated)</span><input id="editTripDestinations" type="text" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label><div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px"><button type="button" class="btn" id="cancelEditTripButton">Cancel</button><button type="button" class="btn primary" id="saveEditTripButton">Save changes</button></div></div></div><script>(function(){function initEditTripShell(){var open=document.getElementById("editTripButton"),panel=document.getElementById("editTripShell"),close=document.getElementById("closeEditTripButton"),cancel=document.getElementById("cancelEditTripButton"),saveButton=document.getElementById("saveEditTripButton");if(!open||!panel||!close||!cancel||!saveButton)return;var name=document.getElementById("editTripName"),startDate=document.getElementById("editTripStart"),endDate=document.getElementById("editTripEnd"),destinations=document.getElementById("editTripDestinations");function loadFields(){if(name)name.value=trip.name||"";if(startDate)startDate.value=trip.start||"";if(endDate)endDate.value=trip.end||"";if(destinations)destinations.value=(trip.destinations||[]).join(", ");}function closeEditor(){panel.style.display="none";loadFields();}function show(){loadFields();panel.style.display="block";panel.scrollIntoView({behavior:"smooth",block:"start"});}async function saveEdits(){var original=JSON.parse(JSON.stringify(trip));var nextName=String(name&&name.value||"").trim(),nextStart=String(startDate&&startDate.value||"").trim(),nextEnd=String(endDate&&endDate.value||"").trim(),nextDestinations=String(destinations&&destinations.value||"").split(/[,\n]/).map(function(x){return x.trim()}).filter(Boolean);if(!nextName){alert("Trip name is required.");return;}if(!nextStart||!nextEnd){alert("Start and end dates are required.");return;}if(nextEnd<nextStart){alert("End date cannot be before start date.");return;}if(!nextDestinations.length){alert("At least one destination is required.");return;}trip.name=nextName;trip.start=nextStart;trip.end=nextEnd;trip.destinations=nextDestinations;try{save();renderHeader();renderRoute();renderDestinations();panel.style.display="none";alert("Trip changes saved. Itinerary and suggestions were not regenerated.");}catch(e){trip=original;loadFields();alert("Trip changes could not be saved. Nothing was changed.");console.warn("New Orleans Edit Trip save failed:",e);}}open.addEventListener("click",show);close.addEventListener("click",closeEditor);cancel.addEventListener("click",closeEditor);saveButton.addEventListener("click",saveEdits);loadFields();}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initEditTripShell);else initEditTripShell();})();</script><main>
+<div id="editTripShell" style="display:none;max-width:1500px;width:94%;margin:18px auto 0;background:#fffdf9;border:1px solid #D9E0E7;border-radius:12px;padding:22px;box-shadow:0 18px 50px #0B2D4A14"><div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap"><div><div class="kicker">TRIP EDITOR</div><h2 style="font:600 32px/1.1 &quot;Playfair Display&quot;,serif;margin:6px 0">Edit this trip</h2><p style="margin:0;color:#4F6B8A;font-size:12px;line-height:1.5">Edit the core trip details below. Saving updates the existing trip only; itinerary and suggestions will be regenerated separately in the next step.</p></div><button type="button" class="btn" id="closeEditTripButton" style="background:#0B2D4A;color:white;border-color:#0B2D4A">Close</button></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:20px"><label style="font-size:12px;color:#4F6B8A">Trip name<input id="editTripName" type="text" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label><label style="font-size:12px;color:#4F6B8A">Start date<input id="editTripStart" type="date" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label><label style="font-size:12px;color:#4F6B8A">End date<input id="editTripEnd" type="date" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label><label style="grid-column:1/-1;font-size:12px;color:#4F6B8A">Destinations <span style="color:#8A6A35">(comma separated)</span><input id="editTripDestinations" type="text" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label><div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px"><button type="button" class="btn" id="cancelEditTripButton">Cancel</button><button type="button" class="btn primary" id="saveEditTripButton">Save changes</button></div></div></div><script>
+(function(){
+  function initEditTripShell(){
+    var open=document.getElementById("editTripButton"),
+        panel=document.getElementById("editTripShell"),
+        close=document.getElementById("closeEditTripButton"),
+        cancel=document.getElementById("cancelEditTripButton"),
+        saveButton=document.getElementById("saveEditTripButton");
+    if(!open||!panel||!close||!cancel||!saveButton)return;
+    var name=document.getElementById("editTripName"),
+        startDate=document.getElementById("editTripStart"),
+        endDate=document.getElementById("editTripEnd"),
+        destinations=document.getElementById("editTripDestinations");
+    function loadFields(){
+      var currentTrip=window.trip;
+      if(!currentTrip)return;
+      if(name)name.value=currentTrip.name||"";
+      if(startDate)startDate.value=currentTrip.start||"";
+      if(endDate)endDate.value=currentTrip.end||"";
+      if(destinations)destinations.value=(currentTrip.destinations||[]).join(", ");
+    }
+    function closeEditor(){panel.style.display="none";loadFields();}
+    function show(){loadFields();panel.style.display="block";panel.scrollIntoView({behavior:"smooth",block:"start"});}
+    async function saveEdits(){
+      var currentTrip=window.trip;
+      if(!currentTrip){alert("The trip is still loading. Please try again.");return;}
+      var original=JSON.parse(JSON.stringify(currentTrip));
+      var nextName=String(name&&name.value||"").trim(),
+          nextStart=String(startDate&&startDate.value||"").trim(),
+          nextEnd=String(endDate&&endDate.value||"").trim(),
+          nextDestinations=String(destinations&&destinations.value||"").split(/[,\n]/).map(function(x){return x.trim()}).filter(Boolean);
+      if(!nextName){alert("Trip name is required.");return;}
+      if(!nextStart||!nextEnd){alert("Start and end dates are required.");return;}
+      if(nextEnd<nextStart){alert("End date cannot be before start date.");return;}
+      if(!nextDestinations.length){alert("At least one destination is required.");return;}
+      currentTrip.name=nextName;
+      currentTrip.start=nextStart;
+      currentTrip.end=nextEnd;
+      currentTrip.destinations=nextDestinations;
+      try{
+        save();
+        renderHeader();
+        renderRoute();
+        renderDestinations();
+        panel.style.display="none";
+        alert("Trip changes saved. Itinerary and suggestions were not regenerated.");
+      }catch(e){
+        window.trip=original;
+        loadFields();
+        alert("Trip changes could not be saved. Nothing was changed.");
+        console.warn("New Orleans Edit Trip save failed:",e);
+      }
+    }
+    open.onclick=show;
+    close.onclick=closeEditor;
+    cancel.onclick=closeEditor;
+    saveButton.onclick=saveEdits;
+    loadFields();
+  }
+  window.addEventListener("load",initEditTripShell);
+})();
+</script><main>
 <section id="dashboard" class="section">
 <div class="sectionHead"><div><div class="kicker">Your trip</div><h2>Plan · travel · remember.</h2></div><p id="overviewLead">The workspace keeps the visual structure of the Thanksgiving trip, while making the content destination-specific and editable.</p></div>
 <div class="dash"><div class="panel today"><div class="todayDate"><b id="daysCount">—</b><small>days</small></div><div><div class="kicker" id="tripDates">YOUR DATES</div><h2 id="dashTitle">Trip</h2><p id="dashMeta">Travelers · destination · pace</p></div></div><div class="panel quick"><a href="#itinerary">Itinerary</a><a href="#weather">Weather</a><a href="#travel">Bookings</a><a href="#webcams">Webcams</a></div></div>
