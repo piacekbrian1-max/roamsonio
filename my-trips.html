@@ -10,7 +10,7 @@ html,body{max-width:100%;overflow-x:hidden}*,*::before,*::after{box-sizing:borde
 </style></head><body>
 <header class="rsTop"><div class="rsNav"><a class="rsBrand" href="index.html" aria-label="RoamSonio home"><span class="rsMark"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#F8F5ED"/><circle cx="45" cy="18" r="8" fill="#D4A85A"/><path d="M10 46 25 29l8 9 8-12 13 20H10Z" fill="#0B2D4A"/><path d="M17 20c8-7 18-8 27-4 5 2 8 5 10 9" fill="none" stroke="#D4A85A" stroke-width="3" stroke-linecap="round"/></svg></span><span><strong><span class="rsRoam">Roam</span><span class="rsSonio">Sonio</span></strong><small>DREAM IT. PLAN IT. LIVE IT.</small></span></a><nav class="rsLinks" aria-label="Primary navigation"><a href="index.html">My RoamSonio</a><a href="my-trips.html">My Trips</a><a href="build-trip.html">Build Your Trip</a><a href="travel-desk.html">Travel Desk</a><a href="about.html">About Us</a><a href="account.html" id="rsAccountLink">My Account</a><a href="login.html?return=my-trips.html" id="rsAuthLink" class="rsAuthBtn">Sign In</a></nav></div></header>
 <header class="hero"><div class="ey">ROAMSONIO · YOUR TRAVEL LIBRARY</div><h1><span id="tripOwnerName">My</span> Trips</h1><p id="tripOwnerIntro">Your saved journeys are kept separate from the current trip. Open a trip to work with its own plans, memories and journal, or start something completely new.</p><div class="actions"><a class="btn" href="index.html">Home</a><a class="btn primary" href="build-trip.html">Build a new trip</a><a class="btn" href="current-trip.html">Current trip</a><a class="btn" href="trip-preservation.html">Trip preservation</a></div></header>
-<main class="wrap"><section class="panel"><div class="ey">Saved journeys</div><h2 class="serif">Your trips</h2><p>Trips saved in this browser appear here. Opening one takes you to that trip's workspace instead of changing the current trip page.</p><div id="recoveryStatus" class="empty" style="display:none;margin-bottom:12px"></div><div id="tripList" class="tripList"></div></section></main>
+<main class="wrap"><section class="panel"><div class="ey">Saved journeys</div><h2 class="serif">Your trips</h2><p>Trips saved in this browser appear here. Opening one takes you to that trip's workspace instead of changing the current trip page.</p><div id="recoveryStatus" class="empty" style="display:none;margin-bottom:12px"></div><div id="tripDiagnostic" class="empty" style="display:none;margin-bottom:12px"></div><div id="browserBackupInspector" class="empty" style="margin-bottom:12px;background:#F8F5ED"><b>Browser backup inspection</b><br><small>Read-only check of preserved browser copies. It does not restore, save, or change anything.</small><div id="browserBackupInspectorResult" style="margin-top:10px">Inspecting preserved browser backups…</div></div><div id="tripList" class="tripList"></div></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
@@ -24,63 +24,6 @@ client.auth.onAuthStateChange(function(e,s){if(s){authLink.textContent="My Accou
 (function(){
 var KEY="big-thanksgiving-trips-v1";
 var BACKUP_KEY="roamsonio-trip-safety-backups-v1";
-var TEST_ARCHIVE_KEY="roamsonio-test-trip-archive-v1";
-function isTestingTrip(t){
-  t=t||{};
-  var id=String(t.supabaseId||t.id||"").trim();
-  var name=String(t.name||"").trim().toLowerCase();
-  return name==="new trip test" ||
-         name==="account 2 test trip";
-}
-function archiveTestingTrips(){
-  try{
-    var primary=parseArray(localStorage.getItem(KEY));
-    var archive=parseArray(localStorage.getItem(TEST_ARCHIVE_KEY));
-    // Atlanta Test is an intentional routing test and must remain visible.
-    // If the previous cleanup archived it, restore the richest copy first.
-    var atlanta=primary.filter(function(t){
-      return String(t.supabaseId||t.id||"") === "16f08031-885a-45d6-a79e-480fb1d39c67" ||
-             String(t.name||"").trim().toLowerCase() === "atlanta test";
-    });
-    for(var ai=0;ai<archive.length;ai++){
-      var at=archive[ai]||{};
-      if(String(at.supabaseId||at.id||"") === "16f08031-885a-45d6-a79e-480fb1d39c67" ||
-         String(at.name||"").trim().toLowerCase() === "atlanta test"){
-        var exists=atlanta.some(function(x){
-          return String(x.supabaseId||x.id||"")===String(at.supabaseId||at.id||"") ||
-                 String(x.name||"").trim().toLowerCase()==="atlanta test";
-        });
-        if(!exists)atlanta.push(at);
-      }
-    }
-    var clean=primary.filter(function(t){return !isTestingTrip(t)});
-    for(var aj=0;aj<atlanta.length;aj++){
-      var duplicate=clean.some(function(x){
-        return String(x.supabaseId||x.id||"")===String(atlanta[aj].supabaseId||atlanta[aj].id||"") ||
-               (String(x.name||"").trim().toLowerCase()==="atlanta test");
-      });
-      if(!duplicate)clean.push(atlanta[aj]);
-    }
-    localStorage.setItem(KEY,JSON.stringify(clean));
-
-    // Keep the other old test journeys archived, without deleting their data.
-    var all=archive.slice();
-    for(var i=0;i<primary.length;i++){
-      if(isTestingTrip(primary[i])) all.push(primary[i]);
-    }
-    var best={};
-    for(var j=0;j<all.length;j++){
-      var t=all[j]||{},k=String(t.supabaseId||t.id||t.name||("test-"+j)),bytes=JSON.stringify(t||{}).length;
-      if(!best[k]||bytes>best[k].bytes)best[k]={trip:t,bytes:bytes};
-    }
-    var archived=Object.keys(best).map(function(k){return best[k].trip}).filter(function(t){
-      return !((String(t.supabaseId||t.id||"") === "16f08031-885a-45d6-a79e-480fb1d39c67") ||
-               String(t.name||"").trim().toLowerCase()==="atlanta test");
-    });
-    if(archived.length)localStorage.setItem(TEST_ARCHIVE_KEY,JSON.stringify(archived));
-    else localStorage.removeItem(TEST_ARCHIVE_KEY);
-  }catch(e){console.warn("Test-trip archive cleanup skipped:",e)}
-}
 
 function parseArray(raw){
   try{var a=JSON.parse(raw||"[]");return Array.isArray(a)?a:[]}catch(e){return[]}
@@ -100,9 +43,7 @@ function findProtectedTrips(){
   var byKey={},order=[];
   function addTrips(trips,source,backup){
     for(var i=0;i<trips.length;i++){
-      var t=trips[i]||{};
-      if(isTestingTrip(t))continue;
-      var key=String(t.supabaseId||t.id||t.name||("trip-"+i));
+      var t=trips[i]||{},key=String(t.supabaseId||t.id||t.name||("trip-"+i));
       var bytes=JSON.stringify(t||{}).length;
       if(!byKey[key]||bytes>byKey[key].bytes){
         if(!byKey[key])order.push(key);
@@ -124,6 +65,42 @@ function findProtectedTrips(){
   return {trips:[],source:"none",backup:null};
 }
 function load(){return findProtectedTrips().trips}
+function diagnostic(){
+  var primaryRaw=null,backupRaw=null,primary=[],history=[],backupTrips=0;
+  try{primaryRaw=localStorage.getItem(KEY);primary=parseArray(primaryRaw)}catch(e){}
+  try{backupRaw=localStorage.getItem(BACKUP_KEY);history=parseArray(backupRaw)}catch(e){}
+  for(var i=history.length-1;i>=0;i--){var x=parseArray(history[i]&&history[i].data);if(x.length){backupTrips=x.length;break;}}
+  return {primaryExists:primaryRaw!==null,primaryCount:primary.length,backupExists:backupRaw!==null,backupEntries:history.length,backupTrips:backupTrips};
+}
+
+
+function inspectBrowserBackups(){
+  var box=document.getElementById("browserBackupInspectorResult");
+  if(!box)return;
+  try{
+    var history=loadBackups();
+    if(!history.length){box.innerHTML="<span style='color:#7B3028'>No browser backup records were found.</span>";return;}
+    var names={};
+    for(var hi=0;hi<history.length;hi++){
+      var h=history[hi]||{},trips=parseArray(h.data);
+      for(var ti=0;ti<trips.length;ti++){
+        var t=trips[ti]||{}, key=String(t.supabaseId||t.id||t.name||("trip-"+ti));
+        var p=names[key];
+        var plan=Array.isArray(t.plan)?t.plan.length:0, orig=Array.isArray(t.originalPlan)?t.originalPlan.length:0;
+        var stays=Array.isArray(t.stayRecords)?t.stayRecords.length:0, flights=Array.isArray(t.flightRecords)?t.flightRecords.length:0, budget=Array.isArray(t.budgetItems)?t.budgetItems.length:0;
+        var score=(JSON.stringify(t)||"").length;
+        if(!p||score>p.bytes){names[key]={name:t.name||"Unnamed trip",savedAt:h.savedAt||"",bytes:score,plan:plan,orig:orig,dest:Array.isArray(t.destinations)?t.destinations.length:0,stays:stays,flights:flights,budget:budget,must:Array.isArray(t.mustSee)?t.mustSee.length:0,food:Array.isArray(t.food)?t.food.length:0,sights:Array.isArray(t.sights)?t.sights.length:0};}
+      }
+    }
+    var rows=Object.keys(names).map(function(k){return names[k]}).sort(function(a,b){return b.bytes-a.bytes});
+    if(!rows.length){box.innerHTML="<span style='color:#7B3028'>Backup records exist, but contain no trip objects.</span>";return;}
+    var html="<b>"+history.length+" preserved backup record(s) inspected.</b><br><small>For each trip, showing the richest browser copy found (largest JSON size). No data was changed.</small><div style='overflow:auto;margin-top:8px'><table style='width:100%;border-collapse:collapse;font-size:13px'><tr><th style='text-align:left;padding:5px'>Trip</th><th>Bytes</th><th>Plan</th><th>Original</th><th>Dest.</th><th>Stays</th><th>Flights</th><th>Budget</th><th>Must-see</th><th>Food</th><th>Sights</th><th style='text-align:left'>Captured</th></tr>";
+    for(var ri=0;ri<rows.length;ri++){var r=rows[ri];html+="<tr><td style='padding:5px;text-align:left'><b>"+esc(r.name)+"</b></td><td>"+r.bytes+"</td><td>"+r.plan+"</td><td>"+r.orig+"</td><td>"+r.dest+"</td><td>"+r.stays+"</td><td>"+r.flights+"</td><td>"+r.budget+"</td><td>"+r.must+"</td><td>"+r.food+"</td><td>"+r.sights+"</td><td style='padding:5px;text-align:left'>"+esc(r.savedAt)+"</td></tr>";}
+    html+="</table></div>";
+    box.innerHTML=html;
+  }catch(e){box.innerHTML="<span style='color:#7B3028'>Backup inspection failed: "+esc(e.message||e)+"</span>";}
+}
+
 function safetyBackup(){
   try{
     var raw=localStorage.getItem(KEY);
@@ -174,38 +151,6 @@ function restoreProtectedBrowserCopy(){
   return true;
 }
 
-async function loadAtlantaTestCopy(){
-  if(!sb)return null;
-  var id="16f08031-885a-45d6-a79e-480fb1d39c67";
-  try{
-    var r=await sb.rpc("roamsonio_recover_trip",{p_trip_id:id});
-    if(!r.error){
-      var p=r.data;
-      if(typeof p==="string"){try{p=JSON.parse(p)}catch(e){p=null}}
-      var snap=p&&p.trip_snapshot&&typeof p.trip_snapshot==="object"&&!Array.isArray(p.trip_snapshot)?p.trip_snapshot:null;
-      if(snap){
-        snap.supabaseId=id;
-        snap.id=snap.id||id;
-        snap.name=snap.name||"Atlanta Test";
-        snap.destinations=Array.isArray(snap.destinations)&&snap.destinations.length?snap.destinations:["Atlanta"];
-        return snap;
-      }
-    }
-  }catch(e){console.warn("Atlanta test recovery RPC unavailable:",e)}
-  try{
-    var q=await sb.from("trips").select("id,name,trip_snapshot").eq("id",id).maybeSingle();
-    if(!q.error&&q.data&&q.data.trip_snapshot&&typeof q.data.trip_snapshot==="object"){
-      var t=JSON.parse(JSON.stringify(q.data.trip_snapshot));
-      t.supabaseId=id;
-      t.id=t.id||id;
-      t.name=t.name||q.data.name||"Atlanta Test";
-      t.destinations=Array.isArray(t.destinations)&&t.destinations.length?t.destinations:["Atlanta"];
-      return t;
-    }
-  }catch(e){console.warn("Atlanta test direct recovery unavailable:",e)}
-  return null;
-}
-
 async function loadAccountTripCopies(){
   if(!sb)return [];
   var session=await getSession();
@@ -219,8 +164,8 @@ async function loadAccountTripCopies(){
     }
     if(rows && !Array.isArray(rows) && Array.isArray(rows.items))rows=rows.items;
     if(!Array.isArray(rows))rows=[];
-    var copies=rows.filter(function(row){
-      return row&&row.trip_snapshot&&typeof row.trip_snapshot==="object"&&!isTestingTrip(row.trip_snapshot);
+    return rows.filter(function(row){
+      return row&&row.trip_snapshot&&typeof row.trip_snapshot==="object";
     }).map(function(row){
       var t=JSON.parse(JSON.stringify(row.trip_snapshot));
       t.id=t.id||row.id;
@@ -229,12 +174,6 @@ async function loadAccountTripCopies(){
       t.recoveredFromAccountAt=new Date().toISOString();
       return t;
     });
-    var atlanta=await loadAtlantaTestCopy();
-    if(atlanta){
-      atlanta.recoveredFromAccountAt=new Date().toISOString();
-      copies.push(atlanta);
-    }
-    return copies;
   }catch(e){
     console.warn("Account trip recovery RPC failed:",e);
     throw e;
@@ -338,14 +277,23 @@ async function recoverTrip(id){
 window.recoverTrip=recoverTrip;
 window.restoreProtectedBrowserCopy=restoreProtectedBrowserCopy;
 
+inspectBrowserBackups();
 safetyBackup();
-archiveTestingTrips();
 
 async function render(){
   var el=document.getElementById("tripList"),state=findProtectedTrips(),a=state.trips;
+
   el.innerHTML="";
+  var dg=diagnostic(),dEl=document.getElementById("tripDiagnostic");
+  dEl.style.display="block";
+  dEl.className="empty";
+  dEl.style.borderStyle="solid";
+  dEl.style.background="#F1EADB";
+  dEl.style.color="#5F5137";
+  dEl.innerHTML="<b>Browser recovery diagnostic</b><br>Current trip storage: <b>"+dg.primaryCount+"</b> trip(s). Protected backup: <b>"+(dg.backupExists?"found":"not found")+"</b> ("+dg.backupEntries+" backup record"+(dg.backupEntries===1?"":"s")+", "+dg.backupTrips+" trip(s) in the newest non-empty backup).<br><small>The Current Trip page uses separate current-trip data; seeing it does not mean the saved-trip library was deleted.</small>";
+
   if(state.source==="protected-backup"&&a.length){
-    showStatus("<b>Recovery copy found.</b> RoamSonio found "+a.length+" original trip(s) in the protected browser backup. Your saved data was preserved.",false);
+    showStatus("<b>Recovery copy found.</b> RoamSonio found "+a.length+" original trip(s) in the protected browser backup. <button type='button' onclick='restoreProtectedBrowserCopy()' style='margin-left:8px;border:1px solid #D4A85A;background:#D4A85A;color:#0B2D4A;border-radius:7px;padding:8px 10px;font-weight:800;cursor:pointer'>Restore original trips</button>",false);
   }
 
   // IMPORTANT: durable account snapshots are authoritative when they exist.
@@ -356,7 +304,7 @@ async function render(){
     accountTrips=await loadAccountTripCopies();
   }catch(e){
     var msg=e&&e.message?e.message:String(e);
-    showStatus("<b>Account data could not be refreshed.</b> The saved database records were not changed. "+esc(msg),false);
+    dEl.innerHTML="<b>Account recovery error</b><br>"+esc(msg)+"<br><small>The saved database records were not changed.</small>";
     if(!a.length){
       el.innerHTML='<div class="empty">RoamSonio could not read the durable trip snapshots. Nothing was deleted or rebuilt.</div>';
       return;
@@ -379,6 +327,7 @@ async function render(){
       // known names the visible trip name is the stable recovery identity.
       if(name==="new orleans · jan 16–20, 2027")return "known:new-orleans-2027";
       if(name==="european thanksgiving adventure 2026")return "known:europe-2026";
+      if(name==="new trip test")return "known:new-trip-test";
 
       if(t.supabaseId)return "server:"+String(t.supabaseId);
       var start=String(t.start||"").trim();
@@ -438,7 +387,9 @@ async function render(){
     }
     a=unique;
     localStorage.setItem(KEY,JSON.stringify(a));
-    showStatus("<b>Your saved trips are up to date.</b> RoamSonio merged the durable account snapshots with the richest preserved browser copies and collapsed duplicate wrappers.",true);
+    showStatus("<b>Original account data loaded.</b> RoamSonio refreshed "+accountTrips.length+" durable trip snapshot(s) and removed duplicate browser wrappers from the My Trips list. No trip data was rebuilt or deleted.",true);
+    dg=diagnostic();
+    dEl.innerHTML="<b>Recovery source: RoamSonio account</b><br>"+accountTrips.length+" durable trip snapshot(s) loaded. <b>"+replaced+"</b> browser copy/copies were refreshed. Duplicate wrappers were collapsed to one copy per saved journey.";
   }
 
   if(!a.length){
