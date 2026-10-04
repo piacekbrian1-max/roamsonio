@@ -10,7 +10,7 @@ html,body{max-width:100%;overflow-x:hidden}*,*::before,*::after{box-sizing:borde
 </style></head><body>
 <header class="rsTop"><div class="rsNav"><a class="rsBrand" href="index.html" aria-label="RoamSonio home"><span class="rsMark"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#F8F5ED"/><circle cx="45" cy="18" r="8" fill="#D4A85A"/><path d="M10 46 25 29l8 9 8-12 13 20H10Z" fill="#0B2D4A"/><path d="M17 20c8-7 18-8 27-4 5 2 8 5 10 9" fill="none" stroke="#D4A85A" stroke-width="3" stroke-linecap="round"/></svg></span><span><strong><span class="rsRoam">Roam</span><span class="rsSonio">Sonio</span></strong><small>DREAM IT. PLAN IT. LIVE IT.</small></span></a><nav class="rsLinks" aria-label="Primary navigation"><a href="index.html">My RoamSonio</a><a href="my-trips.html">My Trips</a><a href="build-trip.html">Build Your Trip</a><a href="travel-desk.html">Travel Desk</a><a href="about.html">About Us</a><a href="account.html" id="rsAccountLink">My Account</a><a href="login.html?return=my-trips.html" id="rsAuthLink" class="rsAuthBtn">Sign In</a></nav></div></header>
 <header class="hero"><div class="ey">ROAMSONIO · YOUR TRAVEL LIBRARY</div><h1><span id="tripOwnerName">My</span> Trips</h1><p id="tripOwnerIntro">Your saved journeys are kept separate from the current trip. Open a trip to work with its own plans, memories and journal, or start something completely new.</p><div class="actions"><a class="btn" href="index.html">Home</a><a class="btn primary" href="build-trip.html">Build a new trip</a><a class="btn" href="current-trip.html">Current trip</a><a class="btn" href="trip-preservation.html">Trip preservation</a></div></header>
-<main class="wrap"><section class="panel"><div class="ey">Saved journeys</div><h2 class="serif">Your trips</h2><p>Trips saved in this browser appear here. Opening one takes you to that trip's workspace instead of changing the current trip page.</p><div id="recoveryStatus" class="empty" style="display:none;margin-bottom:12px"></div><div id="tripDiagnostic" class="empty" style="display:none;margin-bottom:12px"></div><div id="browserBackupInspector" class="empty" style="margin-bottom:12px;background:#F8F5ED"><b>Browser backup inspection</b><br><small>Read-only check of preserved browser copies. It does not restore, save, or change anything.</small><div id="browserBackupInspectorResult" style="margin-top:10px">Inspecting preserved browser backups…</div></div><div id="tripList" class="tripList"></div></section></main>
+<main class="wrap"><section class="panel"><div class="ey">Saved journeys</div><h2 class="serif">Your trips</h2><p>Trips saved in this browser appear here. Opening one takes you to that trip's workspace instead of changing the current trip page.</p><div id="recoveryStatus" class="empty" style="display:none;margin-bottom:12px"></div><div id="tripList" class="tripList"></div></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
@@ -65,42 +65,6 @@ function findProtectedTrips(){
   return {trips:[],source:"none",backup:null};
 }
 function load(){return findProtectedTrips().trips}
-function diagnostic(){
-  var primaryRaw=null,backupRaw=null,primary=[],history=[],backupTrips=0;
-  try{primaryRaw=localStorage.getItem(KEY);primary=parseArray(primaryRaw)}catch(e){}
-  try{backupRaw=localStorage.getItem(BACKUP_KEY);history=parseArray(backupRaw)}catch(e){}
-  for(var i=history.length-1;i>=0;i--){var x=parseArray(history[i]&&history[i].data);if(x.length){backupTrips=x.length;break;}}
-  return {primaryExists:primaryRaw!==null,primaryCount:primary.length,backupExists:backupRaw!==null,backupEntries:history.length,backupTrips:backupTrips};
-}
-
-
-function inspectBrowserBackups(){
-  var box=document.getElementById("browserBackupInspectorResult");
-  if(!box)return;
-  try{
-    var history=loadBackups();
-    if(!history.length){box.innerHTML="<span style='color:#7B3028'>No browser backup records were found.</span>";return;}
-    var names={};
-    for(var hi=0;hi<history.length;hi++){
-      var h=history[hi]||{},trips=parseArray(h.data);
-      for(var ti=0;ti<trips.length;ti++){
-        var t=trips[ti]||{}, key=String(t.supabaseId||t.id||t.name||("trip-"+ti));
-        var p=names[key];
-        var plan=Array.isArray(t.plan)?t.plan.length:0, orig=Array.isArray(t.originalPlan)?t.originalPlan.length:0;
-        var stays=Array.isArray(t.stayRecords)?t.stayRecords.length:0, flights=Array.isArray(t.flightRecords)?t.flightRecords.length:0, budget=Array.isArray(t.budgetItems)?t.budgetItems.length:0;
-        var score=(JSON.stringify(t)||"").length;
-        if(!p||score>p.bytes){names[key]={name:t.name||"Unnamed trip",savedAt:h.savedAt||"",bytes:score,plan:plan,orig:orig,dest:Array.isArray(t.destinations)?t.destinations.length:0,stays:stays,flights:flights,budget:budget,must:Array.isArray(t.mustSee)?t.mustSee.length:0,food:Array.isArray(t.food)?t.food.length:0,sights:Array.isArray(t.sights)?t.sights.length:0};}
-      }
-    }
-    var rows=Object.keys(names).map(function(k){return names[k]}).sort(function(a,b){return b.bytes-a.bytes});
-    if(!rows.length){box.innerHTML="<span style='color:#7B3028'>Backup records exist, but contain no trip objects.</span>";return;}
-    var html="<b>"+history.length+" preserved backup record(s) inspected.</b><br><small>For each trip, showing the richest browser copy found (largest JSON size). No data was changed.</small><div style='overflow:auto;margin-top:8px'><table style='width:100%;border-collapse:collapse;font-size:13px'><tr><th style='text-align:left;padding:5px'>Trip</th><th>Bytes</th><th>Plan</th><th>Original</th><th>Dest.</th><th>Stays</th><th>Flights</th><th>Budget</th><th>Must-see</th><th>Food</th><th>Sights</th><th style='text-align:left'>Captured</th></tr>";
-    for(var ri=0;ri<rows.length;ri++){var r=rows[ri];html+="<tr><td style='padding:5px;text-align:left'><b>"+esc(r.name)+"</b></td><td>"+r.bytes+"</td><td>"+r.plan+"</td><td>"+r.orig+"</td><td>"+r.dest+"</td><td>"+r.stays+"</td><td>"+r.flights+"</td><td>"+r.budget+"</td><td>"+r.must+"</td><td>"+r.food+"</td><td>"+r.sights+"</td><td style='padding:5px;text-align:left'>"+esc(r.savedAt)+"</td></tr>";}
-    html+="</table></div>";
-    box.innerHTML=html;
-  }catch(e){box.innerHTML="<span style='color:#7B3028'>Backup inspection failed: "+esc(e.message||e)+"</span>";}
-}
-
 function safetyBackup(){
   try{
     var raw=localStorage.getItem(KEY);
@@ -277,21 +241,12 @@ async function recoverTrip(id){
 window.recoverTrip=recoverTrip;
 window.restoreProtectedBrowserCopy=restoreProtectedBrowserCopy;
 
-inspectBrowserBackups();
 safetyBackup();
 
 async function render(){
   var el=document.getElementById("tripList"),state=findProtectedTrips(),a=state.trips;
 
   el.innerHTML="";
-  var dg=diagnostic(),dEl=document.getElementById("tripDiagnostic");
-  dEl.style.display="block";
-  dEl.className="empty";
-  dEl.style.borderStyle="solid";
-  dEl.style.background="#F1EADB";
-  dEl.style.color="#5F5137";
-  dEl.innerHTML="<b>Browser recovery diagnostic</b><br>Current trip storage: <b>"+dg.primaryCount+"</b> trip(s). Protected backup: <b>"+(dg.backupExists?"found":"not found")+"</b> ("+dg.backupEntries+" backup record"+(dg.backupEntries===1?"":"s")+", "+dg.backupTrips+" trip(s) in the newest non-empty backup).<br><small>The Current Trip page uses separate current-trip data; seeing it does not mean the saved-trip library was deleted.</small>";
-
   if(state.source==="protected-backup"&&a.length){
     showStatus("<b>Recovery copy found.</b> RoamSonio found "+a.length+" original trip(s) in the protected browser backup. <button type='button' onclick='restoreProtectedBrowserCopy()' style='margin-left:8px;border:1px solid #D4A85A;background:#D4A85A;color:#0B2D4A;border-radius:7px;padding:8px 10px;font-weight:800;cursor:pointer'>Restore original trips</button>",false);
   }
@@ -388,8 +343,6 @@ async function render(){
     a=unique;
     localStorage.setItem(KEY,JSON.stringify(a));
     showStatus("<b>Original account data loaded.</b> RoamSonio refreshed "+accountTrips.length+" durable trip snapshot(s) and removed duplicate browser wrappers from the My Trips list. No trip data was rebuilt or deleted.",true);
-    dg=diagnostic();
-    dEl.innerHTML="<b>Recovery source: RoamSonio account</b><br>"+accountTrips.length+" durable trip snapshot(s) loaded. <b>"+replaced+"</b> browser copy/copies were refreshed. Duplicate wrappers were collapsed to one copy per saved journey.";
   }
 
   if(!a.length){
