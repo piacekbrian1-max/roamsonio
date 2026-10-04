@@ -437,10 +437,48 @@ window.openTrip=function(id){
 
   location.href="trip-workspace.html?id="+encodeURIComponent(id)+"&destination="+encodeURIComponent(d)+"&v=501-"+Date.now();
 };
-window.deleteTrip=function(id){
-  if(!confirm("Delete this saved trip? This will remove only the browser copy. Protected recovery backups are not deleted."))return;
-  var a=load().filter(function(t){return t.id!==id});
-  localStorage.setItem(KEY,JSON.stringify(a));
+window.deleteTrip=async function(id){
+  var current=load(),target=current.find(function(t){return t.id===id});
+  if(!target)return;
+  if(!confirm("Delete this saved trip? This removes the trip from My Trips, its protected recovery copies, and its saved account record."))return;
+
+  // Delete only the selected trip from the browser's primary list.
+  var primary=loadPrimary().filter(function(t){
+    return t.id!==id && String(t.supabaseId||"")!==String(target.supabaseId||"");
+  });
+  localStorage.setItem(KEY,JSON.stringify(primary));
+
+  // A protected backup is intentionally useful for recovery, but a user who
+  // explicitly deletes a trip must be able to delete that trip completely.
+  var history=loadBackups().reverse();
+  var cleaned=[];
+  for(var bi=0;bi<history.length;bi++){
+    var entry=history[bi]||{},data=parseArray(entry.data);
+    var kept=data.filter(function(t){
+      return t.id!==id && String(t.supabaseId||"")!==String(target.supabaseId||"");
+    });
+    if(kept.length){
+      entry.data=JSON.stringify(kept);
+      cleaned.push(entry);
+    }
+  }
+  localStorage.setItem(BACKUP_KEY,JSON.stringify(cleaned));
+
+  // Remove the durable account record when this browser trip is linked to one.
+  if(sb&&target.supabaseId){
+    try{
+      var session=await getSession();
+      if(session){
+        var result=await sb.from("trips").delete()
+          .eq("id",String(target.supabaseId))
+          .eq("owner_id",session.user.id);
+        if(result.error)throw result.error;
+      }
+    }catch(e){
+      console.warn("Account trip deletion failed:",e);
+    }
+  }
+
   render();
 };
 
