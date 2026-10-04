@@ -87,6 +87,14 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Latest versioning UI change; awaiting deployment and user validation."
+    },
+    {
+      "sha": "5fce8ebd31f6f3e4a3dd5bc9da9c249c9d50e01c",
+      "date": "2026-10-04",
+      "title": "Add safe Edit Trip shell to European Thanksgiving trip",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds the same non-mutating Edit Trip button and shell used in trip-workspace.html to current-trip.html. No trip data, itinerary, persistence, recovery, destination data, or suggestions changed. Awaiting live validation."
     }
   ]
 }
