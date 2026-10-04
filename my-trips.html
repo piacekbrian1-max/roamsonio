@@ -246,26 +246,48 @@ async function render(){
     showStatus("<b>Recovery copy found.</b> RoamSonio found "+a.length+" original trip(s) in the protected browser backup. <button type='button' onclick='restoreProtectedBrowserCopy()' style='margin-left:8px;border:1px solid #D4A85A;background:#D4A85A;color:#0B2D4A;border-radius:7px;padding:8px 10px;font-weight:800;cursor:pointer'>Restore original trips</button>",false);
   }
 
-  if(!a.length){
-    var accountTrips=[];
-    try{
-      accountTrips=await loadAccountTripCopies();
-    }catch(e){
-      var msg=e&&e.message?e.message:String(e);
-      dEl.innerHTML="<b>Account recovery error</b><br>"+esc(msg)+"<br><small>The saved database records were not changed.</small>";
+  // IMPORTANT: durable account snapshots are authoritative when they exist.
+  // The browser may contain older/incomplete shells for the same trips. Always
+  // merge the account snapshots, even when localStorage already has trips.
+  var accountTrips=[];
+  try{
+    accountTrips=await loadAccountTripCopies();
+  }catch(e){
+    var msg=e&&e.message?e.message:String(e);
+    dEl.innerHTML="<b>Account recovery error</b><br>"+esc(msg)+"<br><small>The saved database records were not changed.</small>";
+    if(!a.length){
       el.innerHTML='<div class="empty">RoamSonio could not read the durable trip snapshots. Nothing was deleted or rebuilt.</div>';
       return;
     }
-    if(accountTrips.length){
-      a=accountTrips;
-      localStorage.setItem(KEY,JSON.stringify(accountTrips));
-      showStatus("<b>Account recovery copy found.</b> RoamSonio found "+accountTrips.length+" saved trip snapshot(s) in your account and restored them to this browser. No trip was rebuilt.",true);
-      dg=diagnostic();
-      dEl.innerHTML="<b>Recovery source: RoamSonio account</b><br>"+accountTrips.length+" durable trip snapshot(s) were found and copied back into My Trips.";
-    }else{
-      el.innerHTML='<div class="empty">No saved trips are currently visible, and no durable trip snapshots were returned for this account.</div>';
-      return;
+  }
+
+  if(accountTrips.length){
+    var merged=a.slice();
+    var replaced=0;
+    for(var ai=0;ai<accountTrips.length;ai++){
+      var at=accountTrips[ai];
+      var match=-1;
+      for(var mi=0;mi<merged.length;mi++){
+        var mt=merged[mi];
+        if((at.supabaseId&&mt.supabaseId&&String(at.supabaseId)===String(mt.supabaseId)) ||
+           (at.supabaseId&&String(at.supabaseId)===String(mt.id)) ||
+           (at.id&&String(at.id)===String(mt.id))){
+          match=mi;break;
+        }
+      }
+      if(match>=0){merged[match]=at;replaced++;}
+      else{merged.push(at);}
     }
+    a=merged;
+    localStorage.setItem(KEY,JSON.stringify(a));
+    showStatus("<b>Original account data loaded.</b> RoamSonio refreshed "+accountTrips.length+" durable trip snapshot(s) from your account. Existing incomplete browser copies were replaced; nothing was rebuilt or deleted.",true);
+    dg=diagnostic();
+    dEl.innerHTML="<b>Recovery source: RoamSonio account</b><br>"+accountTrips.length+" durable trip snapshot(s) loaded. <b>"+replaced+"</b> existing browser trip(s) were refreshed from their original account snapshots.";
+  }
+
+  if(!a.length){
+    el.innerHTML='<div class="empty">No saved trips are currently visible, and no durable trip snapshots were returned for this account.</div>';
+    return;
   }
 
   for(var i=a.length-1;i>=0;i--){
