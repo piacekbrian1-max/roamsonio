@@ -64,7 +64,7 @@ function safetyBackup(){
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 var SB_URL="https://vqtqchxoecrahtrnoocy.supabase.co";
 var SB_KEY="sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy";
-var sb=supabase.createClient(SB_URL,SB_KEY);
+var sb=null;\ntry{if(window.supabase&&typeof window.supabase.createClient==="function"){sb=window.supabase.createClient(SB_URL,SB_KEY);}}catch(e){sb=null;}
 
 async function getSession(){
   try{var r=await sb.auth.getSession();return r.data&&r.data.session||null}catch(e){return null}
