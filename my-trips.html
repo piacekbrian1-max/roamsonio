@@ -110,24 +110,62 @@ async function recoverTrip(id){
   st.style.display="block";
   st.className="empty";
   st.style.borderStyle="solid";
-  st.textContent="Recovering the original "+(t.name||"trip")+" into your RoamSonio account…";
+  st.style.background="#F1EADB";
+  st.style.color="#5F5137";
+  st.textContent="Recovering the original "+(t.name||"trip")+" from the protected browser copy…";
   var session=await getSession();
   if(!session){
     st.textContent="Sign in to recover this trip to your RoamSonio account.";
     return;
   }
   try{
-    var r=await sb.rpc("roamsonio_restore_browser_trip",{
-      p_browser_trip_id:String(t.supabaseId||t.id||""),
-      p_name:t.name||"RoamSonio Trip",
-      p_snapshot:t
-    });
-    if(r.error)throw r.error;
-    var result=r.data;
-    if(typeof result==="string")result=JSON.parse(result);
-    if(!result||!result.id)throw new Error("The account recovery service returned no saved trip ID.");
+    var tripId=String(t.supabaseId||t.id||"");
+    var existing=null;
 
-    t.supabaseId=result.id;
+    // The browser copy is the recovery source. If it already has the durable
+    // server ID, inspect that exact record first.
+    if(tripId){
+      var found=await sb.from("trips")
+        .select("id,owner_id,name,trip_snapshot")
+        .eq("id",tripId)
+        .eq("owner_id",session.user.id)
+        .maybeSingle();
+      if(found.error)throw found.error;
+      existing=found.data||null;
+    }
+
+    if(existing){
+      // Preserve the server version before repairing its snapshot.
+      try{
+        await sb.rpc("roamsonio_protect_trip_baseline",{
+          p_browser_trip_id:t.id||null,
+          p_trip_id:existing.id,
+          p_trip_name:t.name||existing.name||"RoamSonio Trip",
+          p_snapshot:existing.trip_snapshot||t
+        });
+      }catch(e){}
+
+      var saveResult=await sb.rpc("roamsonio_save_trip_snapshot",{
+        p_trip_id:existing.id,
+        p_name:t.name||existing.name||"RoamSonio Trip",
+        p_snapshot:t
+      });
+      if(saveResult.error)throw saveResult.error;
+      t.supabaseId=existing.id;
+    }else{
+      // No durable record for this browser copy: create exactly one account
+      // record from the original browser snapshot.
+      var inserted=await sb.from("trips").insert({
+        owner_id:session.user.id,
+        name:t.name||((t.destinations||[])[0]||"RoamSonio Trip")+" Adventure",
+        visibility:"private",
+        surprise_mode:false,
+        trip_snapshot:t
+      }).select("id").single();
+      if(inserted.error)throw inserted.error;
+      t.supabaseId=inserted.data.id;
+    }
+
     t.recoveredToAccountAt=new Date().toISOString();
     var primary=loadPrimary();
     var idx=primary.findIndex(function(x){return x.id===t.id});
@@ -135,14 +173,15 @@ async function recoverTrip(id){
     localStorage.setItem(KEY,JSON.stringify(primary));
 
     st.className="empty";
+    st.style.borderStyle="solid";
     st.style.background="#E8F2E8";
     st.style.color="#315B3B";
-    st.innerHTML="<b>Recovery successful.</b> "+esc(t.name||"Trip")+" is restored to your account using the original browser data. Existing complete server data was not overwritten.";
+    st.innerHTML="<b>Recovery successful.</b> "+esc(t.name||"Trip")+" was restored from the protected browser copy. The original browser data remains preserved.";
     render();
   }catch(e){
     st.style.background="#F7E5E2";
     st.style.color="#7B3028";
-    st.textContent="Recovery could not be completed. Nothing was deleted or overwritten. "+(e.message||e);
+    st.textContent="Recovery could not be completed. Nothing in the protected browser copy was deleted. "+(e.message||e);
   }
 }
 window.recoverTrip=recoverTrip;
