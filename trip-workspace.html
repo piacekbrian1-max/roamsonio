@@ -1177,10 +1177,10 @@ window.saveSmartSettings=function(){trip.homeBase=document.getElementById("homeB
 function renderHeader(){
 var ds=(trip.destinations||[]),n=dates().n;
 document.title=(trip.name||"Trip")+" · Smart Travel Workspace";
-document.getElementById("brand").textContent=trip.name||"Trip Workspace";document.getElementById("heroTitle").textContent=trip.name||"Your trip";document.getElementById("footerTitle").textContent=trip.name||"Trip Workspace";
+var rsBrand=document.getElementById("brand");if(rsBrand)rsBrand.textContent=trip.name||"Trip Workspace";document.getElementById("heroTitle").textContent=trip.name||"Your trip";document.getElementById("footerTitle").textContent=trip.name||"Trip Workspace";
 document.getElementById("heroEyebrow").textContent=(ds.join(" · ")||"YOUR TRIP")+" · "+(trip.groupType||"TRAVEL");
 document.getElementById("heroText").textContent="A smart, editable journey built around "+baseLabel()+", your interests, your dates and the people traveling with you.";
-document.getElementById("datePill").textContent=fmtDate(trip.start)+" — "+fmtDate(trip.end);
+var rsDatePill=document.getElementById("datePill");if(rsDatePill)rsDatePill.textContent=fmtDate(trip.start)+" — "+fmtDate(trip.end);
 document.getElementById("tripDates").textContent=fmtDate(trip.start)+" → "+fmtDate(trip.end);
 document.getElementById("dashTitle").textContent=trip.name||"Your trip";document.getElementById("daysCount").textContent=n;document.getElementById("dashMeta").textContent=(trip.travelers||2)+" travelers · "+ds.join(" · ")+" · "+(trip.pace||"balanced");
 document.getElementById("overviewLead").textContent="RoamSonio uses the completed European Thanksgiving trip as the master template, then adapts the same structure to this destination, your dates, home base, interests and traveler profile.";
