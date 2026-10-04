@@ -282,6 +282,23 @@ safetyBackup();
 
 async function render(){
   var el=document.getElementById("tripList"),state=findProtectedTrips(),a=state.trips;
+
+  // Normalize duplicate browser wrappers before anything is rendered.
+  // Keep the richest object for each known saved journey.
+  (function(){
+    var unique=[],seen={};
+    for(var di=0;di<a.length;di++){
+      var dt=a[di]||{},dk=tripIdentity(dt),prev=seen[dk];
+      if(prev===undefined){
+        seen[dk]=unique.length;
+        unique.push(dt);
+      }else if(JSON.stringify(dt||{}).length>JSON.stringify(unique[prev]||{}).length){
+        unique[prev]=dt;
+      }
+    }
+    a=unique;
+  })();
+
   el.innerHTML="";
   var dg=diagnostic(),dEl=document.getElementById("tripDiagnostic");
   dEl.style.display="block";
@@ -319,8 +336,16 @@ async function render(){
     // browser wrapper ID even when they refer to the same saved journey.
     function tripIdentity(t){
       t=t||{};
-      if(t.supabaseId)return "server:"+String(t.supabaseId);
       var name=String(t.name||"").trim().toLowerCase();
+
+      // These are the three known original saved journeys. Older browser
+      // wrappers sometimes lost their server ID or date fields, so for these
+      // known names the visible trip name is the stable recovery identity.
+      if(name==="new orleans · jan 16–20, 2027")return "known:new-orleans-2027";
+      if(name==="european thanksgiving adventure 2026")return "known:europe-2026";
+      if(name==="new trip test")return "known:new-trip-test";
+
+      if(t.supabaseId)return "server:"+String(t.supabaseId);
       var start=String(t.start||"").trim();
       var end=String(t.end||"").trim();
       var dest=Array.isArray(t.destinations)?t.destinations.map(String).join("|").trim().toLowerCase():"";
