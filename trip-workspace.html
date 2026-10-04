@@ -602,7 +602,24 @@ document.addEventListener("keydown",function(e){if(e.key==="Escape")closeTripMen
 var KEY="big-thanksgiving-trips-v1";
 var params=new URLSearchParams(location.search),id=params.get("id")||sessionStorage.getItem("openTripId");
 function load(){try{return JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){return[]}}
-var trips=load(),urlDestination=(params.get("destination")||"").trim(),trip=trips.find(function(t){return t.id===id});if(!trip&&urlDestination){var u=slug(urlDestination);trip=trips.find(function(t){var d=slug((t.destinations||[])[0]||""),n=slug(t.name||"");return d===u||d.indexOf(u)>=0||u.indexOf(d)>=0||n.indexOf(u)>=0})}
+var trips=load(),urlDestination=(params.get("destination")||"").trim(),serverId=(params.get("supabaseId")||"").trim(),trip=trips.find(function(t){return t.id===id});
+if(!trip&&serverId)trip=trips.find(function(t){return String(t.supabaseId||"")===serverId});
+if(!trip&&urlDestination){var u=slug(urlDestination);trip=trips.find(function(t){var d=slug((t.destinations||[])[0]||""),n=slug(t.name||"");return d===u||d.indexOf(u)>=0||u.indexOf(d)>=0||n.indexOf(u)>=0})}
+var atlantaDurableId="16f08031-885a-45d6-a79e-480fb1d39c67";
+if((String(id)===atlantaDurableId||String(serverId)===atlantaDurableId||slug(urlDestination)==="atlanta")&&rsWorkspaceAuth){
+  try{
+    var ar=await rsWorkspaceAuth.rpc("roamsonio_recover_trip",{p_trip_id:atlantaDurableId});
+    var ap=ar&&ar.data;
+    if(typeof ap==="string"){try{ap=JSON.parse(ap)}catch(e){}}
+    var asnap=ap&&ap.trip_snapshot&&typeof ap.trip_snapshot==="object"&&!Array.isArray(ap.trip_snapshot)?ap.trip_snapshot:null;
+    if(asnap){
+      asnap.id=(trip&&trip.id)||id||atlantaDurableId;
+      asnap.supabaseId=atlantaDurableId;
+      if(!trip||JSON.stringify(asnap).length>JSON.stringify(trip).length)trip=asnap;
+      else if(!trip.supabaseId)trip.supabaseId=atlantaDurableId;
+    }
+  }catch(e){console.warn("Atlanta durable load unavailable:",e)}
+}
 
 /*
  * Recovery fallback: My Trips can contain a browser wrapper while the richest
