@@ -472,7 +472,7 @@ body{padding-top:74px!important}
     function closeEditor(){panel.style.display="none";loadFields();}
     function show(){loadFields();panel.style.display="block";panel.scrollIntoView({behavior:"smooth",block:"start"});}
     async function saveEdits(){
-      var currentTrip=window.trip;
+      var api=window.roamsonioNolaEdit,currentTrip=api&&api.getTrip?api.getTrip():null;
       if(!currentTrip){alert("The trip is still loading. Please try again.");return;}
       var original=JSON.parse(JSON.stringify(currentTrip));
       var nextName=String(name&&name.value||"").trim(),
@@ -488,14 +488,13 @@ body{padding-top:74px!important}
       currentTrip.end=nextEnd;
       currentTrip.destinations=nextDestinations;
       try{
-        save();
-        renderHeader();
-        renderRoute();
-        renderDestinations();
+        await api.save();
+        api.render();
         panel.style.display="none";
         alert("Trip changes saved. Itinerary and suggestions were not regenerated.");
       }catch(e){
-        window.trip=original;
+        Object.keys(original).forEach(function(k){delete currentTrip[k]});
+        Object.keys(original).forEach(function(k){currentTrip[k]=original[k]});
         loadFields();
         alert("Trip changes could not be saved. Nothing was changed.");
         console.warn("New Orleans Edit Trip save failed:",e);
@@ -1478,7 +1477,7 @@ function renderResources(){var e=document.getElementById("resourceGrid"),d=(trip
 if(slug(d).indexOf("new orleans")>=0){rs[0]=["New Orleans & Company","https://www.neworleans.com/"];rs[2]=["January / event guide","https://www.neworleans.com/plan/january-in-new-orleans/"];rs[3]=["Eater New Orleans","https://nola.eater.com/"];rs.push(["Mardi Gras parade schedule","https://www.neworleans.com/events/holidays-seasonal/mardi-gras/mardi-gras-parade-schedule/"])}
 e.innerHTML="";for(var i=0;i<rs.length;i++){var a=document.createElement("a");a.className="link";a.target="_blank";a.href=rs[i][1];a.innerHTML="<b>"+esc(rs[i][0])+"</b><small>Open resource</small>";e.appendChild(a)}}
 
-ensureOriginalPlan();renderHeader();renderRoute();renderDestinations();renderPlan();renderGuide();renderEvents();renderWeather();renderCams();renderTravel();renderBudget();renderMemories();renderResources();
+ensureOriginalPlan();renderHeader();renderRoute();renderDestinations();renderPlan();renderGuide();renderEvents();renderWeather();renderCams();renderTravel();renderBudget();renderMemories();renderResources();window.roamsonioNolaEdit={getTrip:function(){return trip},save:function(){save()},render:function(){renderHeader();renderRoute();renderDestinations()}};
 })();
 </script>
 </body></html>
