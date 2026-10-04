@@ -82,13 +82,44 @@ function findProtectedTrips(){
   // and every preserved safety backup. The account snapshot can be smaller
   // than the original browser trip, so never discard a richer browser copy.
   var byKey={},order=[];
+  function stableTripKey(t){
+    t=t||{};
+    var name=String(t.name||"").trim().toLowerCase();
+    var dests=Array.isArray(t.destinations)?t.destinations.map(function(x){return String(x||"").trim().toLowerCase()}):[];
+    var isNola=String(t.id||"") === "febaebf6-7369-4922-b069-c745eee8c16f" ||
+      String(t.supabaseId||"") === "febaebf6-7369-4922-b069-c745eee8c16f" ||
+      (dests.indexOf("new orleans")>=0 && String(t.start||"")==="2027-01-16" && String(t.end||"")==="2027-01-20");
+    if(isNola)return "known:new-orleans-2027";
+    return String(t.supabaseId||t.id||name||"trip");
+  }
+  function preferredTripCopy(a,b){
+    if(!a)return b;
+    if(!b)return a;
+    var ar=Number(a.revision)||0,br=Number(b.revision)||0;
+    if(br>ar)return b;
+    if(ar>br)return a;
+    var au=String(a.updatedAt||""),bu=String(b.updatedAt||"");
+    if(bu&&(!au||bu>au))return b;
+    if(au&&(!bu||au>bu))return a;
+    if(stableTripKey(a)==="known:new-orleans-2027"&&stableTripKey(b)==="known:new-orleans-2027"){
+      var defaultName="new orleans · jan 16–20, 2027";
+      var an=String(a.name||"").trim().toLowerCase(),bn=String(b.name||"").trim().toLowerCase();
+      if(an===defaultName&&bn!==defaultName)return b;
+      if(bn===defaultName&&an!==defaultName)return a;
+    }
+    return a;
+  }
   function addTrips(trips,source,backup){
     for(var i=0;i<trips.length;i++){
-      var t=trips[i]||{},key=String(t.supabaseId||t.id||t.name||("trip-"+i));
-      var bytes=JSON.stringify(t||{}).length;
-      if(!byKey[key]||bytes>byKey[key].bytes){
-        if(!byKey[key])order.push(key);
-        byKey[key]={trip:t,bytes:bytes,source:source,backup:backup||null};
+      var t=trips[i]||{},key=stableTripKey(t);
+      var existing=byKey[key];
+      if(!existing){
+        order.push(key);
+        byKey[key]={trip:t,source:source,backup:backup||null};
+      }else{
+        byKey[key].trip=preferredTripCopy(existing.trip,t);
+        if(existing.source==="protected-backup"&&source==="browser")existing.source="browser";
+        if(source==="protected-backup"&&existing.source!=="browser")existing.backup=backup||existing.backup;
       }
     }
   }
@@ -432,7 +463,7 @@ window.openTrip=function(id){
   var isNola=String(id)===nolaId || String(t.supabaseId||"")===nolaId ||
              String(t.name||"").trim()==="New Orleans · Jan 16–20, 2027";
   if(isNola){
-    location.href="new-orleans.html?id="+encodeURIComponent(nolaId)+"&v=restored-"+Date.now();
+    location.href="new-orleans.html?id="+encodeURIComponent(id)+"&v=nola-stable-"+Date.now();
     return;
   }
 
