@@ -96,42 +96,6 @@ function findProtectedTrips(){
   return {trips:[],source:"none",backup:null};
 }
 function load(){return findProtectedTrips().trips}
-function diagnostic(){
-  var primaryRaw=null,backupRaw=null,primary=[],history=[],backupTrips=0;
-  try{primaryRaw=localStorage.getItem(KEY);primary=parseArray(primaryRaw)}catch(e){}
-  try{backupRaw=localStorage.getItem(BACKUP_KEY);history=parseArray(backupRaw)}catch(e){}
-  for(var i=history.length-1;i>=0;i--){var x=parseArray(history[i]&&history[i].data);if(x.length){backupTrips=x.length;break;}}
-  return {primaryExists:primaryRaw!==null,primaryCount:primary.length,backupExists:backupRaw!==null,backupEntries:history.length,backupTrips:backupTrips};
-}
-
-
-function inspectBrowserBackups(){
-  var box=document.getElementById("browserBackupInspectorResult");
-  if(!box)return;
-  try{
-    var history=loadBackups();
-    if(!history.length){box.innerHTML="<span style='color:#7B3028'>No browser backup records were found.</span>";return;}
-    var names={};
-    for(var hi=0;hi<history.length;hi++){
-      var h=history[hi]||{},trips=parseArray(h.data);
-      for(var ti=0;ti<trips.length;ti++){
-        var t=trips[ti]||{}, key=String(t.supabaseId||t.id||t.name||("trip-"+ti));
-        var p=names[key];
-        var plan=Array.isArray(t.plan)?t.plan.length:0, orig=Array.isArray(t.originalPlan)?t.originalPlan.length:0;
-        var stays=Array.isArray(t.stayRecords)?t.stayRecords.length:0, flights=Array.isArray(t.flightRecords)?t.flightRecords.length:0, budget=Array.isArray(t.budgetItems)?t.budgetItems.length:0;
-        var score=(JSON.stringify(t)||"").length;
-        if(!p||score>p.bytes){names[key]={name:t.name||"Unnamed trip",savedAt:h.savedAt||"",bytes:score,plan:plan,orig:orig,dest:Array.isArray(t.destinations)?t.destinations.length:0,stays:stays,flights:flights,budget:budget,must:Array.isArray(t.mustSee)?t.mustSee.length:0,food:Array.isArray(t.food)?t.food.length:0,sights:Array.isArray(t.sights)?t.sights.length:0};}
-      }
-    }
-    var rows=Object.keys(names).map(function(k){return names[k]}).sort(function(a,b){return b.bytes-a.bytes});
-    if(!rows.length){box.innerHTML="<span style='color:#7B3028'>Backup records exist, but contain no trip objects.</span>";return;}
-    var html="<b>"+history.length+" preserved backup record(s) inspected.</b><br><small>For each trip, showing the richest browser copy found (largest JSON size). No data was changed.</small><div style='overflow:auto;margin-top:8px'><table style='width:100%;border-collapse:collapse;font-size:13px'><tr><th style='text-align:left;padding:5px'>Trip</th><th>Bytes</th><th>Plan</th><th>Original</th><th>Dest.</th><th>Stays</th><th>Flights</th><th>Budget</th><th>Must-see</th><th>Food</th><th>Sights</th><th style='text-align:left'>Captured</th></tr>";
-    for(var ri=0;ri<rows.length;ri++){var r=rows[ri];html+="<tr><td style='padding:5px;text-align:left'><b>"+esc(r.name)+"</b></td><td>"+r.bytes+"</td><td>"+r.plan+"</td><td>"+r.orig+"</td><td>"+r.dest+"</td><td>"+r.stays+"</td><td>"+r.flights+"</td><td>"+r.budget+"</td><td>"+r.must+"</td><td>"+r.food+"</td><td>"+r.sights+"</td><td style='padding:5px;text-align:left'>"+esc(r.savedAt)+"</td></tr>";}
-    html+="</table></div>";
-    box.innerHTML=html;
-  }catch(e){box.innerHTML="<span style='color:#7B3028'>Backup inspection failed: "+esc(e.message||e)+"</span>";}
-}
-
 function safetyBackup(){
   try{
     var raw=localStorage.getItem(KEY);
@@ -313,18 +277,9 @@ archiveTestingTrips();
 
 async function render(){
   var el=document.getElementById("tripList"),state=findProtectedTrips(),a=state.trips;
-
   el.innerHTML="";
-  var dg=diagnostic(),dEl=document.getElementById("tripDiagnostic");
-  dEl.style.display="block";
-  dEl.className="empty";
-  dEl.style.borderStyle="solid";
-  dEl.style.background="#F1EADB";
-  dEl.style.color="#5F5137";
-  dEl.innerHTML="<b>Browser recovery diagnostic</b><br>Current trip storage: <b>"+dg.primaryCount+"</b> trip(s). Protected backup: <b>"+(dg.backupExists?"found":"not found")+"</b> ("+dg.backupEntries+" backup record"+(dg.backupEntries===1?"":"s")+", "+dg.backupTrips+" trip(s) in the newest non-empty backup).<br><small>The Current Trip page uses separate current-trip data; seeing it does not mean the saved-trip library was deleted.</small>";
-
   if(state.source==="protected-backup"&&a.length){
-    showStatus("<b>Recovery copy found.</b> RoamSonio found "+a.length+" original trip(s) in the protected browser backup. <button type='button' onclick='restoreProtectedBrowserCopy()' style='margin-left:8px;border:1px solid #D4A85A;background:#D4A85A;color:#0B2D4A;border-radius:7px;padding:8px 10px;font-weight:800;cursor:pointer'>Restore original trips</button>",false);
+    showStatus("<b>Recovery copy found.</b> RoamSonio found "+a.length+" original trip(s) in the protected browser backup. Your saved data was preserved.",false);
   }
 
   // IMPORTANT: durable account snapshots are authoritative when they exist.
@@ -335,7 +290,7 @@ async function render(){
     accountTrips=await loadAccountTripCopies();
   }catch(e){
     var msg=e&&e.message?e.message:String(e);
-    dEl.innerHTML="<b>Account recovery error</b><br>"+esc(msg)+"<br><small>The saved database records were not changed.</small>";
+    showStatus("<b>Account data could not be refreshed.</b> The saved database records were not changed. "+esc(msg),false);
     if(!a.length){
       el.innerHTML='<div class="empty">RoamSonio could not read the durable trip snapshots. Nothing was deleted or rebuilt.</div>';
       return;
@@ -358,7 +313,6 @@ async function render(){
       // known names the visible trip name is the stable recovery identity.
       if(name==="new orleans · jan 16–20, 2027")return "known:new-orleans-2027";
       if(name==="european thanksgiving adventure 2026")return "known:europe-2026";
-      if(name==="new trip test")return "known:new-trip-test";
 
       if(t.supabaseId)return "server:"+String(t.supabaseId);
       var start=String(t.start||"").trim();
