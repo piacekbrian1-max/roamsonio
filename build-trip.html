@@ -281,7 +281,7 @@ async function fetchDestinationKnowledge(identity){
   if(!isFinite(lat)||!isFinite(lon))return null;
   var knowledge={identity:identity,areas:[],thingsToDo:[],food:[],photos:[],sources:[],generatedAt:new Date().toISOString()};
   var south=lat-0.055,north=lat+0.055,west=lon-0.075,east=lon+0.075;
-  var q='[out:json][timeout:25];(nwr["amenity"="restaurant"]('+south+','+west+','+north+','+east+');nwr["amenity"="cafe"]('+south+','+west+','+north+','+east+');nwr["amenity"="bar"]('+south+','+west+','+north+','+east+');nwr["amenity"="pub"]('+south+','+west+','+north+','+east+');nwr["amenity"="food_court"]('+south+','+west+','+north+','+east+');nwr["amenity"="fast_food"]('+south+','+west+','+north+','+east+');nwr["craft"="brewery"]('+south+','+west+','+north+','+east+');nwr["shop"="bakery"]('+south+','+west+','+north+','+east+');nwr["tourism"="attraction"]('+south+','+west+','+north+','+east+');nwr["tourism"="museum"]('+south+','+west+','+north+','+east+');nwr["tourism"="gallery"]('+south+','+west+','+north+','+east+');nwr["tourism"="viewpoint"]('+south+','+west+','+north+','+east+');nwr["tourism"="zoo"]('+south+','+west+','+north+','+east+');nwr["leisure"="park"]('+south+','+west+','+north+','+east+');nwr["shop"="mall"]('+south+','+west+','+north+','+east+'););out center tags;';
+  var q='[out:json][timeout:25];(nwr["amenity"="restaurant"]('+south+','+west+','+north+','+east+');nwr["amenity"="cafe"]('+south+','+west+','+north+','+east+');nwr["amenity"="bar"]('+south+','+west+','+north+','+east+');nwr["amenity"="food_court"]('+south+','+west+','+north+','+east+');nwr["tourism"="attraction"]('+south+','+west+','+north+','+east+');nwr["tourism"="museum"]('+south+','+west+','+north+','+east+');nwr["tourism"="gallery"]('+south+','+west+','+north+','+east+');nwr["tourism"="viewpoint"]('+south+','+west+','+north+','+east+');nwr["tourism"="zoo"]('+south+','+west+','+north+','+east+');nwr["leisure"="park"]('+south+','+west+','+north+','+east+');nwr["shop"="mall"]('+south+','+west+','+north+','+east+'););out center tags;';
   try{
     var or=await fetch("https://overpass-api.de/api/interpreter",{method:"POST",headers:{"Content-Type":"text/plain"},body:q});
     if(or.ok){
@@ -289,9 +289,9 @@ async function fetchDestinationKnowledge(identity){
       for(var i=0;i<els.length;i++){
         var tags=els[i].tags||{},name=String(tags.name||"").trim();
         if(!name)continue;
-        var amen=String(tags.amenity||""),tour=String(tags.tourism||""),leis=String(tags.leisure||""),shop=String(tags.shop||""),craft=String(tags.craft||"");
-        var item={name:name,category:tour||amen||leis||shop||craft,source:"OpenStreetMap"};
-        if(amen==="restaurant"||amen==="cafe"||amen==="bar"||amen==="pub"||amen==="food_court"||amen==="fast_food"||shop==="bakery"||craft==="brewery")knowledge.food.push(item);
+        var amen=String(tags.amenity||""),tour=String(tags.tourism||""),leis=String(tags.leisure||""),shop=String(tags.shop||"");
+        var item={name:name,category:tour||amen||leis||shop,source:"OpenStreetMap"};
+        if(amen==="restaurant"||amen==="cafe"||amen==="bar"||amen==="food_court")knowledge.food.push(item);
         else knowledge.thingsToDo.push(item);
         if(tags["addr:suburb"]||tags["addr:neighbourhood"])knowledge.areas.push(tags["addr:suburb"]||tags["addr:neighbourhood"]);
       }
