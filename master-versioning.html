@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Versioning & Rollback · RoamSonio Master Account</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0B2D4A;--gold:#D4A85A;--gold-dark:#A47C2F;--ivory:#F8F5ED;--paper:#FFFDF9;--slate:#58718A;--line:#D9E0E7;--danger:#A84B3D;--safe:#315B3B}
+*{box-sizing:border-box}html,body{margin:0;max-width:100%;overflow-x:hidden}
+body{background:var(--ivory);color:var(--navy);font-family:"DM Sans",Arial,sans-serif}a{text-decoration:none;color:inherit}
+.rsTop{position:sticky;top:0;z-index:1000;background:rgba(248,245,237,.98);border-bottom:1px solid var(--line);backdrop-filter:blur(14px)}
+.rsNav{width:min(1440px,100%);margin:auto;min-height:68px;padding:8px 20px;display:flex;align-items:center;gap:18px}
+.rsBrand{display:flex;align-items:center;gap:10px;flex:0 0 auto}.rsMark{width:42px;height:42px;border:2px solid var(--gold);border-radius:10px;display:grid;place-items:center;background:var(--ivory)}.rsMark svg{width:32px}
+.rsBrand strong{font:600 22px/1.05 "Playfair Display",serif;white-space:nowrap}.rsRoam{color:var(--navy)}.rsSonio{color:var(--gold)}.rsBrand small{display:block;margin-top:3px;color:var(--slate);font:700 7px/1.1 "DM Sans";letter-spacing:.18em}
+.rsLinks{display:flex;align-items:center;justify-content:flex-end;gap:13px;flex:1;flex-wrap:wrap}.rsLinks a{font:700 11px/1.1 "DM Sans";white-space:nowrap}.rsLinks a.active{color:var(--gold-dark)}
+.wrap{width:min(1180px,calc(100% - 32px));margin:auto;padding:34px 0 70px}.ey{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-dark);font-weight:800}
+h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px}.intro{max-width:820px;color:var(--slate);font-size:13px;line-height:1.65;margin:0}
+.section{margin-top:24px;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:22px}.section h2{font:600 27px/1.1 "Playfair Display";margin:0 0 8px}.section p{color:var(--slate);font-size:10px;line-height:1.6}
+.rule{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:15px 0;border-bottom:1px solid #E5E9ED}.rule:last-child{border-bottom:0}.num{width:34px;height:34px;border-radius:50%;background:#F1EADB;color:var(--gold-dark);display:grid;place-items:center;font-weight:800;font-size:10px}
+.rule strong{display:block;font-size:11px;margin-bottom:4px}.rule span{display:block;color:var(--slate);font-size:10px;line-height:1.55}
+.checkpoint{display:grid;grid-template-columns:1.2fr .8fr .9fr;gap:10px}.box{border:1px solid var(--line);border-radius:10px;background:#fff;padding:14px}.box small{display:block;color:var(--gold-dark);font-size:8px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.box strong{display:block;margin-top:7px;font-size:10px;word-break:break-word}.safe{border-color:#BFD5C3;background:#F5FAF5}.safe strong{color:var(--safe)}
+.warn{border-left:4px solid var(--danger);background:#F8ECE9;padding:14px 15px;border-radius:9px;color:#7B3028;font-size:10px;line-height:1.55}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.btn{padding:10px 13px;border-radius:7px;border:1px solid var(--line);background:#fff;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.btn.primary{background:var(--gold);border-color:var(--gold)}
+.denied{max-width:620px;margin:70px auto;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:30px;text-align:center}.denied h1{font-size:38px}
+.error{display:none;margin-top:15px;padding:12px;border-radius:9px;background:#F8ECE9;color:#7B3028;font-size:10px}
+@media(max-width:760px){.rsNav{align-items:flex-start;padding:8px 11px}.rsBrand strong{font-size:18px}.rsMark{width:34px;height:34px}.rsMark svg{width:26px}.rsBrand small{font-size:5px}.rsLinks{gap:6px 8px}.rsLinks a{font-size:9px}.wrap{width:calc(100% - 24px);padding-top:24px}.checkpoint{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="rsTop"><div class="rsNav">
+<a class="rsBrand" href="master-account.html"><span class="rsMark"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="29" fill="#F8F5ED"/><circle cx="45" cy="18" r="8" fill="#D4A85A"/><path d="M10 46 25 29l8 9 8-12 13 20H10Z" fill="#0B2D4A"/><path d="M17 20c8-7 18-8 27-4 5 2 8 5 10 9" fill="none" stroke="#D4A85A" stroke-width="3" stroke-linecap="round"/></svg></span><span><strong><span class="rsRoam">Roam</span><span class="rsSonio">Sonio</span></strong><small>MASTER ADMINISTRATION</small></span></a>
+<nav class="rsLinks"><a href="master-account.html">Master Account</a><a href="master-users.html">Users</a><a href="master-trips.html">Trips</a><a href="master-families.html">Families</a><a href="master-support.html">Support</a><a class="active" href="master-versioning.html">Versioning & Rollback</a></nav>
+</div></header>
+<main id="app"><div class="denied" id="denied"><div class="ey">RoamSonio Administration</div><h1>Versioning & Rollback</h1><p class="intro" style="margin:0 auto">This area is reserved for the authorized RoamSonio Master Administrator.</p><div class="actions" style="justify-content:center"><a class="btn primary" href="master-admin-login.html">Master Admin Sign In</a></div><div class="error" id="authError"></div></div>
+<div class="wrap" id="dashboard" style="display:none">
+<div class="ey">RoamSonio Operations · Protection Protocol</div><h1>Versioning & Rollback</h1>
+<p class="intro">The production safety record for RoamSonio code changes. Every change must have a known-good restore point before work begins, and a failed experiment can never become the new production baseline.</p>
+<section class="section"><h2>Current Production Checkpoint</h2><p>This checkpoint identifies the version that should be restored if a new code change causes a regression.</p>
+<div class="checkpoint"><div class="box safe"><small>Known-good restore point</small><strong>7fd55ab4f85bfa85e7ae4aff5b06ce894e12c3fc</strong></div><div class="box"><small>Purpose</small><strong>Exact rollback after failed destination-food experiment</strong></div><div class="box"><small>Status</small><strong class="safe">Trips verified back and available</strong></div></div>
+</section>
+<section class="section"><h2>Required Change Protocol</h2>
+<div class="rule"><div class="num">1</div><div><strong>Identify the known-good production commit.</strong><span>Before every code change, record the current production SHA and treat it as the restore point. A successful deployment is not automatically a production checkpoint.</span></div></div>
+<div class="rule"><div class="num">2</div><div><strong>Record the change.</strong><span>Record the SHA, date/time, exact files being changed, purpose of the change, deployment status and user-test status.</span></div></div>
+<div class="rule"><div class="num">3</div><div><strong>Fetch the exact current file SHA before editing.</strong><span>Use the repository's current file content and blob SHA. Never edit from an assumed or stale version.</span></div></div>
+<div class="rule"><div class="num">4</div><div><strong>Make one isolated change.</strong><span>Do not combine unrelated architecture, trip-data, UI and destination changes in the same experiment.</span></div></div>
+<div class="rule"><div class="num">5</div><div><strong>Compare the result to the restore point.</strong><span>Verify exactly which files and lines changed. Confirm that trip data, IDs, localStorage, Supabase records, routing and existing trip behavior were not unintentionally altered.</span></div></div>
+<div class="rule"><div class="num">6</div><div><strong>Deploy and verify deployment.</strong><span>Confirm the GitHub Pages deployment succeeds before asking the user to test. A technically successful deployment still requires user validation.</span></div></div>
+<div class="rule"><div class="num">7</div><div><strong>User tests the change.</strong><span>The version becomes a new production checkpoint only after the user confirms the affected functionality and existing trips remain intact.</span></div></div>
+<div class="rule"><div class="num">8</div><div><strong>If the test fails: STOP.</strong><span>Do not layer another fix onto a broken version. Revert to the documented restore point, redeploy it, verify the trips are back, and only then investigate the failed experiment separately.</span></div></div>
+<div class="rule"><div class="num">9</div><div><strong>Failed experiments never become baselines.</strong><span>A failed deployment or rejected user test remains an experiment. It cannot replace the last known-good production checkpoint.</span></div></div>
+</section>
+<section class="section"><h2>Checkpoint Definitions</h2>
+<div class="checkpoint"><div class="box"><small>Production checkpoint</small><strong>Last version the user tested and approved as working.</strong></div><div class="box"><small>Deployment commit</small><strong>Latest code deployed to GitHub Pages. It may still be awaiting validation.</strong></div><div class="box"><small>Restore point</small><strong>Exact production commit used to recover after a failed change.</strong></div></div>
+</section>
+<section class="section"><h2>Non-Negotiable Trip Protection</h2><div class="warn"><strong>Never trade trip safety for an experiment.</strong><br>Existing trips must not be overwritten, replaced by a richer copy, regenerated from a template, or lost because of a new feature experiment. When uncertain, preserve the known-good version and stop.</div>
+<div class="actions"><a class="btn primary" href="master-account.html">← Back to Master Account</a></div></section>
+</div></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy",{auth:{storageKey:"roamsonio-master-auth",persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+(async()=>{
+ const {data:{session},error:sessionError}=await client.auth.getSession();
+ if(sessionError||!session){location.replace("master-admin-login.html");return}
+ const {data:isMaster,error:roleError}=await client.rpc("roamsonio_is_master_admin");
+ if(roleError||isMaster!==true){location.replace("master-admin-login.html");return}
+ const {data:aal,error:aalError}=await client.auth.mfa.getAuthenticatorAssuranceLevel();
+ if(aalError||aal.currentLevel!=="aal2"){location.replace("master-admin-security.html");return}
+ document.getElementById("denied").style.display="none";
+ document.getElementById("dashboard").style.display="block";
+})().catch(e=>{const box=document.getElementById("authError");box.textContent=e.message||"Unable to verify Master Admin access.";box.style.display="block"});
+</script>
+</body></html>
