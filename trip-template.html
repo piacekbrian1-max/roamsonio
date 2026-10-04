@@ -590,9 +590,11 @@ if(tripNav){tripNav.querySelectorAll("a").forEach(function(a){a.addEventListener
 document.addEventListener("click",function(e){if(tripNav&&tripNav.classList.contains("open")&&!tripNav.contains(e.target)&&e.target!==menuToggle)closeTripMenu()});
 document.addEventListener("keydown",function(e){if(e.key==="Escape")closeTripMenu()});
 var KEY="big-thanksgiving-trips-v1";
-var params=new URLSearchParams(location.search),id=params.get("id")||sessionStorage.getItem("openTripId");
+var params=new URLSearchParams(location.search),id=params.get("id")||sessionStorage.getItem("openTripId"),serverId=params.get("supabaseId")||"";
 function load(){try{return JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){return[]}}
-var trips=load(),trip=trips.find(function(t){return t.id===id})||trips[trips.length-1];
+var trips=load(),trip=trips.find(function(t){return String(t.id||"")===String(id)})||
+  (serverId?trips.find(function(t){return String(t.supabaseId||"")===String(serverId)}):null)||
+  trips.find(function(t){return String(t.supabaseId||"")===String(id)})||null;
 /*
  * CANONICAL NEW ORLEANS MASTER RECOVERY
  * Keep the approved five-day New Orleans build as the structural master.
