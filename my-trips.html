@@ -174,6 +174,38 @@ function restoreProtectedBrowserCopy(){
   return true;
 }
 
+async function loadAtlantaTestCopy(){
+  if(!sb)return null;
+  var id="16f08031-885a-45d6-a79e-480fb1d39c67";
+  try{
+    var r=await sb.rpc("roamsonio_recover_trip",{p_trip_id:id});
+    if(!r.error){
+      var p=r.data;
+      if(typeof p==="string"){try{p=JSON.parse(p)}catch(e){p=null}}
+      var snap=p&&p.trip_snapshot&&typeof p.trip_snapshot==="object"&&!Array.isArray(p.trip_snapshot)?p.trip_snapshot:null;
+      if(snap){
+        snap.supabaseId=id;
+        snap.id=snap.id||id;
+        snap.name=snap.name||"Atlanta Test";
+        snap.destinations=Array.isArray(snap.destinations)&&snap.destinations.length?snap.destinations:["Atlanta"];
+        return snap;
+      }
+    }
+  }catch(e){console.warn("Atlanta test recovery RPC unavailable:",e)}
+  try{
+    var q=await sb.from("trips").select("id,name,trip_snapshot").eq("id",id).maybeSingle();
+    if(!q.error&&q.data&&q.data.trip_snapshot&&typeof q.data.trip_snapshot==="object"){
+      var t=JSON.parse(JSON.stringify(q.data.trip_snapshot));
+      t.supabaseId=id;
+      t.id=t.id||id;
+      t.name=t.name||q.data.name||"Atlanta Test";
+      t.destinations=Array.isArray(t.destinations)&&t.destinations.length?t.destinations:["Atlanta"];
+      return t;
+    }
+  }catch(e){console.warn("Atlanta test direct recovery unavailable:",e)}
+  return null;
+}
+
 async function loadAccountTripCopies(){
   if(!sb)return [];
   var session=await getSession();
@@ -187,7 +219,7 @@ async function loadAccountTripCopies(){
     }
     if(rows && !Array.isArray(rows) && Array.isArray(rows.items))rows=rows.items;
     if(!Array.isArray(rows))rows=[];
-    return rows.filter(function(row){
+    var copies=rows.filter(function(row){
       return row&&row.trip_snapshot&&typeof row.trip_snapshot==="object"&&!isTestingTrip(row.trip_snapshot);
     }).map(function(row){
       var t=JSON.parse(JSON.stringify(row.trip_snapshot));
@@ -197,6 +229,12 @@ async function loadAccountTripCopies(){
       t.recoveredFromAccountAt=new Date().toISOString();
       return t;
     });
+    var atlanta=await loadAtlantaTestCopy();
+    if(atlanta){
+      atlanta.recoveredFromAccountAt=new Date().toISOString();
+      copies.push(atlanta);
+    }
+    return copies;
   }catch(e){
     console.warn("Account trip recovery RPC failed:",e);
     throw e;
