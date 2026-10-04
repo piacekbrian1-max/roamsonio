@@ -9,12 +9,20 @@
   },
   "versions": [
     {
+      "sha": "68cdd2ea9423cd444f8ef1fb26a0a93490666d6a",
+      "date": "2026-10-04",
+      "title": "Keep New Orleans edits matched to the same trip",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds only a stable New Orleans trip identity to My Trips merging so a renamed New Orleans trip cannot be treated as a separate journey from its existing account snapshot. No trip data, itinerary, routing, recovery source, or other trip pages changed. Gatlinburg image issue intentionally not changed in this step."
+    },
+    {
       "sha": "ec3fe88aafee0df6277a316c704ddd8088165c48",
       "date": "2026-10-04",
       "title": "Fix New Orleans Edit Trip field loading",
-      "status": "TESTING",
+      "status": "ISSUE",
       "rollbackEligible": false,
-      "notes": "Changes only the Edit Trip field loader to use the existing New Orleans trip-state API. No trip data, itinerary, routing, recovery logic, or other trip pages changed. Awaiting user validation."
+      "notes": "User reported multiple New Orleans copies, the edited name reverted after refresh, and My Trips showed the old New Orleans name. Do not use this version as a rollback target."
     },
     {
       "sha": "0a565c93e2d5b3f24f6693df67c0d40058c602ea",
