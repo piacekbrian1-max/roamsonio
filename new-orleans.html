@@ -462,7 +462,7 @@ body{padding-top:74px!important}
         endDate=document.getElementById("editTripEnd"),
         destinations=document.getElementById("editTripDestinations");
     function loadFields(){
-      var currentTrip=window.trip;
+      var api=window.roamsonioNolaEdit,currentTrip=api&&api.getTrip?api.getTrip():null;
       if(!currentTrip)return;
       if(name)name.value=currentTrip.name||"";
       if(startDate)startDate.value=currentTrip.start||"";
