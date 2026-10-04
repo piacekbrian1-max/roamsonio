@@ -29,15 +29,41 @@ function isTestingTrip(t){
   t=t||{};
   var id=String(t.supabaseId||t.id||"").trim();
   var name=String(t.name||"").trim().toLowerCase();
-  return id==="16f08031-885a-45d6-a79e-480fb1d39c67" ||
-         name==="atlanta test" ||
-         name==="new trip test" ||
+  return name==="new trip test" ||
          name==="account 2 test trip";
 }
 function archiveTestingTrips(){
   try{
     var primary=parseArray(localStorage.getItem(KEY));
     var archive=parseArray(localStorage.getItem(TEST_ARCHIVE_KEY));
+    // Atlanta Test is an intentional routing test and must remain visible.
+    // If the previous cleanup archived it, restore the richest copy first.
+    var atlanta=primary.filter(function(t){
+      return String(t.supabaseId||t.id||"") === "16f08031-885a-45d6-a79e-480fb1d39c67" ||
+             String(t.name||"").trim().toLowerCase() === "atlanta test";
+    });
+    for(var ai=0;ai<archive.length;ai++){
+      var at=archive[ai]||{};
+      if(String(at.supabaseId||at.id||"") === "16f08031-885a-45d6-a79e-480fb1d39c67" ||
+         String(at.name||"").trim().toLowerCase() === "atlanta test"){
+        var exists=atlanta.some(function(x){
+          return String(x.supabaseId||x.id||"")===String(at.supabaseId||at.id||"") ||
+                 String(x.name||"").trim().toLowerCase()==="atlanta test";
+        });
+        if(!exists)atlanta.push(at);
+      }
+    }
+    var clean=primary.filter(function(t){return !isTestingTrip(t)});
+    for(var aj=0;aj<atlanta.length;aj++){
+      var duplicate=clean.some(function(x){
+        return String(x.supabaseId||x.id||"")===String(atlanta[aj].supabaseId||atlanta[aj].id||"") ||
+               (String(x.name||"").trim().toLowerCase()==="atlanta test");
+      });
+      if(!duplicate)clean.push(atlanta[aj]);
+    }
+    localStorage.setItem(KEY,JSON.stringify(clean));
+
+    // Keep the other old test journeys archived, without deleting their data.
     var all=archive.slice();
     for(var i=0;i<primary.length;i++){
       if(isTestingTrip(primary[i])) all.push(primary[i]);
@@ -47,10 +73,12 @@ function archiveTestingTrips(){
       var t=all[j]||{},k=String(t.supabaseId||t.id||t.name||("test-"+j)),bytes=JSON.stringify(t||{}).length;
       if(!best[k]||bytes>best[k].bytes)best[k]={trip:t,bytes:bytes};
     }
-    var archived=Object.keys(best).map(function(k){return best[k].trip});
+    var archived=Object.keys(best).map(function(k){return best[k].trip}).filter(function(t){
+      return !((String(t.supabaseId||t.id||"") === "16f08031-885a-45d6-a79e-480fb1d39c67") ||
+               String(t.name||"").trim().toLowerCase()==="atlanta test");
+    });
     if(archived.length)localStorage.setItem(TEST_ARCHIVE_KEY,JSON.stringify(archived));
-    var clean=primary.filter(function(t){return !isTestingTrip(t)});
-    localStorage.setItem(KEY,JSON.stringify(clean));
+    else localStorage.removeItem(TEST_ARCHIVE_KEY);
   }catch(e){console.warn("Test-trip archive cleanup skipped:",e)}
 }
 
