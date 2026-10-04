@@ -647,42 +647,10 @@ if((String(id)===atlantaDurableId||String(serverId)===atlantaDurableId||slug(url
 }
 
 /*
- * Recovery fallback: My Trips can contain a browser wrapper while the richest
- * original copy is still preserved in the safety-backup history. The workspace
- * must use that richer copy rather than opening a sparse account snapshot.
- * Read-only selection first; it only writes back when the backup is clearly
- * richer than the current copy.
+ * Safety backups are for explicit recovery only.
+ * Never automatically replace the active editable trip with a backup
+ * merely because the backup contains more serialized fields.
  */
-(function(){
-  try{
-    var hist=JSON.parse(localStorage.getItem("roamsonio-trip-safety-backups-v1")||"[]");
-    if(!Array.isArray(hist))hist=[];
-    var currentBytes=JSON.stringify(trip||{}).length;
-    var best=null,bestBytes=currentBytes;
-    for(var hi=0;hi<hist.length;hi++){
-      var saved=[];
-      try{saved=JSON.parse((hist[hi]&&hist[hi].data)||"[]")}catch(e){saved=[]}
-      if(!Array.isArray(saved))continue;
-      for(var si=0;si<saved.length;si++){
-        var s=saved[si]||{},match=false;
-        if(id&&String(s.id||"")===String(id))match=true;
-        if(!match&&trip&&s.supabaseId&&trip.supabaseId&&String(s.supabaseId)===String(trip.supabaseId))match=true;
-        if(!match&&trip&&String(s.name||"").trim()===String(trip.name||"").trim())match=true;
-        if(match){
-          var bytes=JSON.stringify(s).length;
-          if(bytes>bestBytes){best=s;bestBytes=bytes}
-        }
-      }
-    }
-    if(best){
-      trip=best;
-      var ti=trips.findIndex(function(t){return t.id===trip.id});
-      if(ti>=0)trips[ti]=best;else trips.push(best);
-      localStorage.setItem(KEY,JSON.stringify(trips));
-      sessionStorage.setItem("openTripId",trip.id);
-    }
-  }catch(e){console.warn("Trip backup fallback unavailable",e)}
-})()
 /* Canonical New Orleans recovery: restore the known-good five-day master into the existing saved trip ID. */
 if(id==="febaebf6-7369-4922-b069-c745eee8c16f" && !trips.some(function(t){return t.id===id})){
 var nolaDates=["2027-01-16","2027-01-17","2027-01-18","2027-01-19","2027-01-20"],nolaDays=[["Carnival kickoff + French Quarter","French Quarter + Jackson Square","French Market + Mississippi Riverfront","Local Creole/Cajun dinner + live music"],["Garden District + Magazine Street","St. Charles Avenue + Garden District","Magazine Street + neighborhood cafés","Local dinner + music"],["Culture + City Park","National WWII Museum","City Park + sculpture garden","Neighborhood restaurant"],["Neighborhoods + local food","Tremé + historic New Orleans","Mid-City + Bayou St. John","Local favorite restaurant + music"],["Favorites + flexible day","Return to a favorite area or must-see","King cake / café / shopping stop","Farewell dinner"]],nolaNotes=["Keep the evening flexible for Carnival atmosphere.","Balance walking with a relaxed afternoon.","Use indoor options if weather turns wet or cool.","Prioritize neighborhood experiences over backtracking.","Leave room for anything discovered during the trip."];
