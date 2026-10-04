@@ -2002,6 +2002,21 @@ if(food.length&&foodCategories.indexOf(category)>=0){
     var kind=typeof x==="object"&&x?(x.category||"Food & drink"):"Food & drink";
     return [name,area,kind,"Destination knowledge"];
   }).filter(function(x){return !!x[0]});
+
+  /* Use the destination's actual source type to create different food lanes.
+     Do not show the same mixed restaurant list for every food category. */
+  var typeFor=String(category||"").toLowerCase();
+  var filtered=foodItems.filter(function(x){
+    var kind=String(x[2]||"").toLowerCase();
+    if(typeFor==="breakfast"||typeFor==="coffee & bakeries")return /cafe|coffee|bakery|pastry/.test(kind);
+    if(typeFor==="bars")return /bar/.test(kind);
+    if(typeFor==="breweries")return /brewery|pub/.test(kind);
+    if(typeFor==="lunch"||typeFor==="dinner"||typeFor==="special occasions")return /restaurant|food_court|food hall|bistro|dining/.test(kind);
+    return true;
+  });
+  if(filtered.length)return filtered;
+  /* If the destination does not have enough typed source data, keep real
+     destination places available rather than replacing them with fake names. */
   if(foodItems.length)return foodItems;
 }
 if(todo.length){
