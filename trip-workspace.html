@@ -731,6 +731,7 @@ async function save(){
   var currentRevision=Number(trip.revision)||0;
   trip.revision=Math.max(previousRevision,currentRevision)+1;
   trip.updatedAt=new Date().toISOString();
+  if(!trip.createdAt)trip.createdAt=(previous&&previous.createdAt)||trip.updatedAt;
   if(i>=0)a[i]=trip;else a.push(trip);
   localStorage.setItem(KEY,JSON.stringify(a));
   sessionStorage.setItem("openTripId",trip.id);
