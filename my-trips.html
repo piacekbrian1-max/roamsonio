@@ -353,7 +353,7 @@ async function render(){
     var t=a[i],d=document.createElement("div");
     d.className="trip";
     var hasServer=t.supabaseId;
-    d.innerHTML="<div><b>"+esc(t.name||"Unnamed trip")+"</b><small>"+esc((t.destinations||[]).join(" · "))+" · "+(t.days||"")+" days · "+esc(t.status||"Planning")+"</small></div><div><button onclick='openTrip("+JSON.stringify(t.id)+")'>Open trip</button> <button onclick='recoverTrip("+JSON.stringify(t.id)+")'>"+(hasServer?"Restore original data":"Recover to account")+"</button> <button onclick='deleteTrip("+JSON.stringify(t.id)+" )'>Delete</button></div>";
+    d.innerHTML="<div><b>"+esc(t.name||"Unnamed trip")+"</b><small>"+esc((t.destinations||[]).join(" · "))+" · "+(t.days||"")+" days · "+esc(t.status||"Planning")+"</small></div><div><button onclick='openTrip("+JSON.stringify(t.id)+")'>Open trip</button> <button onclick='deleteTrip("+JSON.stringify(t.id)+" )'>Delete</button></div>";
     el.appendChild(d);
   }
 }
