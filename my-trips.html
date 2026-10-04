@@ -378,7 +378,9 @@ async function render(){
         unique.push(ut);
       }else{
         var prev=unique[prior];
-        if(JSON.stringify(ut||{}).length>JSON.stringify(prev||{}).length)unique[prior]=ut;
+        var prevRevision=Number(prev&&prev.revision)||0;
+        var candidateRevision=Number(ut&&ut.revision)||0;
+        if(candidateRevision>prevRevision)unique[prior]=ut;
       }
     }
     a=unique;
