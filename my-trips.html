@@ -10,7 +10,7 @@ html,body{max-width:100%;overflow-x:hidden}*,*::before,*::after{box-sizing:borde
 </style></head><body>
 <header class="rsTop"><div class="rsNav"><a class="rsBrand" href="index.html" aria-label="RoamSonio home"><span class="rsMark"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#F8F5ED"/><circle cx="45" cy="18" r="8" fill="#D4A85A"/><path d="M10 46 25 29l8 9 8-12 13 20H10Z" fill="#0B2D4A"/><path d="M17 20c8-7 18-8 27-4 5 2 8 5 10 9" fill="none" stroke="#D4A85A" stroke-width="3" stroke-linecap="round"/></svg></span><span><strong><span class="rsRoam">Roam</span><span class="rsSonio">Sonio</span></strong><small>DREAM IT. PLAN IT. LIVE IT.</small></span></a><nav class="rsLinks" aria-label="Primary navigation"><a href="index.html">My RoamSonio</a><a href="my-trips.html">My Trips</a><a href="build-trip.html">Build Your Trip</a><a href="travel-desk.html">Travel Desk</a><a href="about.html">About Us</a><a href="account.html" id="rsAccountLink">My Account</a><a href="login.html?return=my-trips.html" id="rsAuthLink" class="rsAuthBtn">Sign In</a></nav></div></header>
 <header class="hero"><div class="ey">ROAMSONIO · YOUR TRAVEL LIBRARY</div><h1><span id="tripOwnerName">My</span> Trips</h1><p id="tripOwnerIntro">Your saved journeys are kept separate from the current trip. Open a trip to work with its own plans, memories and journal, or start something completely new.</p><div class="actions"><a class="btn" href="index.html">Home</a><a class="btn primary" href="build-trip.html">Build a new trip</a><a class="btn" href="current-trip.html">Current trip</a><a class="btn" href="trip-preservation.html">Trip preservation</a></div></header>
-<main class="wrap"><section class="panel"><div class="ey">Saved journeys</div><h2 class="serif">Your trips</h2><p>Trips saved in this browser appear here. Opening one takes you to that trip's workspace instead of changing the current trip page.</p><div id="recoveryStatus" class="empty" style="display:none;margin-bottom:12px"></div><div id="tripDiagnostic" class="empty" style="display:none;margin-bottom:12px"></div><div id="liveAccountTest" class="empty" style="margin-bottom:12px;background:#F8F5ED"><b>Live account test</b><br><small>This is read-only. It checks the signed-in Supabase identity, the recovery function, and the three known missing trip records.</small><br><div id="liveAccountTestAutoStatus" style="margin-top:10px;font-weight:700">Running live account test automatically…</div><div id="liveAccountTestResult" style="margin-top:12px;text-align:left"></div></div><div id="tripList" class="tripList"></div></section></main>
+<main class="wrap"><section class="panel"><div class="ey">Saved journeys</div><h2 class="serif">Your trips</h2><p>Trips saved in this browser appear here. Opening one takes you to that trip's workspace instead of changing the current trip page.</p><div id="recoveryStatus" class="empty" style="display:none;margin-bottom:12px"></div><div id="tripDiagnostic" class="empty" style="display:none;margin-bottom:12px"></div><div id="tripList" class="tripList"></div></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
@@ -276,72 +276,6 @@ async function render(){
     el.appendChild(d);
   }
 }
-window.runLiveAccountTest=async function(){
-  var box=document.getElementById("liveAccountTestResult");
-  if(!box)return;
-  box.innerHTML="<b>Running read-only test…</b>";
-  if(!sb){box.innerHTML="<span style='color:#7B3028'>Supabase client is unavailable.</span>";return;}
-  var known=[
-    {id:"9b68b7a9-cb33-49d3-bd60-a3d8d4659696",name:"New trip test — Atlanta"},
-    {id:"febabf76-7369-4922-b069-c745eee8c16f",name:"New Orleans · Jan 16–20, 2027"},
-    {id:"a636626a-e7b2-4337-b950-be9682edde63",name:"European Thanksgiving Adventure 2026"}
-  ];
-  var lines=[];
-  try{
-    var sr=await sb.auth.getSession();
-    var session=sr.data&&sr.data.session||null;
-    if(sr.error) lines.push("<b>Session:</b> ERROR — "+esc(sr.error.message||sr.error));
-    else if(!session) lines.push("<b>Session:</b> NOT SIGNED IN");
-    else{
-      lines.push("<b>Session:</b> SIGNED IN");
-      lines.push("<b>Auth user ID:</b> <code>"+esc(session.user.id)+"</code>");
-      lines.push("<b>Auth email:</b> "+esc(session.user.email||"(none)"));
-      lines.push("<b>Known durable owner ID:</b> <code>1d7ae331-284b-4520-a072-aa0cb4a0930e</code>");
-      lines.push("<b>Owner UUID match:</b> "+(session.user.id==="1d7ae331-284b-4520-a072-aa0cb4a0930e"?"YES":"NO"));
-      try{
-        var rr=await sb.rpc("roamsonio_recover_trip_candidates");
-        if(rr.error){
-          lines.push("<b>Recovery RPC:</b> ERROR — "+esc(rr.error.message||rr.error)+" <small>"+esc([rr.error.code,rr.error.details,rr.error.hint].filter(Boolean).join(" · "))+"</small>");
-        }else{
-          var rd=rr.data, arr=rd;
-          if(typeof arr==="string"){try{arr=JSON.parse(arr)}catch(e){}}
-          if(arr&&!Array.isArray(arr)&&Array.isArray(arr.items))arr=arr.items;
-          lines.push("<b>Recovery RPC:</b> SUCCESS");
-          lines.push("<b>RPC returned:</b> "+(Array.isArray(arr)?arr.length:"non-array")+" row(s)");
-          if(Array.isArray(arr))lines.push("<b>RPC snapshots:</b> "+arr.filter(function(x){return x&&x.trip_snapshot&&typeof x.trip_snapshot==="object"}).length);
-        }
-      }catch(e){lines.push("<b>Recovery RPC:</b> EXCEPTION — "+esc(e.message||e));}
-      lines.push("<hr style='border:0;border-top:1px solid #D9E0E7;margin:10px 0'>");
-      for(var i=0;i<known.length;i++){
-        var k=known[i];
-        try{
-          var q=await sb.from("trips").select("id,owner_id,name,trip_snapshot").eq("id",k.id).maybeSingle();
-          if(q.error){
-            lines.push("<b>"+esc(k.name)+":</b> QUERY ERROR — "+esc(q.error.message||q.error)+" <small>"+esc([q.error.code,q.error.details,q.error.hint].filter(Boolean).join(" · "))+"</small>");
-          }else if(q.data){
-            lines.push("<b>"+esc(k.name)+":</b> VISIBLE · owner=<code>"+esc(q.data.owner_id||"")+"</code> · snapshot="+(q.data.trip_snapshot?"YES":"NO"));
-          }else{
-            lines.push("<b>"+esc(k.name)+":</b> NOT VISIBLE TO THIS SESSION");
-          }
-        }catch(e){lines.push("<b>"+esc(k.name)+":</b> EXCEPTION — "+esc(e.message||e));}
-      }
-    }
-  }catch(e){lines.push("<b>Test failed:</b> "+esc(e.message||e));}
-  box.innerHTML=lines.join("<br>");
-};
-setTimeout(function(){
-  try{
-    if(typeof window.runLiveAccountTest==="function"){
-      window.runLiveAccountTest();
-    }else{
-      var box=document.getElementById("liveAccountTestResult");
-      if(box)box.innerHTML="<span style='color:#7B3028'>Diagnostic function did not initialize.</span>";
-    }
-  }catch(e){
-    var box=document.getElementById("liveAccountTestResult");
-    if(box)box.innerHTML="<span style='color:#7B3028'>Diagnostic startup error: "+esc(e.message||e)+"</span>";
-  }
-},250);
 window.openTrip=function(id){
   var a=load(),t=a.find(function(x){return x.id===id})||{};
   var d=(t.destinations||[])[0]||"";
