@@ -420,6 +420,18 @@ button,a{max-width:100%}
 .guideLiveLoading{color:#967b35!important}
 .guideLiveError{color:#8b918c!important}
 .guideOnlineSlot{min-height:30px}
+</style><style id="roamsonio-fixed-navigation">
+/* Persistent navigation: full navigation on iPad/desktop, existing menu on iPhone. */
+.top{position:fixed!important;top:0!important;left:0!important;right:0!important;z-index:1000!important}
+body{padding-top:74px!important}
+@media (min-width:601px) and (max-width:1180px){
+  .top{height:auto!important;min-height:74px!important}
+}
+@media (max-width:600px){
+  body{padding-top:62px!important}
+  .top{height:62px!important;min-height:62px!important}
+  .navlinks.open{top:62px!important}
+}
 </style></head>
 <body>
 <header class="top"><div class="nav">
