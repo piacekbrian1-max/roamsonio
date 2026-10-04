@@ -459,6 +459,22 @@ button,a{max-width:100%}
 </div>
 <div class="weatherLead" id="weatherLead"><div class="weatherLeadIntro"><b>Trip weather</b><span>Current conditions · stay averages</span></div></div>
 </header>
+<script>
+/* Atlanta initial-image preload: presentation only. The workspace still renders saved trip data normally. */
+(function(){
+  var p=new URLSearchParams(location.search);
+  var d=(p.get("destination")||"").toLowerCase();
+  var id=p.get("id")||sessionStorage.getItem("openTripId")||"";
+  var atlantaId="16f08031-885a-45d6-a79e-480fb1d39c67";
+  if(id===atlantaId||d.indexOf("atlanta")>=0){
+    var a="https://commons.wikimedia.org/wiki/Special:FilePath/Atlanta%20Skyline%20from%20Piedmont%20Park%20-%20October%202024.png?width=1800";
+    var b="https://commons.wikimedia.org/wiki/Special:FilePath/Ponce%20City%20Market%20from%20Historic%20Fourth%20Ward%20Park.jpg?width=1600";
+    var c="https://commons.wikimedia.org/wiki/Special:FilePath/To%20the%20Beltline.jpg?width=1600";
+    var m=document.getElementById("heroMain"),s1=document.getElementById("heroSide1"),s2=document.getElementById("heroSide2");
+    if(m)m.src=a;if(s1)s1.src=b;if(s2)s2.src=c;
+  }
+})();
+</script>
 
 <main>
 <section id="dashboard" class="section">
