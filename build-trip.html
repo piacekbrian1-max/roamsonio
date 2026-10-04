@@ -173,6 +173,17 @@ function web(q){return "https://www.google.com/search?q="+encodeURIComponent(q)}
 function slug(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}
 function catalog(dest){
 var s=slug(dest);
+if(s.indexOf("gatlinburg")>=0||s.indexOf("gatlinberg")>=0)return {
+city:"Gatlinburg",
+areas:["Downtown Gatlinburg","Ober Gatlinburg & Ski Mountain","Great Smoky Mountains National Park · Gatlinburg entrance","Roaring Fork & Baskins Creek","Arts & Crafts Community","Chimney Tops & Newfound Gap corridor","Pigeon Forge day-trip corridor"],
+sights:["Great Smoky Mountains National Park","Cades Cove","Newfound Gap","Roaring Fork Motor Nature Trail","Ober Mountain","Gatlinburg SkyPark","Ripley's Aquarium of the Smokies","Anakeesta","Great Smoky Arts & Crafts Community","Sugarlands Visitor Center"],
+food:["The Smoky Mountain Brewery","The Park Grill","The Peddler Steakhouse","Crockett's Breakfast Camp","Three Jimmy's","Red Oak Bistro","Delauder's BBQ","Tennessee Jed's"],
+local:["Great Smoky Arts & Crafts Community","Gatlinburg Farmers Market","Downtown Gatlinburg","Roaring Fork Motor Nature Trail","Sugarlands Visitor Center"],
+events:"Gatlinburg events",
+weather:"Gatlinburg Tennessee weather",
+cams:"Gatlinburg downtown webcam",
+resources:["https://www.gatlinburg.com/","https://www.nps.gov/grsm/","https://www.gatlinburg.com/events/"],
+holiday:false};
 if(s.indexOf("atlanta")>=0||s==="atl")return {
 city:"Atlanta",
 areas:["Downtown & Centennial Park","Midtown & Piedmont Park","Old Fourth Ward & Ponce City Market","BeltLine Eastside Trail","Inman Park & Little Five Points","Sweet Auburn & Martin Luther King Jr. Historic District","West Midtown"],
