@@ -422,14 +422,13 @@ window.openTrip=function(id){
     return;
   }
 
-  // New Orleans uses the preserved, known-good feature build from the
-  // repository history rather than the generic workspace renderer.
-  // Atlanta Test uses the reusable trip template with its existing saved data.
+  // Atlanta's full destination-specific build lives in trip-workspace.html.
+  // Use the existing saved browser ID and destination; do not substitute a generic template.
   var atlantaTestId="16f08031-885a-45d6-a79e-480fb1d39c67";
   var isAtlantaTest=String(id)===atlantaTestId || String(t.supabaseId||"")===atlantaTestId ||
                     String(t.name||"").trim()==="Atlanta Test";
   if(isAtlantaTest){
-    location.href="trip-template.html?id="+encodeURIComponent(id)+"&v=atlanta-test-"+Date.now();
+    location.href="trip-workspace.html?id="+encodeURIComponent(id)+"&destination="+encodeURIComponent(d||"Atlanta")+"&v=atlanta-restored-"+Date.now();
     return;
   }
 
