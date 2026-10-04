@@ -9,6 +9,14 @@
   },
   "versions": [
     {
+      "sha": "bb030998bfabdb7e00acd269496b863438495e21",
+      "date": "2026-10-04",
+      "title": "Fix trip workspace script loading for Edit Trip shell",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Fixes an invalid nested script tag introduced by the Edit Trip shell, which prevented the generic trip workspace rendering code from running. No saved trip data, destination data, recovery logic, or suggestion data changed. Awaiting live validation."
+    },
+    {
       "sha": "38dc3760c0cb9690dd02f530f085cbb42d533121",
       "date": "2026-10-04",
       "title": "Add safe Edit Trip shell",
