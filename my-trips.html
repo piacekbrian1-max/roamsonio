@@ -103,9 +103,16 @@ async function loadAccountTripCopies(){
   var session=await getSession();
   if(!session)return [];
   try{
-    var r=await sb.from("trips").select("id,name,owner_id,visibility,trip_snapshot,created_at,updated_at").eq("owner_id",session.user.id).order("created_at",{ascending:false});
+    var r=await sb.rpc("roamsonio_recover_trip_candidates");
     if(r.error)throw r.error;
-    return (r.data||[]).filter(function(row){return row&&row.trip_snapshot&&typeof row.trip_snapshot==="object"}).map(function(row){
+    var rows=r.data;
+    if(typeof rows==="string"){
+      try{rows=JSON.parse(rows)}catch(e){rows=[]}
+    }
+    if(!Array.isArray(rows))rows=[];
+    return rows.filter(function(row){
+      return row&&row.trip_snapshot&&typeof row.trip_snapshot==="object";
+    }).map(function(row){
       var t=JSON.parse(JSON.stringify(row.trip_snapshot));
       t.id=t.id||row.id;
       t.supabaseId=row.id;
@@ -113,7 +120,10 @@ async function loadAccountTripCopies(){
       t.recoveredFromAccountAt=new Date().toISOString();
       return t;
     });
-  }catch(e){console.warn("Account trip recovery read failed:",e);return []}
+  }catch(e){
+    console.warn("Account trip recovery RPC failed:",e);
+    throw e;
+  }
 }
 
 async function backfillMissingSnapshots(){
