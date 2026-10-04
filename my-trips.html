@@ -283,22 +283,6 @@ safetyBackup();
 async function render(){
   var el=document.getElementById("tripList"),state=findProtectedTrips(),a=state.trips;
 
-  // Normalize duplicate browser wrappers before anything is rendered.
-  // Keep the richest object for each known saved journey.
-  (function(){
-    var unique=[],seen={};
-    for(var di=0;di<a.length;di++){
-      var dt=a[di]||{},dk=tripIdentity(dt),prev=seen[dk];
-      if(prev===undefined){
-        seen[dk]=unique.length;
-        unique.push(dt);
-      }else if(JSON.stringify(dt||{}).length>JSON.stringify(unique[prev]||{}).length){
-        unique[prev]=dt;
-      }
-    }
-    a=unique;
-  })();
-
   el.innerHTML="";
   var dg=diagnostic(),dEl=document.getElementById("tripDiagnostic");
   dEl.style.display="block";
