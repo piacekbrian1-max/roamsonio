@@ -407,6 +407,14 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Displays each Knowledge Base article number, version and last-updated date in Master Account. Documentation presentation only; no trip or persistence logic changed. Awaiting user validation."
+    },
+    {
+      "sha": "ed113cded311dcf150d39a5ce262f047a949cec6",
+      "date": "2026-10-04",
+      "title": "Use uppercase KB article numbers",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Changes Knowledge Base article identifiers to uppercase KB0001-style formatting. Documentation metadata only; no trip, user, family, routing or persistence logic changed. Awaiting user validation."
     }
   ]
 }
