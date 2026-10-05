@@ -447,6 +447,14 @@
       "status": "SUCCESS",
       "rollbackEligible": true,
       "notes": "User confirmed the Master Account Editorial Library now loads and displays the 26 documented entries. Approved as a rollback target. This change only initializes the editorial library renderer; no trip, user, family, persistence, imagery, routing, or existing data was changed."
+    },
+    {
+      "sha": "5b3d0030eea7e85cd7e5e50eb0263872c4052a0e",
+      "date": "2026-10-04",
+      "title": "Add editorial photography candidate previews",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds a controlled candidate-image gallery to Master Account Editorial Photography using Wikimedia Commons search. Selecting a candidate only fills the editor; it is not approved or saved automatically. No existing trips or saved data changed. Awaiting user testing."
     }
   ]
 }
