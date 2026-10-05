@@ -785,7 +785,6 @@ neworleans:"https://upload.wikimedia.org/wikipedia/commons/4/45/New_Orleans_skyl
 neworleans2:"https://upload.wikimedia.org/wikipedia/commons/6/6a/Jackson_Square%2C_French_Quarter.jpg",
 neworleans3:"https://upload.wikimedia.org/wikipedia/commons/a/a6/New_Orleans%2C_LA_-_French_Quarter_%28Vieux_Carre%29_-_Jackson_Square_-_Cabildo_and_St_Louis_Cathedral.jpg",
 atlanta:"https://commons.wikimedia.org/wiki/Special:FilePath/Atlanta%20Skyline%20from%20Piedmont%20Park%20-%20October%202024.png?width=1800",
-gatlinburg:"https://commons.wikimedia.org/wiki/Special:FilePath/Downtown%20Gatlinburg%2C%20Tennessee.JPG?width=1800",
 atlanta2:"https://commons.wikimedia.org/wiki/Special:FilePath/Ponce%20City%20Market%20from%20Historic%20Fourth%20Ward%20Park.jpg?width=1600",
 atlanta3:"https://commons.wikimedia.org/wiki/Special:FilePath/To%20the%20Beltline.jpg?width=1600"};
 
@@ -1093,8 +1092,7 @@ if(photos.length){
   var p=photos[i%photos.length],u=typeof p==="string"?p:p&&p.url;
   if(u)return u;
 }
-if(k.indexOf("new orleans")<0&&tn.indexOf("new orleans")>=0)k="new orleans";if(k.indexOf("atlanta")<0&&tn.indexOf("atlanta")>=0)k="atlanta";if(k.indexOf("gatlinburg")<0&&tn.indexOf("gatlinburg")>=0)k="gatlinburg";if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return i%3===0?imgs.neworleans:i%3===1?imgs.neworleans2:imgs.neworleans3;
-if(k.indexOf("gatlinburg")>=0)return imgs.gatlinburg;
+if(k.indexOf("new orleans")<0&&tn.indexOf("new orleans")>=0)k="new orleans";if(k.indexOf("atlanta")<0&&tn.indexOf("atlanta")>=0)k="atlanta";if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return i%3===0?imgs.neworleans:i%3===1?imgs.neworleans2:imgs.neworleans3;
 if(k.indexOf("prague")>=0)return imgs.prague;if(k.indexOf("trnava")>=0)return imgs.trnava;if(k.indexOf("pilsen")>=0)return imgs.pilsen;if(k.indexOf("hlub")>=0)return imgs.hluboka;if(k.indexOf("vienna")>=0)return imgs.vienna;if(k.indexOf("atlanta")>=0)return imgs.atlanta;return imgs.prague}
 function baseLabel(){return (trip.homeBase||document.getElementById("homeBase").value||trip.stay||"").trim()||"Downtown / city center"}
 function interestScore(area,slot){
