@@ -511,6 +511,13 @@
       "status": "SUCCESS",
       "rollbackEligible": true,
       "notes": "User verified the existing Amalfi Coast entry can be saved as an update; the live database now shows status=published. Approved as a rollback target; no existing trips, saved data, identity, routing or photography records were changed."
+    },
+    {
+      "date": "2026-10-05",
+      "title": "Repair editorial destination read RPC",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Supabase verification showed the protected Editorial Library destination read RPC was absent, causing Master Account to fall back to the documented JSON catalog and display stale draft statuses. This repair restores the Master Admin + MFA protected read function. No existing trips, users, families, saved journeys or photography records are modified. Awaiting SQL application and live read validation."
     }
   ]
 }
