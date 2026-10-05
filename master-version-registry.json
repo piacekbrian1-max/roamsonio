@@ -282,6 +282,13 @@
       "status": "SUCCESS",
       "rollbackEligible": true,
       "notes": "User tested Atlanta on iPad and confirmed the banner stays frozen at the top while scrolling. Approved as a rollback target. Presentation-only change; no trip data, IDs, persistence, imagery or other workspace logic changed."
+    },
+    {
+      "sha": "08145ecbda43319294bf843f0a6e45a421ea336f",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "title": "Refresh deployed workspace banner version",
+      "notes": "Presentation-only deployment refresh for trip-workspace.html so the current RoamSonio global banner is served; no trip data, identity, persistence, imagery, or itinerary logic changed."
     }
   ]
 }
