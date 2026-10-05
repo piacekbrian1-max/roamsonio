@@ -1,0 +1,342 @@
+{
+  "schemaVersion": 1,
+  "title": "RoamSonio Editorial Library",
+  "description": "Curated, buildable travel inspiration for the Home page and trip builder.",
+  "rules": {
+    "weeklyEdition": "Changes Sunday; approved content remains stable during the week.",
+    "photoPolicy": "Approved destination photography is stored per entry; no random image rotation.",
+    "buildPolicy": "Buildable entries hand off to the existing trip builder without modifying saved trips.",
+    "categories": [
+      "City",
+      "Region",
+      "Ski & Snowboard",
+      "Outdoor",
+      "Coast & Island",
+      "Road Trip",
+      "Seasonal Experience"
+    ]
+  },
+  "entries": [
+    {
+      "id": "lisbon",
+      "name": "Lisbon",
+      "type": "City",
+      "category": "Coast & Culture",
+      "season": [
+        "Spring",
+        "Summer",
+        "Fall",
+        "Winter"
+      ],
+      "buildable": true,
+      "buildDestination": "Lisbon, Portugal",
+      "tagline": "Golden streets, Atlantic light & late-night dinners.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "prague",
+      "name": "Prague",
+      "type": "City",
+      "category": "Culture",
+      "season": [
+        "Spring",
+        "Summer",
+        "Fall",
+        "Winter"
+      ],
+      "buildable": true,
+      "buildDestination": "Prague, Czechia",
+      "tagline": "Storybook streets, grand squares & riverside evenings.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "kyoto",
+      "name": "Kyoto",
+      "type": "City",
+      "category": "Culture & Nature",
+      "season": [
+        "Spring",
+        "Fall",
+        "Winter"
+      ],
+      "buildable": true,
+      "buildDestination": "Kyoto, Japan",
+      "tagline": "Temples, gardens, quiet lanes & timeless beauty.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "new-orleans",
+      "name": "New Orleans",
+      "type": "City",
+      "category": "Food & Music",
+      "season": [
+        "Winter",
+        "Spring",
+        "Fall"
+      ],
+      "buildable": true,
+      "buildDestination": "New Orleans, Louisiana, USA",
+      "tagline": "Music, architecture, food & nights worth remembering.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "vienna",
+      "name": "Vienna",
+      "type": "City",
+      "category": "Culture",
+      "season": [
+        "Spring",
+        "Summer",
+        "Fall",
+        "Winter"
+      ],
+      "buildable": true,
+      "buildDestination": "Vienna, Austria",
+      "tagline": "Imperial streets, cafés, music & elegant evenings.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "the-alps",
+      "name": "The Alps",
+      "type": "Region",
+      "category": "Mountain Adventure",
+      "season": [
+        "Winter",
+        "Spring",
+        "Summer",
+        "Fall"
+      ],
+      "buildable": true,
+      "buildDestination": "The Alps",
+      "tagline": "Villages, peaks, scenic railways & mountain escapes.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "colorado-ski-country",
+      "name": "Colorado Ski Country",
+      "type": "Ski & Snowboard",
+      "category": "Mountain Adventure",
+      "season": [
+        "Winter",
+        "Spring"
+      ],
+      "buildable": true,
+      "buildDestination": "Colorado Ski Country, USA",
+      "tagline": "Legendary slopes, mountain towns & big Rocky Mountain views.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "utah-ski-country",
+      "name": "Utah Ski Country",
+      "type": "Ski & Snowboard",
+      "category": "Mountain Adventure",
+      "season": [
+        "Winter",
+        "Spring"
+      ],
+      "buildable": true,
+      "buildDestination": "Utah Ski Country, USA",
+      "tagline": "Deep snow, dramatic peaks & world-class mountain terrain.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "austrian-alps",
+      "name": "Austrian Alps",
+      "type": "Ski & Snowboard",
+      "category": "Mountain Adventure",
+      "season": [
+        "Winter",
+        "Spring",
+        "Summer",
+        "Fall"
+      ],
+      "buildable": true,
+      "buildDestination": "Austrian Alps",
+      "tagline": "Alpine villages, skiing, snowboarding & classic mountain culture.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "dolomites",
+      "name": "Dolomites",
+      "type": "Region",
+      "category": "Mountain Adventure",
+      "season": [
+        "Winter",
+        "Spring",
+        "Summer",
+        "Fall"
+      ],
+      "buildable": true,
+      "buildDestination": "Dolomites, Italy",
+      "tagline": "Jagged peaks, mountain huts, skiing & unforgettable drives.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "swiss-alps",
+      "name": "Swiss Alps",
+      "type": "Region",
+      "category": "Mountain Adventure",
+      "season": [
+        "Winter",
+        "Spring",
+        "Summer",
+        "Fall"
+      ],
+      "buildable": true,
+      "buildDestination": "Swiss Alps",
+      "tagline": "Glacier views, alpine railways, villages & mountain trails.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "canadian-rockies",
+      "name": "Canadian Rockies",
+      "type": "Region",
+      "category": "Outdoor",
+      "season": [
+        "Summer",
+        "Fall",
+        "Winter"
+      ],
+      "buildable": true,
+      "buildDestination": "Canadian Rockies, Canada",
+      "tagline": "Turquoise lakes, towering peaks & extraordinary wilderness.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "great-smoky-mountains",
+      "name": "Great Smoky Mountains",
+      "type": "Outdoor",
+      "category": "Mountain Adventure",
+      "season": [
+        "Spring",
+        "Summer",
+        "Fall"
+      ],
+      "buildable": true,
+      "buildDestination": "Great Smoky Mountains, USA",
+      "tagline": "Mountain roads, waterfalls, wildlife & legendary fall color.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "amalfi-coast",
+      "name": "Amalfi Coast",
+      "type": "Region",
+      "category": "Coast & Culture",
+      "season": [
+        "Spring",
+        "Summer",
+        "Fall"
+      ],
+      "buildable": true,
+      "buildDestination": "Amalfi Coast, Italy",
+      "tagline": "Clifftop villages, blue water & long Mediterranean lunches.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "santorini",
+      "name": "Santorini",
+      "type": "Coast & Island",
+      "category": "Coast & Culture",
+      "season": [
+        "Spring",
+        "Summer",
+        "Fall"
+      ],
+      "buildable": true,
+      "buildDestination": "Santorini, Greece",
+      "tagline": "Whitewashed villages, volcanic cliffs & unforgettable sunsets.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "scottish-highlands",
+      "name": "Scottish Highlands",
+      "type": "Region",
+      "category": "Outdoor",
+      "season": [
+        "Spring",
+        "Summer",
+        "Fall"
+      ],
+      "buildable": true,
+      "buildDestination": "Scottish Highlands, UK",
+      "tagline": "Lochs, castles, winding roads & wild landscapes.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "pacific-coast-highway",
+      "name": "Pacific Coast Highway",
+      "type": "Road Trip",
+      "category": "Coast & Road Trip",
+      "season": [
+        "Spring",
+        "Summer",
+        "Fall"
+      ],
+      "buildable": true,
+      "buildDestination": "Pacific Coast Highway, USA",
+      "tagline": "Ocean cliffs, coastal towns & one unforgettable road.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "european-christmas-markets",
+      "name": "European Christmas Markets",
+      "type": "Seasonal Experience",
+      "category": "Winter Culture",
+      "season": [
+        "Winter"
+      ],
+      "buildable": true,
+      "buildDestination": "Central Europe Christmas Markets",
+      "tagline": "Old-world squares, lights, markets & winter evenings.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "oktoberfest",
+      "name": "Oktoberfest",
+      "type": "Seasonal Experience",
+      "category": "Food & Culture",
+      "season": [
+        "Fall"
+      ],
+      "buildable": true,
+      "buildDestination": "Munich, Germany",
+      "tagline": "Bavarian traditions, music, food & one legendary celebration.",
+      "status": "draft",
+      "photos": []
+    },
+    {
+      "id": "northern-lights",
+      "name": "Northern Lights",
+      "type": "Seasonal Experience",
+      "category": "Outdoor",
+      "season": [
+        "Fall",
+        "Winter",
+        "Spring"
+      ],
+      "buildable": true,
+      "buildDestination": "Northern Europe",
+      "tagline": "Dark skies, winter landscapes & nature's greatest light show.",
+      "status": "draft",
+      "photos": []
+    }
+  ]
+}
