@@ -480,7 +480,7 @@ body.ipad-trip-freeze .rsTop{
 
 <header class="hero" id="home">
 <div class="coverGrid">
-<div class="coverMain"><img id="heroMain" src="images/prague-christmas.jpg" alt=""><div class="heroPhotoCredit" id="heroPhotoCredit">Photo · destination editorial image</div><div class="coverCaption"><div class="eyebrow" id="heroEyebrow">YOUR TRIP · SMARTLY PLANNED</div><h1 id="heroTitle">Trip</h1><p id="heroText">A magazine-style trip workspace that plans around your home base, interests, pace, dates and travel group.</p><div class="heroActions"><a class="btn primary" href="#itinerary">Explore the journey</a><a class="btn" id="routeMap" target="_blank">Open route map</a><a class="btn" id="shareTripButton" href="#">Share trip</a><button type="button" class="btn" id="recoverTripButton">Recover full trip</button><button type="button" class="btn" id="editTripButton">Edit trip</button><a class="btn" href="index.html">Home</a></div></div></div>
+<div class="coverMain"><img id="heroMain" src="images/prague-christmas.jpg" alt=""><div class="heroPhotoCredit" id="heroPhotoCredit">Photo · destination editorial image</div><div class="coverCaption"><div class="eyebrow" id="heroEyebrow">YOUR TRIP · SMARTLY PLANNED</div><h1 id="heroTitle">Trip</h1><p id="heroText">A magazine-style trip workspace that plans around your home base, interests, pace, dates and travel group.</p><div class="heroActions"><a class="btn primary" href="#itinerary">Explore the journey</a><a class="btn" id="routeMap" target="_blank">Open route map</a><a class="btn" id="shareTripButton" href="#">Share trip</a><button type="button" class="btn" id="editTripButton">Edit trip</button><a class="btn" href="index.html">Home</a></div></div></div>
 <div class="coverSide"><div><img id="heroSide1" src="images/prague-christmas.jpg" alt=""><div class="coverMini" id="side1Label">Destination</div></div><div><img id="heroSide2" src="images/prague-christmas.jpg" alt=""><div class="coverMini" id="side2Label">Local character</div></div></div>
 </div>
 <div class="weatherLead" id="weatherLead"><div class="weatherLeadIntro"><b>Trip weather</b><span>Current conditions · stay averages</span></div></div><div id="editTripShell" style="display:none;max-width:1500px;width:94%;margin:18px auto 0;background:#fffdf9;border:1px solid #D9E0E7;border-radius:12px;padding:22px;box-shadow:0 18px 50px #0B2D4A14"><div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap"><div><div class="kicker">TRIP EDITOR</div><h2 style="font:600 32px/1.1 &quot;Playfair Display&quot;,serif;margin:6px 0">Edit this trip</h2><p style="margin:0;color:#4F6B8A;font-size:12px;line-height:1.5">Edit these fields and save the changes to the existing trip. Suggestions and itinerary regeneration will be handled separately in the next step.</p></div><button type="button" class="btn" id="closeEditTripButton" style="background:#0B2D4A;color:white;border-color:#0B2D4A">Close</button></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:20px"><label style="font-size:12px;color:#4F6B8A">Trip name<input id="editTripName" type="text" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label><label style="font-size:12px;color:#4F6B8A">Start date<input id="editTripStart" type="date" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label><label style="font-size:12px;color:#4F6B8A">End date<input id="editTripEnd" type="date" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label><label style="grid-column:1/-1;font-size:12px;color:#4F6B8A">Destinations <span style="color:#8A6A35">(comma separated)</span><input id="editTripDestinations" type="text" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label><div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px"><button type="button" class="btn" id="cancelEditTripButton">Cancel</button><button type="button" class="btn primary" id="saveEditTripButton">Save changes</button></div></div>
@@ -2434,70 +2434,7 @@ function renderResources(){var e=document.getElementById("resourceGrid"),d=(trip
 if(slug(d).indexOf("new orleans")>=0){rs[0]=["New Orleans & Company","https://www.neworleans.com/"];rs[2]=["January / event guide","https://www.neworleans.com/plan/january-in-new-orleans/"];rs[3]=["Eater New Orleans","https://nola.eater.com/"];rs.push(["Mardi Gras parade schedule","https://www.neworleans.com/events/holidays-seasonal/mardi-gras/mardi-gras-parade-schedule/"])}
 e.innerHTML="";for(var i=0;i<rs.length;i++){var a=document.createElement("a");a.className="link";a.target="_blank";a.href=rs[i][1];a.innerHTML="<b>"+esc(rs[i][0])+"</b><small>Open resource</small>";e.appendChild(a)}}
 
-ensureRoamsonioFramework();ensureOriginalPlan();renderHeader();renderRoute();renderDestinations();renderPlan();renderGuide();renderEvents();renderWeather();renderCams();renderTravel();renderBudget();renderMemories();renderResources();initEditTripShell();var shareTripButton=document.getElementById("shareTripButton");if(shareTripButton)shareTripButton.href="share-trip.html?id="+encodeURIComponent(trip.id);var recoverButton=document.getElementById("recoverTripButton");if(recoverButton){recoverButton.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(typeof window.recoverFullTrip==="function"){window.recoverFullTrip()}else{alert("Recovery is still loading. Please wait a moment and try again.")}})}
+ensureRoamsonioFramework();ensureOriginalPlan();renderHeader();renderRoute();renderDestinations();renderPlan();renderGuide();renderEvents();renderWeather();renderCams();renderTravel();renderBudget();renderMemories();renderResources();initEditTripShell();var shareTripButton=document.getElementById("shareTripButton");if(shareTripButton)shareTripButton.href="share-trip.html?id="+encodeURIComponent(trip.id);
 })();
 </script>
-<script>
-(function(){
-  function attachRecoveryRescue(){
-    var b=document.getElementById("recoverTripButton");
-    if(!b||b.dataset.rescueBound==="1")return;
-    b.dataset.rescueBound="1";
-    b.addEventListener("click",async function(e){
-      e.preventDefault();e.stopImmediatePropagation();
-      if(!confirm("Recover the complete saved trip from your RoamSonio account? Your current browser copy will be backed up first."))return;
-      b.disabled=true;b.textContent="Recovering…";
-      try{
-        var key="big-thanksgiving-trips-v1",all=[];
-        try{all=JSON.parse(localStorage.getItem(key)||"[]")}catch(x){}
-        var params=new URLSearchParams(location.search),id=params.get("id")||sessionStorage.getItem("openTripId");
-        var local=Array.isArray(all)?all.find(function(t){return t.id===id}):null;
-        if(!local)throw new Error("The trip is not available in this browser copy.");
-        var sb=window.supabase&&window.supabase.createClient?window.supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy"):null;
-        if(!sb)throw new Error("The account recovery service did not load.");
-        var sr=await sb.auth.getSession(),sess=sr.data&&sr.data.session;
-        if(!sess||!sess.user)throw new Error("Your RoamSonio account session is not active.");
-        var tripId=local.supabaseId||local.id;
-        var rr=await sb.rpc("roamsonio_recover_trip",{p_trip_id:tripId});
-        var p=rr.data;
-        if(rr.error){
-          var candidatesResult=await sb.rpc("roamsonio_recover_trip_candidates",{});
-          if(candidatesResult.error)throw rr.error;
-          var candidates=candidatesResult.data;
-          if(typeof candidates==="string")candidates=JSON.parse(candidates);
-          if(!Array.isArray(candidates)||!candidates.length)throw new Error("No saved trips with complete snapshots were found for this account.");
-          function candidateScore(c){
-            var snap=c&&c.trip_snapshot||{},name=String(c.name||snap.name||"").toLowerCase();
-            var text=JSON.stringify(snap).toLowerCase();
-            var score=0;
-            if(name.indexOf("european thanksgiving")>=0)score+=100;
-            if(name.indexOf("thanksgiving")>=0)score+=60;
-            if(text.indexOf("thanksgiving")>=0)score+=40;
-            if(text.indexOf("trnava")>=0)score+=20;
-            if(text.indexOf("prague")>=0)score+=15;
-            if(text.indexOf("pilsen")>=0)score+=15;
-            return score;
-          }
-          candidates.sort(function(a,b){return candidateScore(b)-candidateScore(a)});
-          p=candidates[0];
-        } else {
-          if(typeof p==="string")p=JSON.parse(p);
-        }
-        if(!p||!p.trip_snapshot)throw new Error("No complete saved snapshot was returned.");
-        var recovered=JSON.parse(JSON.stringify(p.trip_snapshot));
-        recovered.id=local.id;recovered.supabaseId=p.id||tripId;
-        if(!recovered.name&&p.name)recovered.name=p.name;
-        localStorage.setItem(key,JSON.stringify(all.map(function(t){return t.id===local.id?recovered:t})));
-        sessionStorage.setItem("openTripId",recovered.id);
-        alert("Complete trip recovered successfully.");
-        location.reload();
-      }catch(err){
-        console.error("Recovery rescue:",err);
-        alert("Recovery reached the account service, but could not complete.\\n\\n"+(err&&err.message?err.message:String(err)));
-        b.disabled=false;b.textContent="Recover full trip";
-      }
-    },true);
-  }
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",attachRecoveryRescue);else attachRecoveryRescue();
-})();
-</script></body></html>
+</body></html>
