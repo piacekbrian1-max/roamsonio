@@ -132,7 +132,8 @@ pilsen:"images/pilsen-christmas.jpg",
 hluboka:"images/hluboka-winter.jpg",
 vienna:"images/prague-christmas.jpg",
 neworleans:"https://res.cloudinary.com/simpleview/image/upload/v1503612209/clients/neworleans/NOTMC_46619_dfd8fba4-531f-4e0b-81dc-40d770236b88.jpg",
-atlanta:"https://commons.wikimedia.org/wiki/Special:FilePath/Atlanta%20Skyline%20from%20Piedmont%20Park%20-%20October%202024.png?width=1800"
+atlanta:"https://commons.wikimedia.org/wiki/Special:FilePath/Atlanta%20Skyline%20from%20Piedmont%20Park%20-%20October%202024.png?width=1800",
+gatlinburg:"https://commons.wikimedia.org/wiki/Special:FilePath/Downtown%20Gatlinburg%2C%20Tennessee.JPG?width=1800"
 };
 function cleanSavedTrips(a){
   if(!Array.isArray(a))return [];
@@ -257,7 +258,7 @@ function tripHref(t){
   return "trip-workspace.html?id="+encodeURIComponent(id);
 }
 function photo(t){
-var ds=(t.destinations||[]);for(var i=0;i<ds.length;i++){var k=ds[i].toLowerCase();if(k.indexOf("trnava")>=0)return images.trnava;if(k.indexOf("prague")>=0)return images.prague;if(k.indexOf("pilsen")>=0)return images.pilsen;if(k.indexOf("hlub")>=0)return images.hluboka;if(k.indexOf("vienna")>=0)return images.vienna;if(k.indexOf("atlanta")>=0)return images.atlanta;if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return images.neworleans}return images.prague
+var ds=(t.destinations||[]);for(var i=0;i<ds.length;i++){var k=ds[i].toLowerCase();if(k.indexOf("trnava")>=0)return images.trnava;if(k.indexOf("prague")>=0)return images.prague;if(k.indexOf("pilsen")>=0)return images.pilsen;if(k.indexOf("hlub")>=0)return images.hluboka;if(k.indexOf("vienna")>=0)return images.vienna;if(k.indexOf("atlanta")>=0)return images.atlanta;if(k.indexOf("gatlinburg")>=0||k.indexOf("smoky mountains")>=0)return images.gatlinburg;if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return images.neworleans}return images.prague
 }
 function openTrip(id){
   var a=[];try{a=JSON.parse(localStorage.getItem("big-thanksgiving-trips-v1")||"[]")}catch(e){}
@@ -405,7 +406,7 @@ grid.innerHTML=all.filter(function(x){return x.state!=="Upcoming"}).sort(sortByD
 function load(){return loadPersistentTrips()}
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 function photo(t){
-var ds=(t.destinations||[]);for(var i=0;i<ds.length;i++){var k=ds[i].toLowerCase();if(k.indexOf("trnava")>=0)return images.trnava;if(k.indexOf("prague")>=0)return images.prague;if(k.indexOf("pilsen")>=0)return images.pilsen;if(k.indexOf("hlub")>=0)return images.hluboka;if(k.indexOf("vienna")>=0)return images.vienna;if(k.indexOf("atlanta")>=0)return images.atlanta;if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return images.neworleans}return images.prague}
+var ds=(t.destinations||[]);for(var i=0;i<ds.length;i++){var k=ds[i].toLowerCase();if(k.indexOf("trnava")>=0)return images.trnava;if(k.indexOf("prague")>=0)return images.prague;if(k.indexOf("pilsen")>=0)return images.pilsen;if(k.indexOf("hlub")>=0)return images.hluboka;if(k.indexOf("vienna")>=0)return images.vienna;if(k.indexOf("atlanta")>=0)return images.atlanta;if(k.indexOf("gatlinburg")>=0||k.indexOf("smoky mountains")>=0)return images.gatlinburg;if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return images.neworleans}return images.prague}
 function guideKey(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}
 function collectTrip(t){
   var out=[],rs=t&&t.guideReviews&&typeof t.guideReviews==="object"?t.guideReviews:{};
