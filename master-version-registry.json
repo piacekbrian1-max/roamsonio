@@ -391,6 +391,22 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Displays stable KB0001-style article numbers in the Master Account Knowledge Base list and article header. Presentation/documentation only; no trip or persistence logic changed. Awaiting user validation."
+    },
+    {
+      "sha": "d37da8f754a7b29050982a321d6434f946b92534",
+      "date": "2026-10-04",
+      "title": "Add knowledge base article version metadata",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds v1 and last-updated metadata to each Master Knowledge Base article so future revisions can be tracked explicitly. Documentation metadata only; no trip, user, family, routing or persistence logic changed."
+    },
+    {
+      "sha": "3d179d8ccc5101a97d5034a70684b5c110a24810",
+      "date": "2026-10-04",
+      "title": "Show knowledge base article versions",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Displays each Knowledge Base article number, version and last-updated date in Master Account. Documentation presentation only; no trip or persistence logic changed. Awaiting user validation."
     }
   ]
 }
