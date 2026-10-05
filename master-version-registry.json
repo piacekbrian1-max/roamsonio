@@ -351,6 +351,22 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Adds an Editorial Library section to Master Account with catalog review, destination editing and publish controls. Falls back to the documented JSON catalog for preview if the protected Supabase migration is not yet applied. No existing trip UI or trip data changed."
+    },
+    {
+      "sha": "9fc6c17e2eec5e12f78e8296ab7682f0a1692770",
+      "date": "2026-10-04",
+      "title": "Add Master Account knowledge base foundation",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds documented operational guidance for Editorial Library, photography, weekly inspiration, build-from-inspiration, versioning and pilot readiness. Documentation only; no trip data or user data changed."
+    },
+    {
+      "sha": "c6b8d70eded22e0fdcbef95362ac5bf33e724d7a",
+      "date": "2026-10-04",
+      "title": "Add Master Account knowledge base viewer",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds a Master Account knowledge base viewer backed by master-knowledge-base.json. Documentation/UI only; no existing trip, user, family or persistence logic changed."
     }
   ]
 }
