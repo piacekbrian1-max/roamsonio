@@ -415,6 +415,30 @@
       "status": "SUCCESS",
       "rollbackEligible": true,
       "notes": "Changes Knowledge Base article identifiers to uppercase KB0001-style formatting. Documentation metadata only; no trip, user, family, routing or persistence logic changed. User confirmed the Knowledge Base changes are working and approved as a rollback target."
+    },
+    {
+      "sha": "a116e95c3f3fc8706cc34a1ef79678c4045b3d01",
+      "date": "2026-10-04",
+      "title": "Add protected editorial photography listing",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds a protected Master Admin + AAL2 RPC to list editorial photos for photography management. New editorial function only; existing trips, users, families and trip persistence are untouched. Supabase migration must be applied before live photo records can be listed."
+    },
+    {
+      "sha": "8ee57aaf80e5623b8e31fba1004c597476230c40",
+      "date": "2026-10-04",
+      "title": "Add Master Account editorial photography management",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds controlled photography management to the selected Editorial Library entry, including hero/secondary/mobile roles, URL, alt text, credit, source URL, sort order, approval, preview, save and delete. Protected photo RPCs are used; no existing trip data or trip imagery is changed. Awaiting user validation."
+    },
+    {
+      "sha": "bf3b0db64dc6ab4d90b60e46554543710797eede",
+      "date": "2026-10-04",
+      "title": "Style editorial photography management panel",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds presentation styling for the Master Account editorial photography panel. No trip, user, family, routing or persistence logic changed. Awaiting user validation."
     }
   ]
 }
