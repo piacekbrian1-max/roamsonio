@@ -503,6 +503,14 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Updates the Home weekly inspiration cards to prefer approved photography from published Editorial Library destinations, while preserving the existing weekly rotation and existing image fallback. Draft editorial destinations remain private. No existing trips, saved data, identity, routing or persistence logic changed. Awaiting user testing."
+    },
+    {
+      "sha": "67cfa55fc893c845160d891b20b38c0d090cf37e",
+      "date": "2026-10-05",
+      "title": "Fix existing editorial entry save mode",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Fixes Master Account Editorial Library save mode so an existing documented destination is treated as an update even if the selection state is lost before Save Entry. New permanent IDs remain available for new entries. No existing trips, saved data, identity, routing or photography records are changed. Awaiting user test."
     }
   ]
 }
