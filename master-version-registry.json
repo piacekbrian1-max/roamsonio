@@ -471,6 +471,14 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Cleans Wikimedia photographer/artist metadata before placing it in the editorial photo Credit field, so HTML markup is shown as readable credit text instead of raw tags. No existing trips, saved data, identity, routing or trip imagery changed. Awaiting user testing."
+    },
+    {
+      "sha": "7579bcead29a31fd79ff1a03c2f400684692a06b",
+      "date": "2026-10-05",
+      "title": "Refresh editorial photo RPC schema cache",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds a Supabase migration that refreshes the PostgREST schema cache after the protected editorial photo RPC was created. This addresses the live Save Photo error without changing trip, user, family, or editorial data. Awaiting user application of the migration and save test."
     }
   ]
 }
