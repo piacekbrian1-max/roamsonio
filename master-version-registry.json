@@ -255,25 +255,25 @@
       "notes": "Superseded: image was hardcoded to Gatlinburg instead of using the trip's saved destination imagery."
     },
     {
-      "commit": "11d4fa9029401b1e5370657d13ffa50c8efa3dbf",
       "label": "Use saved destination photos for trip cards",
       "status": "SUCCESS",
       "rollbackEligible": true,
-      "notes": "User confirmed the saved destination imagery works on the main page. Trip cards use destination data rather than a Gatlinburg-specific hardcoded image."
+      "notes": "User confirmed the saved destination imagery works on the main page. Trip cards use destination data rather than a Gatlinburg-specific hardcoded image.",
+      "sha": "11d4fa9029401b1e5370657d13ffa50c8efa3dbf"
     },
     {
-      "commit": "b58ed7e946a81dbdcfa2fcab154208ce10cd4e87",
       "label": "Remove hardcoded Gatlinburg image mapping",
       "status": "SUCCESS",
       "rollbackEligible": true,
-      "notes": "User confirmed the data-driven trip workspace image behavior works. Gatlinburg is no longer handled by a destination-specific hardcoded mapping."
+      "notes": "User confirmed the data-driven trip workspace image behavior works. Gatlinburg is no longer handled by a destination-specific hardcoded mapping.",
+      "sha": "b58ed7e946a81dbdcfa2fcab154208ce10cd4e87"
     },
     {
-      "commit": "50d4b361a42b5ec63c7ae658ab9051d9c7ac59d3",
       "label": "Restore home inspiration rendering",
       "status": "SUCCESS",
       "rollbackEligible": true,
-      "notes": "User confirmed the Home page inspiration cards are restored and working. The seasonal inspiration renderer is functioning again; no saved trip data or destination imagery logic was changed."
+      "notes": "User confirmed the Home page inspiration cards are restored and working. The seasonal inspiration renderer is functioning again; no saved trip data or destination imagery logic was changed.",
+      "sha": "50d4b361a42b5ec63c7ae658ab9051d9c7ac59d3"
     }
   ]
 }
