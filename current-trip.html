@@ -943,7 +943,8 @@ document.addEventListener("DOMContentLoaded",function(){TripPlanner.init()});
     function hide(){shell.style.display="none";open.textContent="Edit trip";load();}
     function show(){load();shell.style.display="block";shell.scrollIntoView({behavior:"smooth",block:"start"});open.textContent="Editing trip";}
     function saveEdits(){
-      var t={name:String(name.value||"").trim(),start:String(start.value||"").trim(),end:String(end.value||"").trim(),destinations:String(destinations.value||"").split(/[,\n]/).map(function(x){return x.trim();}).filter(Boolean)};
+      var existing=read();
+      var t={name:String(name.value||"").trim(),start:String(start.value||"").trim(),end:String(end.value||"").trim(),destinations:String(destinations.value||"").split(/[,\n]/).map(function(x){return x.trim();}).filter(Boolean),id:TRIP_ID,supabaseId:existing.supabaseId||TRIP_ID,revision:(Number(existing.revision)||0)+1,updatedAt:new Date().toISOString()};
       if(!t.name||!t.start||!t.end||!t.destinations.length){alert("Trip name, dates and at least one destination are required.");return;}
       if(t.end<t.start){alert("End date cannot be before start date.");return;}
       if(!write(t)){alert("This browser could not save the trip changes.");return;}
