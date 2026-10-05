@@ -429,9 +429,8 @@ button,a{max-width:100%}
 .tripCompass{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-top:22px}.compassCard{border:1px solid var(--line);background:var(--paper);border-radius:16px;padding:24px;box-shadow:var(--shadow)}.compassCard.primaryCompass{background:linear-gradient(135deg,#0B2D4A,#163F60);color:white;border-color:#0B2D4A}.compassEyebrow{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#D4A85A;font-weight:700}.compassCard h3{font:600 28px "Playfair Display",serif;margin:8px 0}.compassCard p{font-size:11px;line-height:1.65;color:var(--muted);margin:0}.primaryCompass p{color:#dbe4e0}.compassSteps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px}.compassStep{padding:11px 10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:9px}.compassStep b{display:block;font:600 16px "Playfair Display",serif;color:#D4A85A}.compassStep span{display:block;font-size:8px;line-height:1.45;color:#d9e2de;margin-top:4px}@media(max-width:800px){.tripCompass{grid-template-columns:1fr}.compassSteps{grid-template-columns:1fr 1fr}}@media(max-width:600px){.compassCard{padding:20px}}
 </style><style id="roamsonio-global-nav">.rsTop{position:sticky!important;top:0!important;z-index:1000!important;width:100%!important;height:68px!important;min-height:68px!important;background:rgba(248,245,237,.98)!important;color:#0B2D4A!important;border-bottom:1px solid #D9E0E7!important;backdrop-filter:blur(14px)!important}.rsNav{width:min(1440px,100%)!important;height:68px!important;margin:0 auto!important;padding:0 28px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:28px!important}.rsBrand{display:flex!important;align-items:center!important;gap:10px!important;flex:0 0 auto!important;min-width:0!important;text-decoration:none!important}.rsMark{width:42px!important;height:42px!important;border:2px solid #D4A85A!important;border-radius:10px!important;display:grid!important;place-items:center!important;background:#F8F5ED!important;flex:0 0 42px!important;overflow:hidden!important}.rsMark svg{width:32px!important;height:32px!important}.rsBrand strong{display:block!important;font:600 22px/1.05 "Playfair Display","Georgia",serif!important;white-space:nowrap!important}.rsRoam{color:#0B2D4A!important}.rsSonio{color:#D4A85A!important}.rsBrand small{display:block!important;margin-top:3px!important;color:#58718A!important;font:700 7px/1.1 "DM Sans",Arial,sans-serif!important;letter-spacing:.18em!important;white-space:nowrap!important}.rsLinks{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:19px!important;min-width:0!important;white-space:nowrap!important}.rsLinks a{color:#0B2D4A!important;text-decoration:none!important;font:700 12px/1.1 "DM Sans",Arial,sans-serif!important}.rsLinks a:hover{color:#A47C2F!important}@media(max-width:1100px){.rsNav{padding:0 20px!important;gap:18px!important}.rsLinks{gap:13px!important}.rsLinks a{font-size:11px!important}}@media(max-width:800px){.rsTop,.rsNav{height:auto!important;min-height:66px!important}.rsNav{padding:9px 16px!important;gap:12px!important}.rsBrand{gap:8px!important}.rsMark{width:38px!important;height:38px!important;flex-basis:38px!important}.rsMark svg{width:29px!important;height:29px!important}.rsBrand strong{font-size:20px!important}.rsBrand small{font-size:6px!important}.rsLinks{gap:9px!important;flex-wrap:wrap!important;row-gap:6px!important}.rsLinks a{font-size:10px!important}}@media(max-width:560px){.rsTop,.rsNav{min-height:62px!important}.rsNav{padding:8px 11px!important;gap:8px!important}.rsMark{width:34px!important;height:34px!important;flex-basis:34px!important}.rsMark svg{width:26px!important;height:26px!important}.rsBrand strong{font-size:18px!important}.rsBrand small{font-size:5px!important}.rsLinks{gap:6px 8px!important}.rsLinks a{font-size:9px!important}}</style><style id="roamsonio-unified-ui">html,body{max-width:100%;overflow-x:hidden}*,*::before,*::after{box-sizing:border-box}body{background:#F8F5ED;color:#0B2D4A}.rsNav{box-sizing:border-box!important;width:100%!important;max-width:1440px!important;margin:0 auto!important}.rsLinks{flex:1 1 auto!important;min-width:0!important}.rsLinks a{white-space:nowrap!important}.btn,button,input,select,textarea{font-family:"DM Sans",Arial,sans-serif}.btn{border-radius:7px}.btn.primary,.primary{background:#D4A85A;color:#0B2D4A;border-color:#D4A85A}@media (min-width:801px) and (max-width:1500px){.rsNav{padding-left:20px!important;padding-right:20px!important;gap:18px!important}.rsLinks{gap:13px!important}.rsLinks a{font-size:11px!important}}@media (max-width:800px){.rsNav{width:100%!important;max-width:none!important}}</style>
 <style id="atlanta-ipad-banner-freeze">
-/* Atlanta iPad banner freeze — presentation only. No trip/workspace logic changes. */
+/* iPad trip banner freeze — presentation only. No trip/workspace logic changes. */
 @media (min-width:601px) and (max-width:1180px){
-  /* Keep the page from becoming a scroll container; this lets Safari anchor fixed UI to the viewport. */
   html{overflow-x:hidden!important;}
   body{padding-top:68px!important;overflow-x:visible!important;}
   .rsTop{
@@ -447,7 +446,33 @@ button,a{max-width:100%}
     -webkit-backdrop-filter:none!important;
   }
 }
+/* iPadOS can report a desktop-sized viewport, especially on iPad Pro/landscape.
+   Detecting the touch iPad separately makes the freeze work regardless of CSS width. */
+html.ipad-trip-freeze{overflow-x:hidden!important;}
+body.ipad-trip-freeze{padding-top:68px!important;overflow-x:visible!important;}
+body.ipad-trip-freeze .rsTop{
+  position:fixed!important;
+  inset:0 0 auto 0!important;
+  width:100%!important;
+  height:68px!important;
+  min-height:68px!important;
+  z-index:9999!important;
+  transform:none!important;
+  -webkit-transform:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
 </style>
+<script>
+(function(){
+  var ua=navigator.userAgent||"";
+  var isIPad=/iPad/i.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  if(isIPad){
+    document.documentElement.classList.add("ipad-trip-freeze");
+    document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("ipad-trip-freeze");});
+  }
+})();
+</script>
 </head>
 <body>
 <header class="rsTop"><div class="rsNav"><a class="rsBrand" href="index.html" aria-label="RoamSonio home"><span class="rsMark"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#F8F5ED"/><circle cx="45" cy="18" r="8" fill="#D4A85A"/><path d="M10 46 25 29l8 9 8-12 13 20H10Z" fill="#0B2D4A"/><path d="M17 20c8-7 18-8 27-4 5 2 8 5 10 9" fill="none" stroke="#D4A85A" stroke-width="3" stroke-linecap="round"/></svg></span><span><strong><span class="rsRoam">Roam</span><span class="rsSonio">Sonio</span></strong><small>DREAM IT. PLAN IT. LIVE IT.</small></span></a><nav class="rsLinks" aria-label="Primary navigation"><a href="index.html">My RoamSonio</a><a href="my-trips.html">My Trips</a><a href="build-trip.html">Build Your Trip</a><a href="travel-desk.html">Travel Desk</a><a href="about.html">About Us</a><a href="account.html" id="rsAccountLink">My Account</a><a href="login.html?return=trip-workspace.html" id="rsAuthLink" class="rsAuthBtn">Sign In</a></nav></div></header>
