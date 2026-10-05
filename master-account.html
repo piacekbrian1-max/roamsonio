@@ -543,6 +543,15 @@ const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","s
   }
   </script>
 
+  <script>
+  // Shared Master Account HTML escaping used by editorial and knowledge-base renderers.
+  function esc(value){
+    return String(value==null?"":value).replace(/[&<>"']/g,function(ch){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch];
+    });
+  }
+  </script>
+
   <script id="editorial-library-admin">
   let editorialEntries=[];
   let selectedEditorialId="";
