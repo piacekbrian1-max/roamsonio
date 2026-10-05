@@ -114,7 +114,7 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.rsNav{padding:8px 11px;min-height:62px;align-items:flex-start}.rsTop{min-height:62px}.rsBrand strong{font-size:18px}.rsMark{width:34px;height:34px;flex-basis:34px}.rsMark svg{width:26px;height:26px}.rsBrand small{font-size:5px}.rsLinks{gap:6px 8px}.rsLinks a{font-size:9px}.wrap{width:calc(100% - 24px);padding-top:24px}.grid{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr 1fr}.row.header{display:none}}
 @media(max-width:430px){.grid{grid-template-columns:1fr}.card{min-height:105px}}
-  .photoManager{margin-top:16px;border-top:1px solid #d9e0e6;padding-top:16px}.photoManagerHead{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.photoManagerHead h4{margin:3px 0 4px;font:600 21px/1.1 'Playfair Display',serif;color:#12324d}.photoManagerHead p{margin:0;color:#61758a;font-size:12px}.photoGrid{display:grid;grid-template-columns:minmax(210px,.8fr) minmax(320px,1.2fr);gap:14px;margin-top:12px}.photoList{display:grid;gap:8px;align-content:start}.photoItem{display:flex;flex-direction:column;align-items:flex-start;text-align:left;border:1px solid #d9e0e6;background:#fff;border-radius:10px;padding:10px 12px;cursor:pointer;color:#173957}.photoItem.active{border-color:#b88a3b;background:#fbf7ef}.photoItem strong{font-size:11px;text-transform:uppercase;letter-spacing:.12em}.photoItem small{margin-top:3px;color:#718399}.photoEditor{border:1px solid #d9e0e6;border-radius:10px;padding:12px;background:#fff}.photoPreview{height:150px;border-radius:8px;background:#f2f4f5;border:1px solid #d9e0e6;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:12px;color:#8290a0;font-size:12px}.photoPreview img{width:100%;height:100%;object-fit:cover;display:block}@media(max-width:800px){.photoGrid{grid-template-columns:1fr}.photoManagerHead{flex-direction:column}}
+  .photoCandidates{margin-top:14px;padding-top:14px;border-top:1px solid #d9e0e6}.photoCandidatesHead{display:flex;justify-content:space-between;align-items:center;gap:10px}.photoCandidatesHead strong{font:600 16px/1.1 'Playfair Display',serif;color:#12324d}.photoCandidatesGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}.photoCandidate{border:1px solid #d9e0e6;border-radius:8px;background:#fff;padding:0;overflow:hidden;cursor:pointer;text-align:left}.photoCandidate img{width:100%;height:110px;object-fit:cover;display:block}.photoCandidate small{display:block;padding:7px;color:#61758a;font-size:8px;line-height:1.3}.photoCandidate:hover{border-color:#b88a3b}@media(max-width:800px){.photoCandidatesGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}.photoManager{margin-top:16px;border-top:1px solid #d9e0e6;padding-top:16px}.photoManagerHead{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.photoManagerHead h4{margin:3px 0 4px;font:600 21px/1.1 'Playfair Display',serif;color:#12324d}.photoManagerHead p{margin:0;color:#61758a;font-size:12px}.photoGrid{display:grid;grid-template-columns:minmax(210px,.8fr) minmax(320px,1.2fr);gap:14px;margin-top:12px}.photoList{display:grid;gap:8px;align-content:start}.photoItem{display:flex;flex-direction:column;align-items:flex-start;text-align:left;border:1px solid #d9e0e6;background:#fff;border-radius:10px;padding:10px 12px;cursor:pointer;color:#173957}.photoItem.active{border-color:#b88a3b;background:#fbf7ef}.photoItem strong{font-size:11px;text-transform:uppercase;letter-spacing:.12em}.photoItem small{margin-top:3px;color:#718399}.photoEditor{border:1px solid #d9e0e6;border-radius:10px;padding:12px;background:#fff}.photoPreview{height:150px;border-radius:8px;background:#f2f4f5;border:1px solid #d9e0e6;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:12px;color:#8290a0;font-size:12px}.photoPreview img{width:100%;height:100%;object-fit:cover;display:block}@media(max-width:800px){.photoGrid{grid-template-columns:1fr}.photoManagerHead{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -205,6 +205,11 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
               <div class="photoList" id="photoList"><div class="row"><span>Select a destination to manage its photography.</span></div></div>
               <div class="photoEditor" id="photoEditor" hidden>
                 <div class="photoPreview" id="photoPreview"><span>Photo preview</span></div>
+                <div class="photoCandidates" id="photoCandidates" hidden>
+                  <div class="photoCandidatesHead"><strong>Photography candidates</strong><button type="button" class="secondaryBtn" id="refreshPhotoCandidates">Refresh</button></div>
+                  <div class="editorialStatus">Select an image to load it into the editor. Nothing is approved or saved until you explicitly save it.</div>
+                  <div class="photoCandidatesGrid" id="photoCandidatesGrid"></div>
+                </div>
                 <div class="editorialForm">
                   <label>Photo URL<input id="photoUrl" placeholder="https://…"></label>
                   <label>Role<select id="photoRole"><option value="hero">Hero</option><option value="secondary">Secondary</option><option value="mobile">Mobile</option></select></label>
@@ -630,6 +635,36 @@ const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","s
 
   let editorialPhotos=[];
   let selectedPhotoId=null;
+  let photoCandidates=[];
+  async function loadPhotoCandidates(){
+    const box=document.getElementById("photoCandidates"),grid=document.getElementById("photoCandidatesGrid");
+    if(!selectedEditorialId){box.hidden=true;return;}
+    const entry=editorialEntries.find(x=>String(x.id)===String(selectedEditorialId));
+    const query=(entry&&(entry.build_destination||entry.buildDestination||entry.name)||"").trim();
+    if(!query){box.hidden=true;return;}
+    box.hidden=false; grid.innerHTML="<div class='row'><span>Finding approved-source candidates…</span></div>";
+    try{
+      const url="https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch="+encodeURIComponent(query)+"&gsrnamespace=6&gsrlimit=9&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=700&format=json&origin=*";
+      const res=await fetch(url,{cache:"no-store"}); if(!res.ok)throw new Error("Wikimedia request failed");
+      const data=await res.json();
+      const pages=Object.values((data.query&&data.query.pages)||{});
+      photoCandidates=pages.map(p=>{
+        const info=(p.imageinfo&&p.imageinfo[0])||{},meta=info.extmetadata||{};
+        return {title:p.title||"",url:info.thumburl||info.url||"",source_url:"https://commons.wikimedia.org/wiki/"+encodeURIComponent((p.title||"").replace(/ /g,"_")),credit:(meta.Artist&&meta.Artist.value)||"Wikimedia Commons",alt_text:query+" travel photography"};
+      }).filter(x=>x.url);
+      grid.innerHTML=photoCandidates.length?photoCandidates.map((x,i)=>"<button type='button' class='photoCandidate' data-index='"+i+"'><img src='"+esc(x.url)+"' alt='"+esc(x.alt_text)+"'><small>"+esc(x.title.replace(/^File:/i,""))+"</small></button>").join(""):"<div class='row'><span>No candidates found. Try Refresh or add a source URL manually.</span></div>";
+      grid.querySelectorAll(".photoCandidate").forEach(b=>b.addEventListener("click",()=>photoUseCandidate(photoCandidates[Number(b.dataset.index)])));
+    }catch(e){grid.innerHTML="<div class='row'><span>Candidate search unavailable. You can still enter a photo URL manually.</span></div>";}
+  }
+  function photoUseCandidate(x){
+    if(!x)return;
+    document.getElementById("photoUrl").value=x.url;
+    document.getElementById("photoSource").value=x.source_url;
+    document.getElementById("photoCredit").value=x.credit;
+    document.getElementById("photoAlt").value=x.alt_text;
+    photoPreview(x.url);
+    photoSetStatus("Candidate loaded. Review the image and licensing/source details, then explicitly approve and save it.");
+  }
 
   function photoSetStatus(msg){
     const el=document.getElementById("photoStatus"); if(el)el.textContent=msg;
