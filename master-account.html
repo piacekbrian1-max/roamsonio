@@ -195,6 +195,32 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
             <button type="button" class="secondaryBtn" id="publishEditorialBtn">Publish</button>
           </div>
           <div class="editorialStatus" id="editorialStatus">The editorial database is protected by Master Admin + MFA. Photography management will use the same protected library.</div>
+          <div class="photoManager" id="photoManager">
+            <div class="photoManagerHead">
+              <div><div class="ey">Editorial photography</div><h4>Approved image set</h4><p>Manage controlled hero, secondary and mobile photography for the selected editorial entry.</p></div>
+              <button type="button" class="transferBtn" id="newPhotoBtn">Add Photo</button>
+            </div>
+            <div class="photoGrid">
+              <div class="photoList" id="photoList"><div class="row"><span>Select a destination to manage its photography.</span></div></div>
+              <div class="photoEditor" id="photoEditor" hidden>
+                <div class="photoPreview" id="photoPreview"><span>Photo preview</span></div>
+                <div class="editorialForm">
+                  <label>Photo URL<input id="photoUrl" placeholder="https://…"></label>
+                  <label>Role<select id="photoRole"><option value="hero">Hero</option><option value="secondary">Secondary</option><option value="mobile">Mobile</option></select></label>
+                  <label>Alt Text<input id="photoAlt" placeholder="Descriptive accessibility text"></label>
+                  <label>Credit<input id="photoCredit" placeholder="Photographer / source credit"></label>
+                  <label class="editorialFull">Source URL<input id="photoSource" placeholder="https://source-page…"></label>
+                  <label>Sort Order<input id="photoSort" type="number" min="0" step="1" value="0"></label>
+                  <div class="editorialChecks"><label><input type="checkbox" id="photoApproved"> Approved for editorial use</label></div>
+                </div>
+                <div class="editorialActions">
+                  <button type="button" class="transferBtn" id="savePhotoBtn">Save Photo</button>
+                  <button type="button" class="dangerBtn" id="deletePhotoBtn" hidden>Delete Photo</button>
+                </div>
+                <div class="editorialStatus" id="photoStatus">Photos remain unpublished until explicitly approved.</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -600,6 +626,105 @@ const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","s
   document.getElementById("newEditorialBtn").addEventListener("click",()=>{selectedEditorialId="";edFill({type:"City",status:"draft",buildable:true});document.getElementById("editorialEditorTitle").textContent="New editorial entry";});
   document.getElementById("saveEditorialBtn").addEventListener("click",()=>edSave());
   document.getElementById("publishEditorialBtn").addEventListener("click",()=>edSave("published"));
+
+  let editorialPhotos=[];
+  let selectedPhotoId=null;
+
+  function photoSetStatus(msg){
+    const el=document.getElementById("photoStatus"); if(el)el.textContent=msg;
+  }
+  function photoReadForm(){
+    return {
+      url:document.getElementById("photoUrl").value.trim(),
+      role:document.getElementById("photoRole").value,
+      alt_text:document.getElementById("photoAlt").value.trim(),
+      credit:document.getElementById("photoCredit").value.trim(),
+      source_url:document.getElementById("photoSource").value.trim(),
+      sort_order:Math.max(0,parseInt(document.getElementById("photoSort").value||"0",10)||0),
+      approved:document.getElementById("photoApproved").checked
+    };
+  }
+  function photoPreview(url){
+    const box=document.getElementById("photoPreview"); if(!box)return;
+    box.innerHTML=url ? "<img src=\""+esc(url)+"\" alt=\"Photo preview\" onerror=\"this.parentNode.innerHTML='<span>Preview unavailable</span>'\">" : "<span>Photo preview</span>";
+  }
+  function photoFill(x){
+    selectedPhotoId=x.id||null;
+    document.getElementById("photoEditor").hidden=false;
+    document.getElementById("photoUrl").value=x.url||"";
+    document.getElementById("photoRole").value=x.role||"hero";
+    document.getElementById("photoAlt").value=x.alt_text||"";
+    document.getElementById("photoCredit").value=x.credit||"";
+    document.getElementById("photoSource").value=x.source_url||"";
+    document.getElementById("photoSort").value=x.sort_order||0;
+    document.getElementById("photoApproved").checked=x.approved===true;
+    document.getElementById("deletePhotoBtn").hidden=!selectedPhotoId;
+    photoPreview(x.url||"");
+    document.querySelectorAll(".photoItem").forEach(b=>b.classList.toggle("active",String(b.dataset.id)===String(selectedPhotoId)));
+  }
+  function photoRender(){
+    const list=document.getElementById("photoList"); list.innerHTML="";
+    if(!selectedEditorialId){
+      list.innerHTML='<div class="row"><span>Select a destination to manage its photography.</span></div>'; return;
+    }
+    if(!editorialPhotos.length){
+      list.innerHTML='<div class="row"><span>No photography added yet. Add the first approved image set.</span></div>'; return;
+    }
+    editorialPhotos.slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)||(a.id||0)-(b.id||0)).forEach(x=>{
+      const b=document.createElement("button"); b.type="button"; b.className="photoItem"; b.dataset.id=x.id;
+      b.innerHTML="<strong>"+esc(x.role||"photo")+"</strong><small>"+esc(x.approved?"Approved":"Draft")+" · "+esc(x.credit||"Credit not entered")+"</small>";
+      b.onclick=()=>photoFill(x); list.appendChild(b);
+    });
+  }
+  async function photoLoad(){
+    if(!selectedEditorialId){editorialPhotos=[];photoRender();return;}
+    try{
+      const {data,error}=await client.rpc("roamsonio_admin_editorial_photos",{p_destination_id:selectedEditorialId});
+      if(error)throw error;
+      editorialPhotos=data||[];photoRender();
+      photoSetStatus("Protected photography database loaded. Approval is controlled by Master Admin + MFA.");
+    }catch(e){
+      editorialPhotos=[];photoRender();
+      photoSetStatus("Photography management is unavailable until the protected photography migration is applied.");
+    }
+  }
+  async function photoSave(){
+    if(!selectedEditorialId){photoSetStatus("Select an editorial destination first.");return;}
+    const x=photoReadForm(); if(!x.url){photoSetStatus("Photo URL is required.");return;}
+    try{
+      const {data,error}=await client.rpc("roamsonio_admin_upsert_editorial_photo",{
+        p_photo_id:selectedPhotoId,p_destination_id:selectedEditorialId,p_url:x.url,p_alt_text:x.alt_text,
+        p_credit:x.credit,p_source_url:x.source_url,p_role:x.role,p_sort_order:x.sort_order,p_approved:x.approved
+      });
+      if(error)throw error;
+      photoSetStatus("Photo saved to the protected editorial library.");
+      await photoLoad();
+      const saved=editorialPhotos.find(p=>String(p.id)===String(data));
+      if(saved)photoFill(saved);
+    }catch(e){photoSetStatus("Photo save unavailable: "+(e.message||"Unknown error"));}
+  }
+  async function photoDelete(){
+    if(!selectedPhotoId)return;
+    if(!confirm("Delete this editorial photo? This does not affect any saved trip."))return;
+    try{
+      const {error}=await client.rpc("roamsonio_admin_delete_editorial_photo",{p_photo_id:selectedPhotoId});
+      if(error)throw error;
+      selectedPhotoId=null; document.getElementById("photoEditor").hidden=true;
+      photoSetStatus("Photo deleted from the protected editorial library."); await photoLoad();
+    }catch(e){photoSetStatus("Photo delete unavailable: "+(e.message||"Unknown error"));}
+  }
+  document.getElementById("newPhotoBtn").addEventListener("click",()=>{
+    if(!selectedEditorialId){photoSetStatus("Select an editorial destination first.");return;}
+    selectedPhotoId=null; document.getElementById("photoEditor").hidden=false;
+    ["photoUrl","photoAlt","photoCredit","photoSource"].forEach(id=>document.getElementById(id).value="");
+    document.getElementById("photoRole").value="hero"; document.getElementById("photoSort").value=0;
+    document.getElementById("photoApproved").checked=false; document.getElementById("deletePhotoBtn").hidden=true; photoPreview("");
+  });
+  document.getElementById("savePhotoBtn").addEventListener("click",photoSave);
+  document.getElementById("deletePhotoBtn").addEventListener("click",photoDelete);
+  ["photoUrl"].forEach(id=>document.getElementById(id).addEventListener("input",e=>photoPreview(e.target.value.trim())));
+  const originalEdFill=edFill;
+  edFill=function(x){ originalEdFill(x); photoLoad(); };
   </script>
 
 
