@@ -372,49 +372,49 @@
       "sha": "76273d8d0097cb2f4dd4207b637b421349c95d99",
       "date": "2026-10-04",
       "title": "Fix Master Account documentation rendering",
-      "status": "TESTING",
-      "rollbackEligible": false,
-      "notes": "Fixes the shared HTML escaping function used by the Master Account Editorial Library and Knowledge Base renderers. The missing function caused the documentation article list to fail after the JSON loaded. No existing trip, user, family, routing or persistence logic changed. Awaiting user validation."
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "Fixes the shared HTML escaping function used by the Master Account Editorial Library and Knowledge Base renderers. The missing function caused the documentation article list to fail after the JSON loaded. No existing trip, user, family, routing or persistence logic changed. User confirmed the Knowledge Base changes are working and approved as a rollback target."
     },
     {
       "sha": "01c1a07e321f43d684f4ddb427a60b714dc899ae",
       "date": "2026-10-04",
       "title": "Add stable knowledge base article numbers",
-      "status": "TESTING",
-      "rollbackEligible": false,
-      "notes": "Adds stable KB0001-style article numbers to the Master Knowledge Base documentation. Documentation metadata only; no trip, user, family, routing or persistence logic changed. Awaiting user validation."
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "Adds stable KB0001-style article numbers to the Master Knowledge Base documentation. Documentation metadata only; no trip, user, family, routing or persistence logic changed. User confirmed the Knowledge Base changes are working and approved as a rollback target."
     },
     {
       "sha": "0714f7d0a01619daba1002b189ec80370d9cc296",
       "date": "2026-10-04",
       "title": "Show knowledge base article numbers",
-      "status": "TESTING",
-      "rollbackEligible": false,
-      "notes": "Displays stable KB0001-style article numbers in the Master Account Knowledge Base list and article header. Presentation/documentation only; no trip or persistence logic changed. Awaiting user validation."
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "Displays stable KB0001-style article numbers in the Master Account Knowledge Base list and article header. Presentation/documentation only; no trip or persistence logic changed. User confirmed the Knowledge Base changes are working and approved as a rollback target."
     },
     {
       "sha": "d37da8f754a7b29050982a321d6434f946b92534",
       "date": "2026-10-04",
       "title": "Add knowledge base article version metadata",
-      "status": "TESTING",
-      "rollbackEligible": false,
-      "notes": "Adds v1 and last-updated metadata to each Master Knowledge Base article so future revisions can be tracked explicitly. Documentation metadata only; no trip, user, family, routing or persistence logic changed."
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "Adds v1 and last-updated metadata to each Master Knowledge Base article so future revisions can be tracked explicitly. Documentation metadata only; no trip, user, family, routing or persistence logic changed. Approved as a rollback target."
     },
     {
       "sha": "3d179d8ccc5101a97d5034a70684b5c110a24810",
       "date": "2026-10-04",
       "title": "Show knowledge base article versions",
-      "status": "TESTING",
-      "rollbackEligible": false,
-      "notes": "Displays each Knowledge Base article number, version and last-updated date in Master Account. Documentation presentation only; no trip or persistence logic changed. Awaiting user validation."
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "Displays each Knowledge Base article number, version and last-updated date in Master Account. Documentation presentation only; no trip or persistence logic changed. User confirmed the Knowledge Base changes are working and approved as a rollback target."
     },
     {
       "sha": "ed113cded311dcf150d39a5ce262f047a949cec6",
       "date": "2026-10-04",
       "title": "Use uppercase KB article numbers",
-      "status": "TESTING",
-      "rollbackEligible": false,
-      "notes": "Changes Knowledge Base article identifiers to uppercase KB0001-style formatting. Documentation metadata only; no trip, user, family, routing or persistence logic changed. Awaiting user validation."
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "Changes Knowledge Base article identifiers to uppercase KB0001-style formatting. Documentation metadata only; no trip, user, family, routing or persistence logic changed. User confirmed the Knowledge Base changes are working and approved as a rollback target."
     }
   ]
 }
