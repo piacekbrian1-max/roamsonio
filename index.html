@@ -239,7 +239,7 @@ function tripHref(t){
     name==="New Orleans · Jan 16–20, 2027" ||
     dests.some(function(d){return String(d||"").trim().toLowerCase()==="new orleans"});
   if(isNola){
-    return "new-orleans.html?id="+encodeURIComponent(id)+"&v=nola-stable";
+    return "trip-workspace.html?id="+encodeURIComponent(id)+"&supabaseId="+encodeURIComponent(String(t.supabaseId||""))+"&destination=New%20Orleans&v=nola-home-"+Date.now();
   }
   var isEurope=id==="a636626a-e7b2-4337-b950-be9682edde63" ||
     id==="european-thanksgiving-adventure-2026" ||
@@ -270,7 +270,7 @@ function openTrip(id){
     dests.some(function(d){return String(d||"").trim().toLowerCase()==="new orleans"});
   if(isNola){
     sessionStorage.setItem("openTripId",id);
-    location.href="new-orleans.html?id="+encodeURIComponent(id)+"&v=nola-stable";
+    location.href="trip-workspace.html?id="+encodeURIComponent(id)+"&supabaseId="+encodeURIComponent(String(t.supabaseId||""))+"&destination=New%20Orleans&v=nola-home-"+Date.now();
     return;
   }
   var atlantaId="16f08031-885a-45d6-a79e-480fb1d39c67";
@@ -299,7 +299,7 @@ function readiness(t){var checks=[
 ];var missing=checks.filter(function(x){return !x.ok}).map(function(x){return x.label});return{done:checks.length-missing.length,total:checks.length,missing:missing}}
 function countdownLabel(t){var d=daysUntil(t.start);if(d===null)return"Dates not set";if(d>1)return d+" days";if(d===1)return"Tomorrow";if(d===0)return"Today";var left=Math.abs(d);return left+" days ago"}
 function completedTripModel(){return{name:"European Thanksgiving Adventure 2026",start:"2026-11-26",end:"2026-12-04",destinations:["Trnava","Prague","Pilsen","Hluboká nad Vltavou","Vienna"],travelers:3,state:"Completed planning",ready:true,missing:[],image:"images/prague-christmas.jpg",href:"current-trip.html"}}
-function currentTripModel(){return{id:"febaebf6-7369-4922-b069-c745eee8c16f",name:"New Orleans · Jan 16–20, 2027",start:"2027-01-16",end:"2027-01-20",destinations:["New Orleans"],travelers:3,state:"In Progress",ready:false,missing:["Finish trip details"],image:images.neworleans,href:"new-orleans.html?id=febaebf6-7369-4922-b069-c745eee8c16f"}}
+function currentTripModel(){return{id:"febaebf6-7369-4922-b069-c745eee8c16f",name:"New Orleans · Jan 16–20, 2027",start:"2027-01-16",end:"2027-01-20",destinations:["New Orleans"],travelers:3,state:"In Progress",ready:false,missing:["Finish trip details"],image:images.neworleans,href:"trip-workspace.html?id=febaebf6-7369-4922-b069-c745eee8c16f&destination=New%20Orleans&v=nola-home-model"}}
 function buildSuggestions(){
 var now=new Date(),month=now.getMonth()+1;
 var season=month<=2||month===12?"Winter":month<=5?"Spring":month<=8?"Summer":"Fall";
