@@ -327,6 +327,30 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Adds the safe Supabase schema foundation for managed editorial destinations and approved photography. No existing users, trips, families or trip data are modified. Master Admin protected management RPCs and UI are intentionally deferred to the next step."
+    },
+    {
+      "sha": "92dda066ceed1c7191537cb02b07ae8ce22a2b03",
+      "date": "2026-10-04",
+      "title": "Expand editorial activities and destination library",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Expands the editorial catalog beyond cities with regions, outdoor destinations, seasonal experiences and diverse activities such as hiking, cycling, kayaking, rafting, sailing, surfing, diving, wildlife, golf, food & wine and more. No existing trip data or trip logic changed."
+    },
+    {
+      "sha": "4a1d1bfaf1178e769b8e0484068763007c468eef",
+      "date": "2026-10-04",
+      "title": "Add protected editorial library administration",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds protected Master Admin + AAL2 RPCs for editorial destination and photography management. No existing user, family or trip records are modified. Supabase migration must be applied before live database editing is available."
+    },
+    {
+      "sha": "d91d1da7e805475107021bd6f9ccd964dfe8769b",
+      "date": "2026-10-04",
+      "title": "Add Master Account editorial library management",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds an Editorial Library section to Master Account with catalog review, destination editing and publish controls. Falls back to the documented JSON catalog for preview if the protected Supabase migration is not yet applied. No existing trip UI or trip data changed."
     }
   ]
 }
