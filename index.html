@@ -406,7 +406,25 @@ grid.innerHTML=all.filter(function(x){return x.state!=="Upcoming"}).sort(sortByD
 function load(){return loadPersistentTrips()}
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 function photo(t){
-var ds=(t.destinations||[]);for(var i=0;i<ds.length;i++){var k=ds[i].toLowerCase();if(k.indexOf("trnava")>=0)return images.trnava;if(k.indexOf("prague")>=0)return images.prague;if(k.indexOf("pilsen")>=0)return images.pilsen;if(k.indexOf("hlub")>=0)return images.hluboka;if(k.indexOf("vienna")>=0)return images.vienna;if(k.indexOf("atlanta")>=0)return images.atlanta;if(k.indexOf("gatlinburg")>=0||k.indexOf("smoky mountains")>=0)return images.gatlinburg;if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return images.neworleans}return images.prague}
+  t=t||{};
+  var dk=t.destinationKnowledge;
+  if(dk&&Array.isArray(dk.photos)&&dk.photos.length){
+    var p=dk.photos[0],u=typeof p==="string"?p:p&&p.url;
+    if(u)return u;
+  }
+  if(t.image)return t.image;
+  var ds=(t.destinations||[]);
+  for(var i=0;i<ds.length;i++){
+    var k=String(ds[i]||"").toLowerCase();
+    if(k.indexOf("trnava")>=0)return images.trnava;
+    if(k.indexOf("prague")>=0)return images.prague;
+    if(k.indexOf("pilsen")>=0)return images.pilsen;
+    if(k.indexOf("hlub")>=0)return images.hluboka;
+    if(k.indexOf("vienna")>=0)return images.vienna;
+    if(k.indexOf("atlanta")>=0)return images.atlanta;
+    if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return images.neworleans;
+  }
+  return images.prague}
 function guideKey(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}
 function collectTrip(t){
   var out=[],rs=t&&t.guideReviews&&typeof t.guideReviews==="object"?t.guideReviews:{};
