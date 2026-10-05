@@ -460,9 +460,9 @@
       "sha": "384b19a56cf8050669ae5c34ca3609e1a6c3aec9",
       "date": "2026-10-05",
       "title": "Load editorial photo candidates when adding a photo",
-      "status": "TESTING",
-      "rollbackEligible": false,
-      "notes": "Ensures the deployed Master Account Add Photo workflow actually invokes the controlled Wikimedia candidate gallery and wires its Refresh button. No existing trips, saved data, identity, routing or trip imagery changed. Awaiting user testing."
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "User confirmed the Master Account Add Photo workflow now loads the editorial photography candidate images. Approved as a rollback target. No existing trips, saved data, identity, routing or trip imagery changed."
     }
   ]
 }
