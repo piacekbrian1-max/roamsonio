@@ -508,9 +508,9 @@
       "sha": "67cfa55fc893c845160d891b20b38c0d090cf37e",
       "date": "2026-10-05",
       "title": "Fix existing editorial entry save mode",
-      "status": "TESTING",
-      "rollbackEligible": false,
-      "notes": "Fixes Master Account Editorial Library save mode so an existing documented destination is treated as an update even if the selection state is lost before Save Entry. New permanent IDs remain available for new entries. No existing trips, saved data, identity, routing or photography records are changed. Awaiting user test."
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "User verified the existing Amalfi Coast entry can be saved as an update; the live database now shows status=published. Approved as a rollback target; no existing trips, saved data, identity, routing or photography records were changed."
     }
   ]
 }
