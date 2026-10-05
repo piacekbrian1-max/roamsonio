@@ -108,6 +108,9 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
 .editorialStat{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.07em}
 @media(max-width:800px){.editorialGrid{grid-template-columns:1fr}.editorialList{max-height:300px}.editorialForm{grid-template-columns:1fr}}
 
+
+.kbGrid{display:grid;grid-template-columns:260px 1fr;gap:14px}.kbList{border:1px solid var(--line);border-radius:11px;background:#fff;overflow:hidden}.kbItem{display:block;width:100%;padding:11px 12px;text-align:left;border:0;border-bottom:1px solid #E7EBEF;background:#fff;color:var(--navy);cursor:pointer;font:700 9px/1.35 "DM Sans"}.kbItem:hover,.kbItem.active{background:#F1EADB}.kbItem small{display:block;color:var(--slate);font-weight:500;margin-top:3px}.kbDoc{border:1px solid var(--line);border-radius:11px;background:#fff;padding:18px}.kbDoc h3{font:600 28px/1.1 "Playfair Display",serif;margin:0 0 7px}.kbDoc h4{margin:16px 0 7px;color:var(--navy);font-size:9px;letter-spacing:.09em;text-transform:uppercase}.kbDoc p,.kbDoc li{color:var(--slate);font-size:10px;line-height:1.55}.kbDoc ul{margin:6px 0 0;padding-left:18px}.kbBadge{display:inline-block;padding:5px 8px;border-radius:999px;background:#F1EADB;color:#5F5137;font-size:7px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.kbNotice{margin-top:12px;padding:10px 12px;border-radius:8px;background:#F5F7F9;color:var(--slate);font-size:9px;line-height:1.5}@media(max-width:800px){.kbGrid{grid-template-columns:1fr}.kbList{max-height:260px;overflow:auto}}
+
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.rsNav{padding:8px 11px;min-height:62px;align-items:flex-start}.rsTop{min-height:62px}.rsBrand strong{font-size:18px}.rsMark{width:34px;height:34px;flex-basis:34px}.rsMark svg{width:26px;height:26px}.rsBrand small{font-size:5px}.rsLinks{gap:6px 8px}.rsLinks a{font-size:9px}.wrap{width:calc(100% - 24px);padding-top:24px}.grid{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr 1fr}.row.header{display:none}}
 @media(max-width:430px){.grid{grid-template-columns:1fr}.card{min-height:105px}}
@@ -156,6 +159,13 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
       <div class="notice">Phase 2B is read-only. Users, trips, families and support data are visible through protected database functions. Account transfer is separately protected and requires Master Admin + MFA verification.</div>
     </section>
 
+
+
+    <section class="section" id="knowledgeBaseSection">
+      <div class="sectionHead"><div><h2>Master Knowledge Base</h2><p>How to manage RoamSonio functions safely</p></div></div>
+      <div class="kbNotice"><strong>Operational rule:</strong> this knowledge base documents what each Master Account function does, how to use it, and the safety checks required before publishing changes. It will grow with the product.</div>
+      <div class="kbGrid" style="margin-top:14px"><div class="kbList" id="kbList"><div class="row"><span>Loading documentation…</span></div></div><article class="kbDoc" id="kbDoc"><span class="kbBadge">Documentation</span><h3>Select a function</h3><p>Choose a topic to see its purpose, operating steps and safety rules.</p></article></div>
+    </section>
 
     <section class="section" id="editorialLibrarySection">
       <div class="sectionHead">
@@ -581,6 +591,20 @@ const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","s
   document.getElementById("newEditorialBtn").addEventListener("click",()=>{selectedEditorialId="";edFill({type:"City",status:"draft",buildable:true});document.getElementById("editorialEditorTitle").textContent="New editorial entry";});
   document.getElementById("saveEditorialBtn").addEventListener("click",()=>edSave());
   document.getElementById("publishEditorialBtn").addEventListener("click",()=>edSave("published"));
+  </script>
+
+
+  <script id="master-knowledge-base">
+  (function(){
+    function loadKB(){
+      fetch("master-knowledge-base.json?v="+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(data=>{
+        const list=document.getElementById("kbList"),doc=document.getElementById("kbDoc"),items=data.sections||[];list.innerHTML="";
+        function render(x){doc.innerHTML="<span class='kbBadge'>"+esc(x.status||"active")+"</span><h3>"+esc(x.title)+"</h3><p>"+esc(x.purpose||"")+"</p><h4>How to manage it</h4><ul>"+(x.howTo||[]).map(y=>"<li>"+esc(y)+"</li>").join("")+"</ul><h4>Safety rules</h4><ul>"+(x.safety||[]).map(y=>"<li>"+esc(y)+"</li>").join("")+"</ul>";document.querySelectorAll(".kbItem").forEach(b=>b.classList.toggle("active",b.dataset.id===x.id));}
+        items.forEach(x=>{const b=document.createElement("button");b.type="button";b.className="kbItem";b.dataset.id=x.id;b.innerHTML=esc(x.title)+"<small>"+esc(x.status||"active")+"</small>";b.onclick=()=>render(x);list.appendChild(b);});if(items[0])render(items[0]);
+      }).catch(()=>{document.getElementById("kbDoc").innerHTML="<span class='kbBadge'>Documentation unavailable</span><h3>Knowledge Base</h3><p>The documentation file could not be loaded.</p>";});
+    }
+    loadKB();
+  })();
   </script>
 
 </body>
