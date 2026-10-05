@@ -311,6 +311,22 @@
       "status": "SUCCESS",
       "rollbackEligible": true,
       "notes": "User confirmed the temporary Recover Full Trip test button was removed and the production trip workspace looks correct. Approved as a rollback target; no trip data or persistence logic changed."
+    },
+    {
+      "sha": "d1fdb49d8fa76ee2c198d0f10e8035d4b7c20ce5",
+      "date": "2026-10-04",
+      "title": "Add RoamSonio editorial library foundation",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds a separate editorial-library.json content foundation with cities, regions, ski/snowboard destinations, outdoor destinations, coast/island destinations, road trips and seasonal experiences. No existing trip data, routing, persistence, imagery or page behavior was changed."
+    },
+    {
+      "sha": "1cb709c84b50faf41f4cfb998a7779f7c73f1dc8",
+      "date": "2026-10-04",
+      "title": "Add RoamSonio editorial library schema foundation",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds the safe Supabase schema foundation for managed editorial destinations and approved photography. No existing users, trips, families or trip data are modified. Master Admin protected management RPCs and UI are intentionally deferred to the next step."
     }
   ]
 }
