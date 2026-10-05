@@ -274,6 +274,14 @@
       "rollbackEligible": true,
       "notes": "User confirmed the Home page inspiration cards are restored and working. The seasonal inspiration renderer is functioning again; no saved trip data or destination imagery logic was changed.",
       "sha": "50d4b361a42b5ec63c7ae658ab9051d9c7ac59d3"
+    },
+    {
+      "sha": "c2fc4159c1a809959f4b799eecdf7b50ed4c3a97",
+      "date": "2026-10-04",
+      "title": "Make trip banner freeze work across iPad viewports",
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "User tested Atlanta on iPad and confirmed the banner stays frozen at the top while scrolling. Approved as a rollback target. Presentation-only change; no trip data, IDs, persistence, imagery or other workspace logic changed."
     }
   ]
 }
