@@ -14,6 +14,27 @@
       "Coast & Island",
       "Road Trip",
       "Seasonal Experience"
+    ],
+    "activityExamples": [
+      "Skiing",
+      "Snowboarding",
+      "Hiking",
+      "Cycling",
+      "Kayaking",
+      "Rafting",
+      "Sailing",
+      "Surfing",
+      "Scuba Diving",
+      "Wildlife",
+      "Photography",
+      "Golf",
+      "Food & Wine",
+      "Museums & Culture",
+      "Scenic Rail",
+      "Road Trip",
+      "Wellness & Spa",
+      "Fishing",
+      "Climbing"
     ]
   },
   "entries": [
@@ -32,7 +53,14 @@
       "buildDestination": "Lisbon, Portugal",
       "tagline": "Golden streets, Atlantic light & late-night dinners.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Walking",
+        "Cycling",
+        "Surfing",
+        "Food & Wine",
+        "Museums & Culture"
+      ]
     },
     {
       "id": "prague",
@@ -49,7 +77,14 @@
       "buildDestination": "Prague, Czechia",
       "tagline": "Storybook streets, grand squares & riverside evenings.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Walking",
+        "Museums & Culture",
+        "Food & Wine",
+        "Photography",
+        "Scenic Rail"
+      ]
     },
     {
       "id": "kyoto",
@@ -65,7 +100,14 @@
       "buildDestination": "Kyoto, Japan",
       "tagline": "Temples, gardens, quiet lanes & timeless beauty.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Walking",
+        "Cycling",
+        "Hiking",
+        "Photography",
+        "Museums & Culture"
+      ]
     },
     {
       "id": "new-orleans",
@@ -81,7 +123,14 @@
       "buildDestination": "New Orleans, Louisiana, USA",
       "tagline": "Music, architecture, food & nights worth remembering.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Food & Wine",
+        "Live Music",
+        "Walking",
+        "Photography",
+        "Museums & Culture"
+      ]
     },
     {
       "id": "vienna",
@@ -98,7 +147,14 @@
       "buildDestination": "Vienna, Austria",
       "tagline": "Imperial streets, cafés, music & elegant evenings.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Walking",
+        "Museums & Culture",
+        "Food & Wine",
+        "Scenic Rail",
+        "Cycling"
+      ]
     },
     {
       "id": "the-alps",
@@ -115,7 +171,16 @@
       "buildDestination": "The Alps",
       "tagline": "Villages, peaks, scenic railways & mountain escapes.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Skiing",
+        "Snowboarding",
+        "Hiking",
+        "Cycling",
+        "Scenic Rail",
+        "Climbing",
+        "Wellness & Spa"
+      ]
     },
     {
       "id": "colorado-ski-country",
@@ -130,7 +195,14 @@
       "buildDestination": "Colorado Ski Country, USA",
       "tagline": "Legendary slopes, mountain towns & big Rocky Mountain views.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Skiing",
+        "Snowboarding",
+        "Hiking",
+        "Mountain Biking",
+        "Climbing"
+      ]
     },
     {
       "id": "utah-ski-country",
@@ -145,7 +217,14 @@
       "buildDestination": "Utah Ski Country, USA",
       "tagline": "Deep snow, dramatic peaks & world-class mountain terrain.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Skiing",
+        "Snowboarding",
+        "Hiking",
+        "Mountain Biking",
+        "Climbing"
+      ]
     },
     {
       "id": "austrian-alps",
@@ -162,7 +241,15 @@
       "buildDestination": "Austrian Alps",
       "tagline": "Alpine villages, skiing, snowboarding & classic mountain culture.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Skiing",
+        "Snowboarding",
+        "Hiking",
+        "Cycling",
+        "Scenic Rail",
+        "Wellness & Spa"
+      ]
     },
     {
       "id": "dolomites",
@@ -179,7 +266,15 @@
       "buildDestination": "Dolomites, Italy",
       "tagline": "Jagged peaks, mountain huts, skiing & unforgettable drives.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Skiing",
+        "Snowboarding",
+        "Hiking",
+        "Cycling",
+        "Climbing",
+        "Photography"
+      ]
     },
     {
       "id": "swiss-alps",
@@ -196,7 +291,15 @@
       "buildDestination": "Swiss Alps",
       "tagline": "Glacier views, alpine railways, villages & mountain trails.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Skiing",
+        "Snowboarding",
+        "Hiking",
+        "Cycling",
+        "Scenic Rail",
+        "Wellness & Spa"
+      ]
     },
     {
       "id": "canadian-rockies",
@@ -212,7 +315,15 @@
       "buildDestination": "Canadian Rockies, Canada",
       "tagline": "Turquoise lakes, towering peaks & extraordinary wilderness.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Hiking",
+        "Skiing",
+        "Snowboarding",
+        "Wildlife",
+        "Canoeing",
+        "Photography"
+      ]
     },
     {
       "id": "great-smoky-mountains",
@@ -228,7 +339,14 @@
       "buildDestination": "Great Smoky Mountains, USA",
       "tagline": "Mountain roads, waterfalls, wildlife & legendary fall color.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Hiking",
+        "Wildlife",
+        "Photography",
+        "Scenic Drives",
+        "Fishing"
+      ]
     },
     {
       "id": "amalfi-coast",
@@ -244,7 +362,14 @@
       "buildDestination": "Amalfi Coast, Italy",
       "tagline": "Clifftop villages, blue water & long Mediterranean lunches.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Hiking",
+        "Sailing",
+        "Swimming",
+        "Food & Wine",
+        "Photography"
+      ]
     },
     {
       "id": "santorini",
@@ -260,7 +385,14 @@
       "buildDestination": "Santorini, Greece",
       "tagline": "Whitewashed villages, volcanic cliffs & unforgettable sunsets.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Sailing",
+        "Swimming",
+        "Hiking",
+        "Food & Wine",
+        "Photography"
+      ]
     },
     {
       "id": "scottish-highlands",
@@ -276,7 +408,15 @@
       "buildDestination": "Scottish Highlands, UK",
       "tagline": "Lochs, castles, winding roads & wild landscapes.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Hiking",
+        "Wildlife",
+        "Golf",
+        "Fishing",
+        "Road Trip",
+        "Photography"
+      ]
     },
     {
       "id": "pacific-coast-highway",
@@ -292,7 +432,14 @@
       "buildDestination": "Pacific Coast Highway, USA",
       "tagline": "Ocean cliffs, coastal towns & one unforgettable road.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Road Trip",
+        "Surfing",
+        "Hiking",
+        "Photography",
+        "Food & Wine"
+      ]
     },
     {
       "id": "european-christmas-markets",
@@ -306,7 +453,14 @@
       "buildDestination": "Central Europe Christmas Markets",
       "tagline": "Old-world squares, lights, markets & winter evenings.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Walking",
+        "Food & Wine",
+        "Shopping",
+        "Photography",
+        "Museums & Culture"
+      ]
     },
     {
       "id": "oktoberfest",
@@ -320,7 +474,13 @@
       "buildDestination": "Munich, Germany",
       "tagline": "Bavarian traditions, music, food & one legendary celebration.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Food & Wine",
+        "Live Music",
+        "Walking",
+        "Museums & Culture"
+      ]
     },
     {
       "id": "northern-lights",
@@ -336,7 +496,159 @@
       "buildDestination": "Northern Europe",
       "tagline": "Dark skies, winter landscapes & nature's greatest light show.",
       "status": "draft",
-      "photos": []
+      "photos": [],
+      "activities": [
+        "Wildlife",
+        "Photography",
+        "Hiking",
+        "Snowshoeing",
+        "Scenic Rail"
+      ]
+    },
+    {
+      "id": "banff",
+      "name": "Banff & Lake Louise",
+      "type": "Outdoor",
+      "category": "Mountain Adventure",
+      "season": [
+        "Summer",
+        "Fall",
+        "Winter",
+        "Spring"
+      ],
+      "buildable": true,
+      "buildDestination": "Banff & Lake Louise, Alberta, Canada",
+      "tagline": "Glacial lakes, mountain trails, wildlife & alpine adventures.",
+      "status": "draft",
+      "photos": [],
+      "activities": [
+        "Hiking",
+        "Skiing",
+        "Snowboarding",
+        "Wildlife",
+        "Canoeing",
+        "Photography"
+      ]
+    },
+    {
+      "id": "hawaii",
+      "name": "Hawaii",
+      "type": "Coast & Island",
+      "category": "Coast & Water",
+      "season": [
+        "Winter",
+        "Spring",
+        "Summer",
+        "Fall"
+      ],
+      "buildable": true,
+      "buildDestination": "Hawaii, USA",
+      "tagline": "Volcanic landscapes, warm water, beaches & island adventures.",
+      "status": "draft",
+      "photos": [],
+      "activities": [
+        "Surfing",
+        "Sailing",
+        "Scuba Diving",
+        "Hiking",
+        "Wildlife",
+        "Golf"
+      ]
+    },
+    {
+      "id": "utah-national-parks",
+      "name": "Utah National Parks",
+      "type": "Road Trip",
+      "category": "Outdoor",
+      "season": [
+        "Spring",
+        "Summer",
+        "Fall"
+      ],
+      "buildable": true,
+      "buildDestination": "Utah National Parks, USA",
+      "tagline": "Red-rock canyons, scenic drives, trails & unforgettable skies.",
+      "status": "draft",
+      "photos": [],
+      "activities": [
+        "Hiking",
+        "Photography",
+        "Road Trip",
+        "Climbing",
+        "Wildlife"
+      ]
+    },
+    {
+      "id": "patagonia",
+      "name": "Patagonia",
+      "type": "Region",
+      "category": "Outdoor",
+      "season": [
+        "Spring",
+        "Summer",
+        "Fall"
+      ],
+      "buildable": true,
+      "buildDestination": "Patagonia, Chile & Argentina",
+      "tagline": "Glaciers, dramatic peaks, wild trails & extraordinary wilderness.",
+      "status": "draft",
+      "photos": [],
+      "activities": [
+        "Hiking",
+        "Wildlife",
+        "Photography",
+        "Climbing",
+        "Fishing"
+      ]
+    },
+    {
+      "id": "tuscany",
+      "name": "Tuscany",
+      "type": "Region",
+      "category": "Food & Culture",
+      "season": [
+        "Spring",
+        "Summer",
+        "Fall"
+      ],
+      "buildable": true,
+      "buildDestination": "Tuscany, Italy",
+      "tagline": "Hill towns, vineyards, art, long lunches & scenic drives.",
+      "status": "draft",
+      "photos": [],
+      "activities": [
+        "Food & Wine",
+        "Cycling",
+        "Golf",
+        "Photography",
+        "Museums & Culture",
+        "Road Trip"
+      ]
+    },
+    {
+      "id": "french-alps",
+      "name": "French Alps",
+      "type": "Ski & Snowboard",
+      "category": "Mountain Adventure",
+      "season": [
+        "Winter",
+        "Spring",
+        "Summer",
+        "Fall"
+      ],
+      "buildable": true,
+      "buildDestination": "French Alps",
+      "tagline": "High mountain terrain, village life, skiing & summer trails.",
+      "status": "draft",
+      "photos": [],
+      "activities": [
+        "Skiing",
+        "Snowboarding",
+        "Hiking",
+        "Cycling",
+        "Climbing",
+        "Wellness & Spa"
+      ]
     }
   ]
 }
