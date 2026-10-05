@@ -9,6 +9,62 @@
   },
   "versions": [
     {
+      "sha": "c0b820baf137f9a9976c90cbc009e68b9933df5",
+      "date": "2026-10-04",
+      "title": "Track European trip edit revision",
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "Current user-tested European Edit Trip state. European trip remains a single saved journey after refresh, existing trip data is intact, and edit revisions are tracked. Approved as a rollback target."
+    },
+    {
+      "sha": "67fced4fd6f287711eb7004077af0b94a6de2ede",
+      "date": "2026-10-04",
+      "title": "Keep European trip identity stable after rename",
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "User verified My Trips contains one European trip after the identity reconciliation change and the trip data remains correct. Approved as a rollback target."
+    },
+    {
+      "sha": "8f93f2aaee6326f35ca2be7aa4a4176cd5d6d27d",
+      "date": "2026-10-04",
+      "title": "Use existing European trip ID for edits",
+      "status": "ISSUE",
+      "rollbackEligible": false,
+      "notes": "Saving updated the trip, but user then observed a duplicate European trip. Replaced by the stable identity reconciliation fix."
+    },
+    {
+      "sha": "8dc238fc0184",
+      "date": "2026-10-04",
+      "title": "Correct European trip save merge",
+      "status": "ISSUE",
+      "rollbackEligible": false,
+      "notes": "Intermediate European save merge correction; superseded after the persistent trip identity mismatch was identified."
+    },
+    {
+      "sha": "231b7b3a8c11",
+      "date": "2026-10-04",
+      "title": "Persist European trip edits to existing saved trip",
+      "status": "ISSUE",
+      "rollbackEligible": false,
+      "notes": "User reported that the edited European trip name did not appear in My Trips. Replaced by the existing-ID fix."
+    },
+    {
+      "sha": "51780a4c09ca",
+      "date": "2026-10-04",
+      "title": "Fix European trip editor spacing overlap",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "User confirmed the editor overlap was corrected, but the complete save flow had not yet been validated. Not a rollback target."
+    },
+    {
+      "sha": "37997b7ce6ba",
+      "date": "2026-10-04",
+      "title": "Add editable fields to unique European trip editor",
+      "status": "ISSUE",
+      "rollbackEligible": false,
+      "notes": "Editable fields appeared, but the initial editor presentation still overlapped the underlying trip content. Superseded by the spacing correction."
+    },
+    {
       "sha": "3ece2540a749841452e79b1a791777c03d437a5b",
       "date": "2026-10-04",
       "title": "Normalize New Orleans identity across dashboard and My Trips",
