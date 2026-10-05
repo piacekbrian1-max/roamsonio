@@ -23,7 +23,8 @@
         "Changing an editorial entry must not change a user's saved trip.",
         "Use permanent IDs so published links remain stable.",
         "Test a new published entry from the Home page before declaring it production-ready."
-      ]
+      ],
+      "kbNumber": "kb0001"
     },
     {
       "id": "editorial-photography",
@@ -40,7 +41,8 @@
         "Do not replace existing trip photos through this library.",
         "Never rely on random image selection for published editorial cards.",
         "Keep source and credit information with every approved image."
-      ]
+      ],
+      "kbNumber": "kb0002"
     },
     {
       "id": "weekly-edit",
@@ -57,7 +59,8 @@
         "Do not hard-code individual weekly destinations into index.html.",
         "Do not fetch random photography on each page load.",
         "Changes to rotation logic require a separate test point."
-      ]
+      ],
+      "kbNumber": "kb0003"
     },
     {
       "id": "trip-builder-handoff",
@@ -73,7 +76,8 @@
         "Never overwrite an existing trip.",
         "Never reuse an existing saved trip ID for an editorial entry.",
         "Test the complete build-and-save flow before approval."
-      ]
+      ],
+      "kbNumber": "kb0004"
     },
     {
       "id": "versioning",
@@ -90,7 +94,8 @@
         "Administrative registry commits are not production rollback targets.",
         "Do not mark a version SUCCESS before user testing.",
         "Make one focused change at a time when possible."
-      ]
+      ],
+      "kbNumber": "kb0005"
     },
     {
       "id": "pilot-readiness",
@@ -106,7 +111,8 @@
       "safety": [
         "No broad redesign should bypass a test point.",
         "Existing trip data, IDs, persistence and routing are protected requirements."
-      ]
+      ],
+      "kbNumber": "kb0006"
     }
   ]
 }
