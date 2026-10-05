@@ -221,9 +221,19 @@ body{padding-top:68px!important}
     <div>
       <div class="kicker">TRIP EDITOR</div>
       <h2 style="font:600 32px/1.1 &quot;Playfair Display&quot;,serif;margin:6px 0">Edit this trip</h2>
-      <p style="margin:0;color:#4F6B8A;font-size:12px;line-height:1.5">Edit mode is ready. The next step will add editable trip details and update suggestions from the changes you make.</p>
+      <p style="margin:0;color:#4F6B8A;font-size:12px;line-height:1.5">Update the core details of this unique European trip. Your existing itinerary, bookings, photos and suggestions are preserved.</p>
     </div>
     <button type="button" class="btn" id="closeEditTripButton" style="background:#0B2D4A;color:white;border-color:#0B2D4A">Close</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:20px">
+    <label style="font-size:12px;color:#4F6B8A">Trip name<input id="editTripName" type="text" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label>
+    <label style="font-size:12px;color:#4F6B8A">Start date<input id="editTripStart" type="date" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label>
+    <label style="font-size:12px;color:#4F6B8A">End date<input id="editTripEnd" type="date" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label>
+    <label style="grid-column:1/-1;font-size:12px;color:#4F6B8A">Destinations <span style="color:#8A6A35">(comma separated)</span><input id="editTripDestinations" type="text" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label>
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px;grid-column:1/-1">
+      <button type="button" class="btn" id="cancelEditTripButton">Cancel</button>
+      <button type="button" class="btn primary" id="saveEditTripButton">Save changes</button>
+    </div>
   </div>
 </div>
 
@@ -917,11 +927,28 @@ document.addEventListener("DOMContentLoaded",function(){TripPlanner.init()});
 </script>
 <script id="roamsonio-edit-trip-shell-script">
 (function(){
+  var KEY="roamsonio-european-trip-edits-v1";
+  var defaults={name:"European Thanksgiving Adventure 2026",start:"2026-11-25",end:"2026-12-04",destinations:["Trnava","Prague","Pilsen","Hluboká nad Vltavou","Vienna"]};
+  function read(){try{var x=JSON.parse(localStorage.getItem(KEY)||"null");return x&&typeof x==="object"?x:defaults;}catch(e){return defaults;}}
+  function write(x){try{localStorage.setItem(KEY,JSON.stringify(x));return true;}catch(e){return false;}}
   function initEditTripShell(){
-    var open=document.getElementById("editTripButton"),shell=document.getElementById("editTripShell"),close=document.getElementById("closeEditTripButton");
-    if(!open||!shell||!close)return;
-    open.addEventListener("click",function(){shell.style.display="block";shell.scrollIntoView({behavior:"smooth",block:"start"});});
-    close.addEventListener("click",function(){shell.style.display="none";});
+    var open=document.getElementById("editTripButton"),shell=document.getElementById("editTripShell"),close=document.getElementById("closeEditTripButton"),cancel=document.getElementById("cancelEditTripButton"),save=document.getElementById("saveEditTripButton");
+    if(!open||!shell||!close||!cancel||!save)return;
+    var name=document.getElementById("editTripName"),start=document.getElementById("editTripStart"),end=document.getElementById("editTripEnd"),destinations=document.getElementById("editTripDestinations");
+    function load(){
+      var t=read();
+      name.value=t.name||defaults.name; start.value=t.start||defaults.start; end.value=t.end||defaults.end; destinations.value=(t.destinations||defaults.destinations).join(", ");
+    }
+    function hide(){shell.style.display="none";open.textContent="Edit trip";load();}
+    function show(){load();shell.style.display="block";shell.scrollIntoView({behavior:"smooth",block:"start"});open.textContent="Editing trip";}
+    function saveEdits(){
+      var t={name:String(name.value||"").trim(),start:String(start.value||"").trim(),end:String(end.value||"").trim(),destinations:String(destinations.value||"").split(/[,\n]/).map(function(x){return x.trim();}).filter(Boolean)};
+      if(!t.name||!t.start||!t.end||!t.destinations.length){alert("Trip name, dates and at least one destination are required.");return;}
+      if(t.end<t.start){alert("End date cannot be before start date.");return;}
+      if(!write(t)){alert("This browser could not save the trip changes.");return;}
+      shell.style.display="none";open.textContent="Edit trip";alert("Trip changes saved. The unique European itinerary was preserved.");
+    }
+    open.addEventListener("click",show); close.addEventListener("click",hide); cancel.addEventListener("click",hide); save.addEventListener("click",saveEdits); load();
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initEditTripShell);else initEditTripShell();
 })();
