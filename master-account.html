@@ -726,6 +726,8 @@ const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","s
   ["photoUrl"].forEach(id=>document.getElementById(id).addEventListener("input",e=>photoPreview(e.target.value.trim())));
   const originalEdFill=edFill;
   edFill=function(x){ originalEdFill(x); photoLoad(); };
+  // Initialize the Editorial Library after the protected Master Admin session is ready.
+  edLoad();
   </script>
 
 
