@@ -636,6 +636,12 @@ const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","s
   let editorialPhotos=[];
   let selectedPhotoId=null;
   let photoCandidates=[];
+  function photoPlainMetadata(value){
+    const raw=String(value||"");
+    const box=document.createElement("div");
+    box.innerHTML=raw;
+    return (box.textContent||box.innerText||raw).replace(/\\s+/g," ").trim();
+  }
   async function loadPhotoCandidates(){
     const box=document.getElementById("photoCandidates"),grid=document.getElementById("photoCandidatesGrid");
     if(!selectedEditorialId){box.hidden=true;return;}
@@ -650,7 +656,7 @@ const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","s
       const pages=Object.values((data.query&&data.query.pages)||{});
       photoCandidates=pages.map(p=>{
         const info=(p.imageinfo&&p.imageinfo[0])||{},meta=info.extmetadata||{};
-        return {title:p.title||"",url:info.thumburl||info.url||"",source_url:"https://commons.wikimedia.org/wiki/"+encodeURIComponent((p.title||"").replace(/ /g,"_")),credit:(meta.Artist&&meta.Artist.value)||"Wikimedia Commons",alt_text:query+" travel photography"};
+        return {title:p.title||"",url:info.thumburl||info.url||"",source_url:"https://commons.wikimedia.org/wiki/"+encodeURIComponent((p.title||"").replace(/ /g,"_")),credit:photoPlainMetadata(meta.Artist&&meta.Artist.value)||"Wikimedia Commons",alt_text:query+" travel photography"};
       }).filter(x=>x.url);
       grid.innerHTML=photoCandidates.length?photoCandidates.map((x,i)=>"<button type='button' class='photoCandidate' data-index='"+i+"'><img src='"+esc(x.url)+"' alt='"+esc(x.alt_text)+"'><small>"+esc(x.title.replace(/^File:/i,""))+"</small></button>").join(""):"<div class='row'><span>No candidates found. Try Refresh or add a source URL manually.</span></div>";
       grid.querySelectorAll(".photoCandidate").forEach(b=>b.addEventListener("click",()=>photoUseCandidate(photoCandidates[Number(b.dataset.index)])));
