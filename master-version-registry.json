@@ -267,6 +267,13 @@
       "status": "SUCCESS",
       "rollbackEligible": true,
       "notes": "User confirmed the data-driven trip workspace image behavior works. Gatlinburg is no longer handled by a destination-specific hardcoded mapping."
+    },
+    {
+      "commit": "50d4b361a42b5ec63c7ae658ab9051d9c7ac59d3",
+      "label": "Restore home inspiration rendering",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Restores the home-page inspiration renderer by replacing an undefined travelEsc helper with the existing esc helper. No trip data, saved journeys, or destination imagery logic was changed. Awaiting user validation."
     }
   ]
 }
