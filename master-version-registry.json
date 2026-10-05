@@ -486,7 +486,7 @@
       "title": "Repair protected editorial photo save RPC",
       "status": "TESTING",
       "rollbackEligible": false,
-      "notes": "Supabase verification now shows one public.roamsonio_admin_upsert_editorial_photo function with the expected signature. Awaiting the final live Save Photo test in Master Account before marking successful."
+      "notes": "Supabase verification confirms both editorial tables now exist. The protected photo RPC remains TESTING. Next validation is confirming the selected editorial destination exists in the live table before testing photo save."
     }
   ]
 }
