@@ -479,6 +479,14 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "User's Supabase verification shows the protected editorial photo upsert RPC does not exist in public schema (0 rows). Previous success marking was premature; reverted to TESTING. Awaiting creation of the missing RPC and live save validation."
+    },
+    {
+      "sha": "730dc9fe34467ddca0bdfd99aca43b22f0cca3d5",
+      "date": "2026-10-05",
+      "title": "Repair protected editorial photo save RPC",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Creates the missing public.roamsonio_admin_upsert_editorial_photo RPC with the intended Master Admin + AAL2 protection and refreshes the PostgREST schema cache. Supabase verification showed the RPC was absent. No existing trip, user, family or saved-trip data is modified. Awaiting SQL application and live save validation."
     }
   ]
 }
