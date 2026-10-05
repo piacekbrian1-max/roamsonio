@@ -608,8 +608,8 @@ const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","s
     function loadKB(){
       fetch("master-knowledge-base.json?v="+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(data=>{
         const list=document.getElementById("kbList"),doc=document.getElementById("kbDoc"),items=data.sections||[];list.innerHTML="";
-        function render(x){doc.innerHTML="<span class='kbBadge'>"+esc(x.status||"active")+"</span><h3>"+esc(x.title)+"</h3><p>"+esc(x.purpose||"")+"</p><h4>How to manage it</h4><ul>"+(x.howTo||[]).map(y=>"<li>"+esc(y)+"</li>").join("")+"</ul><h4>Safety rules</h4><ul>"+(x.safety||[]).map(y=>"<li>"+esc(y)+"</li>").join("")+"</ul>";document.querySelectorAll(".kbItem").forEach(b=>b.classList.toggle("active",b.dataset.id===x.id));}
-        items.forEach(x=>{const b=document.createElement("button");b.type="button";b.className="kbItem";b.dataset.id=x.id;b.innerHTML=esc(x.title)+"<small>"+esc(x.status||"active")+"</small>";b.onclick=()=>render(x);list.appendChild(b);});if(items[0])render(items[0]);
+        function render(x){doc.innerHTML="<span class='kbBadge'>"+esc(x.kbNumber||"KB")+"</span><span class='kbBadge' style='margin-left:6px'>"+esc(x.status||"active")+"</span><h3>"+esc(x.title)+"</h3><p>"+esc(x.purpose||"")+"</p><h4>How to manage it</h4><ul>"+(x.howTo||[]).map(y=>"<li>"+esc(y)+"</li>").join("")+"</ul><h4>Safety rules</h4><ul>"+(x.safety||[]).map(y=>"<li>"+esc(y)+"</li>").join("")+"</ul>";document.querySelectorAll(".kbItem").forEach(b=>b.classList.toggle("active",b.dataset.id===x.id));}
+        items.forEach(x=>{const b=document.createElement("button");b.type="button";b.className="kbItem";b.dataset.id=x.id;b.innerHTML=esc(x.kbNumber||"KB")+" · "+esc(x.title)+"<small>"+esc(x.status||"active")+"</small>";b.onclick=()=>render(x);list.appendChild(b);});if(items[0])render(items[0]);
       }).catch(()=>{document.getElementById("kbDoc").innerHTML="<span class='kbBadge'>Documentation unavailable</span><h3>Knowledge Base</h3><p>The documentation file could not be loaded.</p>";});
     }
     loadKB();
