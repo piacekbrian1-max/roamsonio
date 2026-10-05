@@ -476,9 +476,9 @@
       "sha": "7579bcead29a31fd79ff1a03c2f400684692a06b",
       "date": "2026-10-05",
       "title": "Refresh editorial photo RPC schema cache",
-      "status": "SUCCESS",
-      "rollbackEligible": true,
-      "notes": "User confirmed the protected editorial photo approval/save workflow now succeeds after refreshing the PostgREST schema cache. Approved as a rollback target. No existing trips, saved data, identity, routing or trip imagery changed."
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "User's Supabase verification shows the protected editorial photo upsert RPC does not exist in public schema (0 rows). Previous success marking was premature; reverted to TESTING. Awaiting creation of the missing RPC and live save validation."
     }
   ]
 }
