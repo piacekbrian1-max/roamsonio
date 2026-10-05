@@ -487,6 +487,14 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Supabase verification confirms both editorial tables now exist. The protected photo RPC remains TESTING. Next validation is confirming the selected editorial destination exists in the live table before testing photo save."
+    },
+    {
+      "sha": "8b1aaf689904f19c3c80a611c967d8adc10604aa",
+      "date": "2026-10-05",
+      "title": "Seed RoamSonio editorial library",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Seeds the documented 26-entry Editorial Library into the live Supabase editorial destinations table using idempotent upserts. No existing trips, users, families, or saved journeys are modified. Awaiting user application and verification of the 26 entries."
     }
   ]
 }
