@@ -88,6 +88,26 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
 .denied h1{font-size:38px}
 .preview{display:none}
 .errorBox{display:none;margin:20px auto 0;max-width:760px;padding:13px 15px;border-radius:10px;background:#F7E5E2;color:#7B3028;border:1px solid #E8C7C2;font-size:11px;line-height:1.5}
+
+.editorialGrid{display:grid;grid-template-columns:300px 1fr;gap:14px}
+.editorialList{border:1px solid var(--line);border-radius:11px;background:#fff;max-height:560px;overflow:auto}
+.editorialItem{display:block;width:100%;text-align:left;padding:11px 12px;border:0;border-bottom:1px solid #E7EBEF;background:#fff;cursor:pointer;color:var(--navy);font:600 10px/1.35 "DM Sans"}
+.editorialItem:hover,.editorialItem.active{background:#F1EADB}
+.editorialItem small{display:block;margin-top:3px;color:var(--slate);font-size:8px;font-weight:500}
+.editorialEditor{border:1px solid var(--line);border-radius:11px;background:#fff;padding:16px}
+.editorialForm{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.editorialForm label{display:block;color:var(--navy);font-size:8px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.editorialForm input,.editorialForm select,.editorialForm textarea{width:100%;margin-top:5px;padding:10px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--navy);font:500 10px/1.4 "DM Sans";outline:none}
+.editorialForm textarea{min-height:72px;resize:vertical}
+.editorialFull{grid-column:1/-1}
+.editorialChecks{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+.editorialChecks label{display:flex;align-items:center;gap:6px;text-transform:none;letter-spacing:0;font-size:9px;font-weight:700}
+.editorialActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+.editorialStatus{margin-top:10px;padding:10px 12px;border-radius:8px;background:#F1EADB;color:#5F5137;font-size:9px;line-height:1.45}
+.editorialStats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px}
+.editorialStat{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.07em}
+@media(max-width:800px){.editorialGrid{grid-template-columns:1fr}.editorialList{max-height:300px}.editorialForm{grid-template-columns:1fr}}
+
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.rsNav{padding:8px 11px;min-height:62px;align-items:flex-start}.rsTop{min-height:62px}.rsBrand strong{font-size:18px}.rsMark{width:34px;height:34px;flex-basis:34px}.rsMark svg{width:26px;height:26px}.rsBrand small{font-size:5px}.rsLinks{gap:6px 8px}.rsLinks a{font-size:9px}.wrap{width:calc(100% - 24px);padding-top:24px}.grid{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr 1fr}.row.header{display:none}}
 @media(max-width:430px){.grid{grid-template-columns:1fr}.card{min-height:105px}}
@@ -134,6 +154,39 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
         <a class="primary" href="master-users.html">Users</a><a href="master-trips.html">Trips</a><a href="master-families.html">Families</a><a href="master-support.html">Support</a><a href="master-versioning.html" class="primary">Versioning & Rollback</a><a href="#">Messages</a><a href="#">Announcements</a><a href="#">Activity Log</a>
       </div>
       <div class="notice">Phase 2B is read-only. Users, trips, families and support data are visible through protected database functions. Account transfer is separately protected and requires Master Admin + MFA verification.</div>
+    </section>
+
+
+    <section class="section" id="editorialLibrarySection">
+      <div class="sectionHead">
+        <div><h2>Editorial Library</h2><p>Curated inspiration, buildable destinations & approved photography</p></div>
+      </div>
+      <div class="editorialStats" id="editorialStats"><span class="editorialStat">Loading library…</span></div>
+      <div class="editorialGrid">
+        <div class="editorialList" id="editorialList"><div class="row"><span>Loading editorial destinations…</span></div></div>
+        <div class="editorialEditor">
+          <div class="ey" id="editorialEditorEy">Editorial entry</div>
+          <h3 id="editorialEditorTitle" style="font:600 26px/1.1 'Playfair Display',serif;margin:6px 0 14px">Select a destination</h3>
+          <div class="editorialForm">
+            <label>ID<input id="edId" placeholder="permanent-id"></label>
+            <label>Name<input id="edName" placeholder="Destination name"></label>
+            <label>Type<select id="edType"><option>City</option><option>Region</option><option>Ski & Snowboard</option><option>Outdoor</option><option>Coast & Island</option><option>Road Trip</option><option>Seasonal Experience</option></select></label>
+            <label>Category<input id="edCategory" placeholder="Mountain Adventure"></label>
+            <label>Seasons<input id="edSeasons" placeholder="Winter, Spring, Summer"></label>
+            <label>Activities<input id="edActivities" placeholder="Hiking, Cycling, Food & Wine"></label>
+            <label class="editorialFull">Build Destination<input id="edBuildDestination" placeholder="Destination or region passed to trip builder"></label>
+            <label class="editorialFull">Editorial Tagline<textarea id="edTagline" placeholder="Short luxury-magazine description"></textarea></label>
+            <label>Status<select id="edStatus"><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></label>
+            <div class="editorialChecks"><label><input type="checkbox" id="edBuildable"> Buildable by users</label></div>
+          </div>
+          <div class="editorialActions">
+            <button type="button" class="transferBtn" id="newEditorialBtn">New Entry</button>
+            <button type="button" class="transferBtn" id="saveEditorialBtn">Save Entry</button>
+            <button type="button" class="secondaryBtn" id="publishEditorialBtn">Publish</button>
+          </div>
+          <div class="editorialStatus" id="editorialStatus">The editorial database is protected by Master Admin + MFA. Photography management will use the same protected library.</div>
+        </div>
+      </div>
     </section>
 
     <section class="section" id="accountTransferSection">
@@ -479,5 +532,56 @@ const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","s
     }
   }
   </script>
+
+  <script id="editorial-library-admin">
+  let editorialEntries=[];
+  let selectedEditorialId="";
+  const editorialFallback="editorial-library.json";
+  function edSetStatus(msg){const el=document.getElementById("editorialStatus");if(el)el.textContent=msg;}
+  function edReadForm(){return {
+    id:document.getElementById("edId").value.trim(),name:document.getElementById("edName").value.trim(),
+    type:document.getElementById("edType").value,category:document.getElementById("edCategory").value.trim(),
+    seasons:document.getElementById("edSeasons").value.split(",").map(x=>x.trim()).filter(Boolean),
+    activities:document.getElementById("edActivities").value.split(",").map(x=>x.trim()).filter(Boolean),
+    buildable:document.getElementById("edBuildable").checked,build_destination:document.getElementById("edBuildDestination").value.trim(),
+    tagline:document.getElementById("edTagline").value.trim(),status:document.getElementById("edStatus").value
+  };}
+  function edFill(x){
+    selectedEditorialId=x.id||"";document.getElementById("editorialEditorTitle").textContent=x.name||"New editorial entry";
+    ["edId","edName","edCategory","edBuildDestination","edTagline"].forEach(id=>document.getElementById(id).value="");
+    document.getElementById("edId").value=x.id||"";document.getElementById("edName").value=x.name||"";document.getElementById("edType").value=x.type||"City";document.getElementById("edCategory").value=x.category||"";
+    document.getElementById("edSeasons").value=(x.seasons||x.season||[]).join(", ");document.getElementById("edActivities").value=(x.activities||[]).join(", ");document.getElementById("edBuildDestination").value=x.build_destination||x.buildDestination||"";document.getElementById("edTagline").value=x.tagline||"";document.getElementById("edStatus").value=x.status||"draft";document.getElementById("edBuildable").checked=x.buildable!==false;
+    document.querySelectorAll(".editorialItem").forEach(b=>b.classList.toggle("active",b.dataset.id===selectedEditorialId));
+  }
+  function edRender(){
+    const list=document.getElementById("editorialList");list.innerHTML="";
+    const sorted=editorialEntries.slice().sort((a,b)=>(a.type||"").localeCompare(b.type||"")||(a.name||"").localeCompare(b.name||""));
+    sorted.forEach(x=>{const b=document.createElement("button");b.type="button";b.className="editorialItem";b.dataset.id=x.id;b.innerHTML="<strong>"+esc(x.name)+"</strong><small>"+esc(x.type)+" · "+esc(x.status||"draft")+" · "+(x.buildable!==false?"Buildable":"Editorial only")+"</small>";b.onclick=()=>edFill(x);list.appendChild(b);});
+    const counts={};sorted.forEach(x=>counts[x.type]=(counts[x.type]||0)+1);
+    document.getElementById("editorialStats").innerHTML="<span class='editorialStat'>"+sorted.length+" Entries</span>"+Object.keys(counts).map(k=>"<span class='editorialStat'>"+esc(k)+" · "+counts[k]+"</span>").join("");
+  }
+  async function edLoad(){
+    try{
+      const {data,error}=await client.rpc("roamsonio_admin_editorial_destinations");
+      if(error)throw error;
+      editorialEntries=data||[];edRender();edSetStatus("Protected editorial database loaded. Changes require Master Admin + MFA.");
+    }catch(e){
+      try{const r=await fetch(editorialFallback+"?v="+Date.now(),{cache:"no-store"});const data=await r.json();editorialEntries=data.entries||[];edRender();edSetStatus("Editorial catalog preview loaded from the documented library. Apply the Supabase editorial migrations to enable protected editing/publishing.");}
+      catch(f){edSetStatus("Editorial library unavailable: "+(e.message||"Unknown error"));}
+    }
+  }
+  async function edSave(statusOverride){
+    const x=edReadForm();if(!x.id||!x.name){edSetStatus("ID and Name are required.");return;}
+    if(!selectedEditorialId && editorialEntries.some(e=>e.id===x.id)){edSetStatus("That editorial ID already exists. Choose the existing entry or use a new permanent ID.");return;}
+    try{
+      const {error}=await client.rpc("roamsonio_admin_upsert_editorial_destination",{p_id:x.id,p_name:x.name,p_type:x.type,p_category:x.category,p_seasons:x.seasons,p_activities:x.activities,p_buildable:x.buildable,p_build_destination:x.build_destination,p_tagline:x.tagline,p_status:statusOverride||x.status,p_metadata:{}});
+      if(error)throw error;edSetStatus("Saved to the protected editorial library.");selectedEditorialId=x.id;await edLoad();
+    }catch(e){edSetStatus("Editorial save unavailable: "+(e.message||"Unknown error")+". The protected migration may still need to be applied.");}
+  }
+  document.getElementById("newEditorialBtn").addEventListener("click",()=>{selectedEditorialId="";edFill({type:"City",status:"draft",buildable:true});document.getElementById("editorialEditorTitle").textContent="New editorial entry";});
+  document.getElementById("saveEditorialBtn").addEventListener("click",()=>edSave());
+  document.getElementById("publishEditorialBtn").addEventListener("click",()=>edSave("published"));
+  </script>
+
 </body>
 </html>
