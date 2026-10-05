@@ -375,6 +375,22 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Fixes the shared HTML escaping function used by the Master Account Editorial Library and Knowledge Base renderers. The missing function caused the documentation article list to fail after the JSON loaded. No existing trip, user, family, routing or persistence logic changed. Awaiting user validation."
+    },
+    {
+      "sha": "01c1a07e321f43d684f4ddb427a60b714dc899ae",
+      "date": "2026-10-04",
+      "title": "Add stable knowledge base article numbers",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds stable KB0001-style article numbers to the Master Knowledge Base documentation. Documentation metadata only; no trip, user, family, routing or persistence logic changed. Awaiting user validation."
+    },
+    {
+      "sha": "0714f7d0a01619daba1002b189ec80370d9cc296",
+      "date": "2026-10-04",
+      "title": "Show knowledge base article numbers",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Displays stable KB0001-style article numbers in the Master Account Knowledge Base list and article header. Presentation/documentation only; no trip or persistence logic changed. Awaiting user validation."
     }
   ]
 }
