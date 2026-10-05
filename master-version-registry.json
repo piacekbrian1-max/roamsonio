@@ -292,17 +292,17 @@
     },
     {
       "sha": "0b52d96fa6191e50a2457837f8b330ad8f953cdd",
-      "status": "TESTING",
-      "rollbackEligible": false,
+      "status": "SUCCESS",
+      "rollbackEligible": true,
       "title": "Route New Orleans to current trip workspace",
-      "notes": "Fixes My Trips routing so the New Orleans trip opens the current RoamSonio trip workspace instead of the legacy new-orleans.html page. No trip data, identity, persistence, itinerary, or imagery changed."
+      "notes": "User verified the New Orleans trip opens the current RoamSonio workspace from My Trips. Approved as a rollback target; no trip data or identity logic changed."
     },
     {
       "sha": "35c4d3f11eaa6a109a067883535add027e82d3a2",
-      "status": "TESTING",
-      "rollbackEligible": false,
+      "status": "SUCCESS",
+      "rollbackEligible": true,
       "title": "Route New Orleans home links to current workspace",
-      "notes": "Fixes Main RoamSonio page links so New Orleans opens the current trip-workspace.html instead of the legacy new-orleans.html page. No trip data or persistence logic changed."
+      "notes": "User verified the New Orleans trip opens the current RoamSonio workspace from the Main page. Approved as a rollback target; no trip data or persistence logic changed."
     }
   ]
 }
