@@ -239,6 +239,20 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Reintroduces Save changes using the existing canonical save() routine, which updates local storage, revision/updatedAt, safety snapshot, and durable Supabase snapshot when available. No My Trips code changed. Awaiting live validation."
+    },
+    {
+      "commit": "d70210917b9898e1d027bce84a5dc61ba03ac9a1",
+      "label": "Fix Gatlinburg trip image mapping",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds a dedicated Gatlinburg destination image mapping on the main dashboard so Gatlinburg no longer falls through to the Prague default. User testing required."
+    },
+    {
+      "commit": "b94f45013e7697aea41a623690ef7fdeaf1dcb78",
+      "label": "Use Gatlinburg image in trip workspace",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Uses the same dedicated Gatlinburg image in the trip workspace destination-image resolver. User testing required."
     }
   ]
 }
