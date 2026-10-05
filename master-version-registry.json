@@ -444,9 +444,9 @@
       "sha": "70d109e0d1dd8793b6c8002dbea88a8d86101df",
       "date": "2026-10-04",
       "title": "Initialize Master Account editorial library",
-      "status": "TESTING",
-      "rollbackEligible": false,
-      "notes": "Fixes the Master Account Editorial Library panel remaining on 'Loading library…' by initializing the protected editorial catalog after the Master Admin page scripts are loaded. No trip, user, family, persistence, imagery, routing, or existing data was changed. Awaiting user verification."
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "User confirmed the Master Account Editorial Library now loads and displays the 26 documented entries. Approved as a rollback target. This change only initializes the editorial library renderer; no trip, user, family, persistence, imagery, routing, or existing data was changed."
     }
   ]
 }
