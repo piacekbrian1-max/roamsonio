@@ -623,7 +623,10 @@ const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","s
   }
   async function edSave(statusOverride){
     const x=edReadForm();if(!x.id||!x.name){edSetStatus("ID and Name are required.");return;}
-    if(!selectedEditorialId && editorialEntries.some(e=>e.id===x.id)){edSetStatus("That editorial ID already exists. Choose the existing entry or use a new permanent ID.");return;}
+    if(!selectedEditorialId){
+      const existing=editorialEntries.find(e=>String(e.id)===String(x.id));
+      if(existing) selectedEditorialId=x.id;
+    }
     try{
       const {error}=await client.rpc("roamsonio_admin_upsert_editorial_destination",{p_id:x.id,p_name:x.name,p_type:x.type,p_category:x.category,p_seasons:x.seasons,p_activities:x.activities,p_buildable:x.buildable,p_build_destination:x.build_destination,p_tagline:x.tagline,p_status:statusOverride||x.status,p_metadata:{}});
       if(error)throw error;edSetStatus("Saved to the protected editorial library.");selectedEditorialId=x.id;await edLoad();
