@@ -484,17 +484,17 @@
       "sha": "730dc9fe34467ddca0bdfd99aca43b22f0cca3d5",
       "date": "2026-10-05",
       "title": "Repair protected editorial photo save RPC",
-      "status": "TESTING",
-      "rollbackEligible": false,
-      "notes": "Supabase verification confirms both editorial tables now exist. The protected photo RPC remains TESTING. Next validation is confirming the selected editorial destination exists in the live table before testing photo save."
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "User confirmed the protected Editorial Photography workflow now saves the approved Amalfi Coast Hero photo successfully. The live database contains the required RPC and editorial tables. Approved as a rollback target; no existing trip, user, family or saved-trip data was modified."
     },
     {
       "sha": "8b1aaf689904f19c3c80a611c967d8adc10604aa",
       "date": "2026-10-05",
       "title": "Seed RoamSonio editorial library",
-      "status": "TESTING",
-      "rollbackEligible": false,
-      "notes": "Seeds the documented 26-entry Editorial Library into the live Supabase editorial destinations table using idempotent upserts. No existing trips, users, families, or saved journeys are modified. Awaiting user application and verification of the 26 entries."
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "User confirmed the live Editorial Library is populated with the documented 26 destinations, including Amalfi Coast, enabling protected editorial photo management. Approved as a rollback target; no existing trip, user, family or saved-trip data was modified."
     }
   ]
 }
