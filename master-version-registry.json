@@ -468,8 +468,8 @@
       "sha": "e6502ac166446cb63458018e7d93feae0c6b0889",
       "date": "2026-10-05",
       "title": "Clean editorial photo credit metadata",
-      "status": "TESTING",
-      "rollbackEligible": false,
+      "status": "SUCCESS",
+      "rollbackEligible": true,
       "notes": "Cleans Wikimedia photographer/artist metadata before placing it in the editorial photo Credit field, so HTML markup is shown as readable credit text instead of raw tags. No existing trips, saved data, identity, routing or trip imagery changed. Awaiting user testing."
     },
     {
