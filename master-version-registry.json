@@ -495,6 +495,14 @@
       "status": "SUCCESS",
       "rollbackEligible": true,
       "notes": "User confirmed the live Editorial Library is populated with the documented 26 destinations, including Amalfi Coast, enabling protected editorial photo management. Approved as a rollback target; no existing trip, user, family or saved-trip data was modified."
+    },
+    {
+      "sha": "0c707248547e8269e1ffa6f1d84101a4187538ca",
+      "date": "2026-10-05",
+      "title": "Connect approved editorial photography to home inspiration",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Updates the Home weekly inspiration cards to prefer approved photography from published Editorial Library destinations, while preserving the existing weekly rotation and existing image fallback. Draft editorial destinations remain private. No existing trips, saved data, identity, routing or persistence logic changed. Awaiting user testing."
     }
   ]
 }
