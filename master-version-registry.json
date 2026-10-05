@@ -476,9 +476,9 @@
       "sha": "7579bcead29a31fd79ff1a03c2f400684692a06b",
       "date": "2026-10-05",
       "title": "Refresh editorial photo RPC schema cache",
-      "status": "TESTING",
-      "rollbackEligible": false,
-      "notes": "Adds a Supabase migration that refreshes the PostgREST schema cache after the protected editorial photo RPC was created. This addresses the live Save Photo error without changing trip, user, family, or editorial data. Awaiting user application of the migration and save test."
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "User confirmed the protected editorial photo approval/save workflow now succeeds after refreshing the PostgREST schema cache. Approved as a rollback target. No existing trips, saved data, identity, routing or trip imagery changed."
     }
   ]
 }
