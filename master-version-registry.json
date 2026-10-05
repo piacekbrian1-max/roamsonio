@@ -486,7 +486,7 @@
       "title": "Repair protected editorial photo save RPC",
       "status": "SUCCESS",
       "rollbackEligible": true,
-      "notes": "User confirmed the protected Editorial Photography workflow now saves the approved Amalfi Coast Hero photo successfully. The live database contains the required RPC and editorial tables. Approved as a rollback target; no existing trip, user, family or saved-trip data was modified."
+      "notes": "User confirmed the protected Editorial Photography workflow now supports a complete approved Hero, Mobile and Secondary image set for Amalfi Coast. The records persist and reload from the protected database. Approved as a rollback target; no existing trip, user, family or saved-trip data was modified."
     },
     {
       "sha": "8b1aaf689904f19c3c80a611c967d8adc10604aa",
