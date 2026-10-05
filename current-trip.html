@@ -928,7 +928,7 @@ document.addEventListener("DOMContentLoaded",function(){TripPlanner.init()});
 <script id="roamsonio-edit-trip-shell-script">
 (function(){
   var KEY="big-thanksgiving-trips-v1";
-  var TRIP_ID="european-thanksgiving-adventure-2026";
+  var TRIP_ID="a636626a-e7b2-4337-b950-be9682edde63";
   var defaults={id:TRIP_ID,name:"European Thanksgiving Adventure 2026",start:"2026-11-26",end:"2026-12-04",destinations:["Trnava","Prague","Pilsen","Hluboká nad Vltavou","Vienna"]};
   function read(){try{var a=JSON.parse(localStorage.getItem(KEY)||"[]");if(!Array.isArray(a))a=[];var x=a.find(function(t){return t&&t.id===TRIP_ID});return x&&typeof x==="object"?x:defaults;}catch(e){return defaults;}}
   function write(x){try{var a=JSON.parse(localStorage.getItem(KEY)||"[]");if(!Array.isArray(a))a=[];var found=false;for(var i=0;i<a.length;i++){if(a[i]&&a[i].id===TRIP_ID){a[i]=Object.assign({},a[i],x,{id:TRIP_ID});found=true;break;}}if(!found)a.unshift(x);localStorage.setItem(KEY,JSON.stringify(a));return true;}catch(e){return false;}}
