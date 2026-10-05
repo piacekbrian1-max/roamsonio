@@ -464,7 +464,7 @@ window.openTrip=function(id){
   var isNola=String(id)===nolaId || String(t.supabaseId||"")===nolaId ||
              String(t.name||"").trim()==="New Orleans · Jan 16–20, 2027";
   if(isNola){
-    location.href="new-orleans.html?id="+encodeURIComponent(id)+"&v=nola-stable-"+Date.now();
+    location.href="trip-workspace.html?id="+encodeURIComponent(id)+"&supabaseId="+encodeURIComponent(t.supabaseId||"16f08031-885a-45d6-a79e-480fb1d39c67")+"&destination="+encodeURIComponent(d||"New Orleans")+"&v=nola-current-"+Date.now();
     return;
   }
 
