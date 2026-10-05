@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "title": "RoamSonio Master Knowledge Base",
+  "description": "Operational documentation for Master Account functions and future pilot operations.",
+  "lastReviewed": "2026-10-04",
+  "sections": [
+    {
+      "id": "editorial-library",
+      "title": "Editorial Library",
+      "status": "active",
+      "purpose": "Manage the curated inspiration catalog used by The RoamSonio Edit and future Home page editorial experiences.",
+      "howTo": [
+        "Choose an existing entry to review or select New Entry.",
+        "Maintain a permanent ID; do not reuse an ID for a different destination.",
+        "Set type, category, seasons and activities.",
+        "Set Buildable when users should be able to use the entry to start a trip.",
+        "Use Build Destination to define what is passed to the existing trip builder.",
+        "Keep editorial photography approved and documented before publishing.",
+        "Use Draft while preparing content; Publish only after review."
+      ],
+      "safety": [
+        "Do not edit existing saved trip records from the Editorial Library.",
+        "Changing an editorial entry must not change a user's saved trip.",
+        "Use permanent IDs so published links remain stable.",
+        "Test a new published entry from the Home page before declaring it production-ready."
+      ]
+    },
+    {
+      "id": "editorial-photography",
+      "title": "Editorial Photography",
+      "status": "planned",
+      "purpose": "Maintain controlled, high-quality destination photography for the luxury travel-magazine presentation.",
+      "howTo": [
+        "Add a photo with destination, role, source URL, credit and alt text.",
+        "Use hero for the primary editorial image, secondary for supporting cards and mobile for an approved mobile crop.",
+        "Approve only images that meet the RoamSonio photography standard.",
+        "Preview the destination before publishing."
+      ],
+      "safety": [
+        "Do not replace existing trip photos through this library.",
+        "Never rely on random image selection for published editorial cards.",
+        "Keep source and credit information with every approved image."
+      ]
+    },
+    {
+      "id": "weekly-edit",
+      "title": "The RoamSonio Edit",
+      "status": "planned",
+      "purpose": "Rotate curated inspiration weekly while keeping the edition stable throughout the week.",
+      "howTo": [
+        "Editorial content is selected from published library entries.",
+        "The weekly edition changes on Sunday.",
+        "Refreshing the Home page during the same edition must not randomly change the destinations.",
+        "Only approved/published entries should be eligible."
+      ],
+      "safety": [
+        "Do not hard-code individual weekly destinations into index.html.",
+        "Do not fetch random photography on each page load.",
+        "Changes to rotation logic require a separate test point."
+      ]
+    },
+    {
+      "id": "trip-builder-handoff",
+      "title": "Build From Inspiration",
+      "status": "planned",
+      "purpose": "Allow a user to turn an editorial destination, region or experience into a new trip without changing existing saved trips.",
+      "howTo": [
+        "Use Build This Journey from an eligible editorial entry.",
+        "Pass the stable editorial/build destination into the existing builder.",
+        "Let the existing builder create the new trip."
+      ],
+      "safety": [
+        "Never overwrite an existing trip.",
+        "Never reuse an existing saved trip ID for an editorial entry.",
+        "Test the complete build-and-save flow before approval."
+      ]
+    },
+    {
+      "id": "versioning",
+      "title": "Versioning & Rollback",
+      "status": "active",
+      "purpose": "Protect tested production states and provide a controlled rollback path.",
+      "howTo": [
+        "Register every development version.",
+        "Keep untested work in TESTING.",
+        "After user confirmation, mark the exact tested version SUCCESS and rollback eligible.",
+        "Mark broken work ISSUE or FAILED and never make it a rollback target."
+      ],
+      "safety": [
+        "Administrative registry commits are not production rollback targets.",
+        "Do not mark a version SUCCESS before user testing.",
+        "Make one focused change at a time when possible."
+      ]
+    },
+    {
+      "id": "pilot-readiness",
+      "title": "Pilot Readiness",
+      "status": "planned",
+      "purpose": "Prepare the site for real users without destabilizing existing trips.",
+      "howTo": [
+        "Review each page individually.",
+        "Test core user journeys after meaningful changes.",
+        "Verify existing trips remain accessible and persistent.",
+        "Separate must-fix issues from optional polish."
+      ],
+      "safety": [
+        "No broad redesign should bypass a test point.",
+        "Existing trip data, IDs, persistence and routing are protected requirements."
+      ]
+    }
+  ]
+}
