@@ -257,16 +257,16 @@
     {
       "commit": "11d4fa9029401b1e5370657d13ffa50c8efa3dbf",
       "label": "Use saved destination photos for trip cards",
-      "status": "TESTING",
-      "rollbackEligible": false,
-      "notes": "Main-page trip cards now prefer each trip's saved destinationKnowledge photos, then the trip's own image, before legacy fallbacks. No destination-specific Gatlinburg hardcode."
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "User confirmed the saved destination imagery works on the main page. Trip cards use destination data rather than a Gatlinburg-specific hardcoded image."
     },
     {
       "commit": "b58ed7e946a81dbdcfa2fcab154208ce10cd4e87",
       "label": "Remove hardcoded Gatlinburg image mapping",
-      "status": "TESTING",
-      "rollbackEligible": false,
-      "notes": "Trip workspace returns to its data-driven destination image resolver; Gatlinburg is no longer hardcoded."
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "User confirmed the data-driven trip workspace image behavior works. Gatlinburg is no longer handled by a destination-specific hardcoded mapping."
     }
   ]
 }
