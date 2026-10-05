@@ -455,6 +455,14 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Adds a controlled candidate-image gallery to Master Account Editorial Photography using Wikimedia Commons search. Selecting a candidate only fills the editor; it is not approved or saved automatically. No existing trips or saved data changed. Awaiting user testing."
+    },
+    {
+      "sha": "384b19a56cf8050669ae5c34ca3609e1a6c3aec9",
+      "date": "2026-10-05",
+      "title": "Load editorial photo candidates when adding a photo",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Ensures the deployed Master Account Add Photo workflow actually invokes the controlled Wikimedia candidate gallery and wires its Refresh button. No existing trips, saved data, identity, routing or trip imagery changed. Awaiting user testing."
     }
   ]
 }
