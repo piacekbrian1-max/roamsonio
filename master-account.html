@@ -755,7 +755,9 @@ const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","s
     ["photoUrl","photoAlt","photoCredit","photoSource"].forEach(id=>document.getElementById(id).value="");
     document.getElementById("photoRole").value="hero"; document.getElementById("photoSort").value=0;
     document.getElementById("photoApproved").checked=false; document.getElementById("deletePhotoBtn").hidden=true; photoPreview("");
+    loadPhotoCandidates();
   });
+  document.getElementById("refreshPhotoCandidates").addEventListener("click",loadPhotoCandidates);
   document.getElementById("savePhotoBtn").addEventListener("click",photoSave);
   document.getElementById("deletePhotoBtn").addEventListener("click",photoDelete);
   ["photoUrl"].forEach(id=>document.getElementById(id).addEventListener("input",e=>photoPreview(e.target.value.trim())));
