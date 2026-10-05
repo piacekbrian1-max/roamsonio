@@ -367,6 +367,14 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Adds a Master Account knowledge base viewer backed by master-knowledge-base.json. Documentation/UI only; no existing trip, user, family or persistence logic changed."
+    },
+    {
+      "sha": "76273d8d0097cb2f4dd4207b637b421349c95d99",
+      "date": "2026-10-04",
+      "title": "Fix Master Account documentation rendering",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Fixes the shared HTML escaping function used by the Master Account Editorial Library and Knowledge Base renderers. The missing function caused the documentation article list to fail after the JSON loaded. No existing trip, user, family, routing or persistence logic changed. Awaiting user validation."
     }
   ]
 }
