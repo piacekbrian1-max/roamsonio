@@ -607,5 +607,13 @@
       "rollbackEligible": false,
       "notes": "First presentation-only step of the Home page facelift. Reworks the Home hero into a magazine-style editorial introduction with RoamSonio messaging and clear discovery/build actions. Existing trip data, Editorial Library loading, weekly inspiration logic and routing are untouched. Awaiting user testing."
     },
+    {
+      "sha": "cd5cd0c5c448e743354074b33eee2a7d873b3d62",
+      "date": "2026-10-05",
+      "title": "Recompose Home as an immersive travel magazine",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Presentation-only Home redesign. Keeps the approved hero foundation, then changes the page rhythm to a full-width weekly feature, asymmetric Explore grid, editorial Your Journeys section, archive, and stronger Start a Trip closing panel. Existing trip persistence, Editorial Library loading, weekly rotation, routing and saved trip data are untouched. Awaiting user testing."
+    }
   ]
 }
