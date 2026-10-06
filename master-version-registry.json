@@ -582,6 +582,22 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "New daily plans distribute editorial destination sights across the trip instead of simply taking adjacent items. Existing saved trips are untouched."
+    },
+    {
+      "sha": "c9394b9c2732c205728cb18c7ca12133169b1727",
+      "date": "2026-10-05",
+      "title": "Expand automatic destination discovery for bars and entertainment",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Extends the generic destination discovery layer to collect bars, restaurants, theaters, nightlife, arts centers and music venues from live OpenStreetMap data. Existing trips and saved data are untouched."
+    },
+    {
+      "sha": "6ecf40164ff75bc2da6d509b9bf6bd2fa9785898",
+      "date": "2026-10-05",
+      "title": "Use saved destination food and entertainment in trip guide",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Makes the trip guide consume the destination knowledge and saved build food for generic destinations, and adds Music/Theater discovery lanes without borrowing another city's restaurant data. Existing trips and saved data are untouched."
     }
   ]
 }
