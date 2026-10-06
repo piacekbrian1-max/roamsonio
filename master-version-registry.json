@@ -518,6 +518,14 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Supabase verification showed the protected Editorial Library destination read RPC was absent, causing Master Account to fall back to the documented JSON catalog and display stale draft statuses. This repair restores the Master Admin + MFA protected read function. No existing trips, users, families, saved journeys or photography records are modified. Awaiting SQL application and live read validation."
+    },
+    {
+      "sha": "b11e5f4bea0d10b4f5d1b2f3d6c870891e816372",
+      "date": "2026-10-05",
+      "title": "Add published editorial destinations to weekly inspiration",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds published Editorial Library destinations with approved photography as a dedicated weekly editorial slot on Home, while preserving the existing five seasonal inspiration cards and Sunday rotation. Draft destinations remain excluded. Existing trips, saved data, identity, routing and persistence are untouched. Awaiting user testing."
     }
   ]
 }
