@@ -317,6 +317,35 @@ async function fetchDestinationKnowledge(identity){
   if(knowledge.food.length||knowledge.thingsToDo.length||knowledge.photos.length||knowledge.areas.length)writeDestinationKnowledge(key,knowledge);
   return knowledge;
 }
+async function fetchEditorialBuildProfile(destination){
+  var raw=String(destination||"").trim();
+  if(!raw)return null;
+  try{
+    var url="https://vqtqchxoecrahtrnoocy.supabase.co/rest/v1/roamsonio_editorial_destinations?status=eq.published&build_destination=eq."+encodeURIComponent(raw)+"&select=name,build_destination,tagline,activities,metadata&limit=1";
+    var key="sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy";
+    var res=await fetch(url,{headers:{apikey:key,Authorization:"Bearer "+key},cache:"no-store"});
+    if(!res.ok)return null;
+    var rows=await res.json();
+    return Array.isArray(rows)&&rows.length?rows[0]:null;
+  }catch(e){return null}
+}
+function applyEditorialBuildProfile(c,profile){
+  if(!profile)return c;
+  var meta=profile.metadata&&typeof profile.metadata==="object"?profile.metadata:{};
+  var next={};
+  for(var k in c)next[k]=c[k];
+  if(Array.isArray(meta.areas)&&meta.areas.length)next.areas=meta.areas;
+  if(Array.isArray(meta.sights)&&meta.sights.length)next.sights=meta.sights;
+  else if(Array.isArray(meta.thingsToDo)&&meta.thingsToDo.length)next.sights=meta.thingsToDo.map(function(x){return typeof x==="string"?x:String(x&&x.name||"")}).filter(Boolean);
+  if(Array.isArray(meta.food)&&meta.food.length)next.food=meta.food.map(function(x){return typeof x==="string"?x:String(x&&x.name||"")}).filter(Boolean);
+  if(Array.isArray(meta.local)&&meta.local.length)next.local=meta.local;
+  if(Array.isArray(meta.resources)&&meta.resources.length)next.resources=meta.resources;
+  if(meta.events)next.events=meta.events;
+  if(meta.weather)next.weather=meta.weather;
+  if(meta.cams)next.cams=meta.cams;
+  if(Array.isArray(meta.photos))next.photos=meta.photos;
+  return next;
+}
 function applyDestinationKnowledge(c,knowledge){
   if(!knowledge)return c;
   var next={};
@@ -349,6 +378,9 @@ var locationIdentity;
 try{locationIdentity=await resolveDestination(dest)}catch(e){status.textContent=e&&e.message?e.message:"We couldn't identify that destination. Please refine the location.";return}
 var resolvedName=locationIdentity.city||locationIdentity.name||dest;
 var c=catalog(resolvedName);
+status.textContent="Loading editorial destination knowledge…";
+var editorialProfile=await fetchEditorialBuildProfile(dest);
+c=applyEditorialBuildProfile(c,editorialProfile);
 status.textContent="Building destination knowledge…";
 var destinationKnowledge=await fetchDestinationKnowledge(locationIdentity);
 c=applyDestinationKnowledge(c,destinationKnowledge);
