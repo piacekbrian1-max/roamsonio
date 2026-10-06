@@ -615,5 +615,13 @@
       "rollbackEligible": false,
       "notes": "Presentation-only Home redesign. Keeps the approved hero foundation, then changes the page rhythm to a full-width weekly feature, asymmetric Explore grid, editorial Your Journeys section, archive, and stronger Start a Trip closing panel. Existing trip persistence, Editorial Library loading, weekly rotation, routing and saved trip data are untouched. Awaiting user testing."
     }
-  ]
+  ],
+    {
+      "sha": "ecdcaa82f89024aeb4b3505b957e43385586cf03",
+      "date": "2026-10-06",
+      "title": "Rework Home opening into magazine cover with direct trip access",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Presentation-only Home opening change. Replaces the text-heavy first viewport with an editorial magazine-cover composition using the current weekly feature photography, while preserving the approved RoamSonio message, direct Start a New Trip action, and an explicit My Trips shortcut for users who want to go straight to their saved journeys. Existing trip data, persistence, Editorial Library loading, weekly rotation, routing and trip pages are untouched. Awaiting user iPad testing."
+    }
 }
