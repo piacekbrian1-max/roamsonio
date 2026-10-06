@@ -598,7 +598,7 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Makes the trip guide consume the destination knowledge and saved build food for generic destinations, and adds Music/Theater discovery lanes without borrowing another city's restaurant data. Existing trips and saved data are untouched."
-    }
+    },
     {
       "sha": "b4b45b9f734ce7f02d481fd9982b15b2b64e2401",
       "date": "2026-10-05",
@@ -615,7 +615,7 @@
       "rollbackEligible": false,
       "notes": "Presentation-only Home redesign. Keeps the approved hero foundation, then changes the page rhythm to a full-width weekly feature, asymmetric Explore grid, editorial Your Journeys section, archive, and stronger Start a Trip closing panel. Existing trip persistence, Editorial Library loading, weekly rotation, routing and saved trip data are untouched. Awaiting user testing."
     }
-  ],
+,
     {
       "sha": "ecdcaa82f89024aeb4b3505b957e43385586cf03",
       "date": "2026-10-06",
@@ -624,4 +624,5 @@
       "rollbackEligible": false,
       "notes": "Presentation-only Home opening change. Replaces the text-heavy first viewport with an editorial magazine-cover composition using the current weekly feature photography, while preserving the approved RoamSonio message, direct Start a New Trip action, and an explicit My Trips shortcut for users who want to go straight to their saved journeys. Existing trip data, persistence, Editorial Library loading, weekly rotation, routing and trip pages are untouched. Awaiting user iPad testing."
     }
+  ]
 }
