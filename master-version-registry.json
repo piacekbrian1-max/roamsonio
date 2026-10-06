@@ -525,15 +525,15 @@
       "title": "Add published editorial destinations to weekly inspiration",
       "status": "TESTING",
       "rollbackEligible": false,
-      "notes": "Adds published Editorial Library destinations with approved photography as a dedicated weekly editorial slot on Home, while preserving the existing five seasonal inspiration cards and Sunday rotation. Draft destinations remain excluded. Existing trips, saved data, identity, routing and persistence are untouched. Awaiting user testing."
+      "notes": "Superseded by 9dfb419bd680dd4c9b5efd7847814a69d8f15cbf, which fixes the Home Editorial Library query to include seasons and other destination fields required by the weekly editorial filter. The intended editorial-slot behavior is now validated through the corrected implementation."
     },
     {
       "sha": "9dfb419bd680dd4c9b5efd7847814a69d8f15cbf",
       "date": "2026-10-05",
       "title": "Fix editorial weekly rotation data loading",
-      "status": "TESTING",
-      "rollbackEligible": false,
-      "notes": "Fixes the Home Editorial Library query to load seasons, activities, type and tagline along with published destinations and approved photography. The prior query loaded only identity/photo fields, so published Amalfi Coast could not pass the seasonal editorial filter. No existing trips, saved data, identity, routing or persistence logic changed. Awaiting user testing."
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "User tested the Home page on iPad and confirmed Amalfi Coast appears as the weekly Editorial slot with the approved Amalfi photography, while the existing seasonal inspiration cards remain intact. This validates the Editorial Library → approved photography → weekly Home inspiration flow. No existing trips, saved data, identity, routing or persistence logic changed."
     }
   ]
 }
