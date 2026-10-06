@@ -617,6 +617,14 @@
     }
 ,
     {
+      "sha": "d77b4e69bcb3b8bb58d5341382f996982013a389",
+      "date": "2026-10-06",
+      "title": "Give Home hero editorial rule more breathing room",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Presentation-only Home hero spacing refinement. Moves the large headline and supporting copy farther from the gold editorial rule on iPad/tablet layouts so the rule reads as a deliberate margin element rather than crowding the typography. No trip data, persistence, Editorial Library loading, weekly rotation, routing or trip pages changed. Awaiting user iPad testing."
+    },
+    {
       "sha": "f4b2e3255de0775c9ed5efe42e89150ea38b8949",
       "date": "2026-10-06",
       "title": "Refine Home hero contrast and magazine hierarchy",
