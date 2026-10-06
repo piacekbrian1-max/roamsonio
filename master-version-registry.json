@@ -558,6 +558,30 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Adds destination-specific Amalfi Coast build metadata to the published Editorial Library row. The profile is stored in the Editorial Library metadata layer rather than hardcoded into the trip builder. Requires applying the SQL migration before testing. No users, families or trips are modified."
+    },
+    {
+      "sha": "1bfc16f34878b3e535caecd09f5f432deb01a81a",
+      "date": "2026-10-05",
+      "title": "Prioritize Editorial Library knowledge in trip builds",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Keeps the existing destination knowledge layer and then applies the published Editorial Library profile so editorial destination-specific content is the final source for the new build. Awaiting rebuild test."
+    },
+    {
+      "sha": "b5462c6083380942fea2b6cdb3890f6f40ae88a9",
+      "date": "2026-10-05",
+      "title": "Add real lunch dinner and local context to builds",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "New builds now persist lunch and dinner from the Editorial Library food list and use local context for the evening block. Existing saved trips are untouched."
+    },
+    {
+      "sha": "6825f084eee34df808857a2dd166235f895c8494",
+      "date": "2026-10-05",
+      "title": "Spread destination sights across daily plans",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "New daily plans distribute editorial destination sights across the trip instead of simply taking adjacent items. Existing saved trips are untouched."
     }
   ]
 }
