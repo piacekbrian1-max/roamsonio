@@ -381,7 +381,7 @@ var c=catalog(resolvedName);
 status.textContent="Building destination knowledge…";
 var destinationKnowledge=await fetchDestinationKnowledge(locationIdentity);
 c=applyDestinationKnowledge(c,destinationKnowledge);
-status.textContent="Loading editorial destination knowledge…";
+status.textContent="Loading Editorial Library knowledge…";
 var editorialProfile=await fetchEditorialBuildProfile(dest);
 c=applyEditorialBuildProfile(c,editorialProfile);
 var ps=selected(),must=arr(document.getElementById("must").value),avoid=arr(document.getElementById("avoid").value);
