@@ -643,9 +643,9 @@
       "sha": "fa67fa8523c9d437f82b414fa4b71189bd288b54",
       "date": "2026-10-06",
       "title": "Reduce Home feature image footprint",
-      "status": "TESTING",
-      "rollbackEligible": false,
-      "notes": "Presentation-only Home refinement. Reduces the weekly feature photograph from a near full-viewport treatment to a shorter, inset editorial image so the page does not feel dominated by one photograph. Existing trip data, persistence, Editorial Library loading, weekly rotation, routing and trip pages are untouched. Awaiting user iPad testing."
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "User tested the revised Home feature image on iPad and confirmed the reduced footprint looks better. The image now has more breathing room and no longer dominates the page; the composition is expected to fill out naturally as more published editorial destinations and approved photography are added. Presentation-only change; no trip data, persistence, Editorial Library loading, weekly rotation, routing or trip pages changed."
     }
   ]
 }
