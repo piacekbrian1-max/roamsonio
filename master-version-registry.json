@@ -542,6 +542,22 @@
       "status": "SUCCESS",
       "rollbackEligible": true,
       "notes": "User tested the Amalfi Coast Home inspiration card on iPad and confirmed it opens Build Your Trip with Amalfi Coast, Italy pre-filled. No trip was automatically created and existing trips remain untouched. Approved as a rollback target."
+    },
+    {
+      "sha": "cc9698a42b42d61482fc4e025eb5bc529eecadb2",
+      "date": "2026-10-05",
+      "title": "Use Editorial Library knowledge in trip builds",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Trip Builder now loads the published Editorial Library build profile for the selected destination and applies its real areas, sights, food, local context, resources, weather and webcam queries before the existing destination-knowledge layer. Existing saved trips and persistence logic are untouched. Awaiting Amalfi build test."
+    },
+    {
+      "sha": "f334c02098e3347053e56b848458e5d9fee70dc0",
+      "date": "2026-10-05",
+      "title": "Add rich Amalfi editorial build profile",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds destination-specific Amalfi Coast build metadata to the published Editorial Library row. The profile is stored in the Editorial Library metadata layer rather than hardcoded into the trip builder. Requires applying the SQL migration before testing. No users, families or trips are modified."
     }
   ]
 }
