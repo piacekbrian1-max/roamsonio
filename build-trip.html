@@ -292,7 +292,8 @@ async function fetchDestinationKnowledge(identity){
         var amen=String(tags.amenity||""),tour=String(tags.tourism||""),leis=String(tags.leisure||""),shop=String(tags.shop||"");
         var item={name:name,category:tour||amen||leis||shop,source:"OpenStreetMap"};
         if(amen==="restaurant"||amen==="cafe"||amen==="bar"||amen==="food_court")knowledge.food.push(item);
-        else if(amen==="theatre"||amen==="nightclub"||amen==="arts_centre"||amen==="music_venue")knowledge.entertainment.push(item);\n        else knowledge.thingsToDo.push(item);
+        else if(amen==="theatre"||amen==="nightclub"||amen==="arts_centre"||amen==="music_venue")knowledge.entertainment.push(item);
+        else knowledge.thingsToDo.push(item);
         if(tags["addr:suburb"]||tags["addr:neighbourhood"])knowledge.areas.push(tags["addr:suburb"]||tags["addr:neighbourhood"]);
       }
       knowledge.sources.push("OpenStreetMap / Overpass");
