@@ -300,7 +300,7 @@ function readiness(t){var checks=[
 function countdownLabel(t){var d=daysUntil(t.start);if(d===null)return"Dates not set";if(d>1)return d+" days";if(d===1)return"Tomorrow";if(d===0)return"Today";var left=Math.abs(d);return left+" days ago"}
 function completedTripModel(){return{name:"European Thanksgiving Adventure 2026",start:"2026-11-26",end:"2026-12-04",destinations:["Trnava","Prague","Pilsen","Hluboká nad Vltavou","Vienna"],travelers:3,state:"Completed planning",ready:true,missing:[],image:"images/prague-christmas.jpg",href:"current-trip.html"}}
 function currentTripModel(){return{id:"febaebf6-7369-4922-b069-c745eee8c16f",name:"New Orleans · Jan 16–20, 2027",start:"2027-01-16",end:"2027-01-20",destinations:["New Orleans"],travelers:3,state:"In Progress",ready:false,missing:["Finish trip details"],image:images.neworleans,href:"trip-workspace.html?id=febaebf6-7369-4922-b069-c745eee8c16f&destination=New%20Orleans&v=nola-home-model"}}
-function buildSuggestions(editorialImages){
+function buildSuggestions(editorialImages,editorialRows){
 if(!editorialImages){
   editorialImages={};
   var editorialUrl="https://vqtqchxoecrahtrnoocy.supabase.co/rest/v1/roamsonio_editorial_destinations?status=eq.published&select=id,name,build_destination,roamsonio_editorial_photos(url,role,sort_order,approved)&order=name.asc";
@@ -311,8 +311,8 @@ if(!editorialImages){
       if(!image)return;
       [row.name,row.build_destination].forEach(function(key){if(key)editorialImages[String(key).trim().toLowerCase()]=image;});
     });
-    buildSuggestions(editorialImages);
-  }).catch(function(){/* Keep the existing homepage photography if the protected editorial library is unavailable. */});
+    buildSuggestions(editorialImages,rows||[]);
+  }).catch(function(){buildSuggestions(editorialImages,[]);});
 }
 var now=new Date(),month=now.getMonth()+1;
 var season=month<=2||month===12?"Winter":month<=5?"Spring":month<=8?"Summer":"Fall";
@@ -369,12 +369,29 @@ var catalog={
 "Lisbon · Coast + Walking":["Lisbon + Atlantic coast","Adventure · Walking + coast","Clifftop paths, historic neighborhoods and Atlantic viewpoints make walking the main event.","Walking + coastal hiking","Lisbon"]
 };
 var pool=pools[season]||pools.Fall;
+var editorialKeys=[];
+(editorialRows||[]).forEach(function(row){
+  var photos=(row.roamsonio_editorial_photos||[]).filter(function(p){return p.approved===true&&p.url;});
+  var seasons=Array.isArray(row.seasons)?row.seasons:[];
+  if(!photos.length||!seasons.some(function(s){return String(s).toLowerCase()===season.toLowerCase();}))return;
+  var key=String(row.name||"").trim();
+  if(!key||catalog[key])return;
+  catalog[key]=[
+    String(row.build_destination||row.name||"").trim(),
+    "Editorial · "+String(row.type||"Destination"),
+    String(row.tagline||"Explore the destination through the RoamSonio Edit."),
+    (row.activities||[]).slice(0,3).join(" + ")||"Explore the destination",
+    String(row.build_destination||row.name||"").trim()
+  ];
+  editorialKeys.push(key);
+});
 var anchor=new Date(2020,0,5),days=Math.floor((now-anchor)/86400000),sundayWeek=Math.floor(days/7),offset=(sundayWeek*3)%pool.length,selected=[];
+if(editorialKeys.length)selected.push(editorialKeys[sundayWeek%editorialKeys.length]);
 for(var i=0;i<pool.length&&selected.length<6;i++)selected.push(pool[(offset+i)%pool.length]);
 var box=document.getElementById("suggestGrid");if(!box)return;
 var seasonEl=document.getElementById("suggestSeason");if(seasonEl)seasonEl.textContent=season+" · new adventures every Sunday";
 box.innerHTML=selected.map(function(name){
-var x=catalog[name],v=base[x[4]],editorialImage=editorialImages[String(x[4]||"").trim().toLowerCase()]||editorialImages[String(v.place||"").trim().toLowerCase()]||"",href="trip-workspace.html?inspiration="+encodeURIComponent(x[4])+"&adventure="+encodeURIComponent(name)+"&magazine=1&v="+Date.now();
+var x=catalog[name],v=base[x[4]]||{place:x[0],image:""},editorialImage=editorialImages[String(x[4]||"").trim().toLowerCase()]||editorialImages[String(v.place||"").trim().toLowerCase()]||"",href="trip-workspace.html?inspiration="+encodeURIComponent(x[4])+"&adventure="+encodeURIComponent(name)+"&magazine=1&v="+Date.now();
 return "<a class='suggestCard' href='"+href+"' aria-label='Explore "+esc(name)+" as a 7-day inspiration trip' style=\"--suggest-image:url('"+(editorialImage||v.image)+"')\"><div class='suggestContent'><div class='suggestTag'>"+esc(x[1])+"</div><h3>"+esc(name)+"</h3><p>"+esc(x[0])+" · "+esc(x[2])+"</p><span class='suggestAction'>"+esc(x[3])+" · Explore this trip</span></div></a>";
 }).join("");
 }
