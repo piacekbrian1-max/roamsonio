@@ -303,7 +303,7 @@ function currentTripModel(){return{id:"febaebf6-7369-4922-b069-c745eee8c16f",nam
 function buildSuggestions(editorialImages,editorialRows){
 if(!editorialImages){
   editorialImages={};
-  var editorialUrl="https://vqtqchxoecrahtrnoocy.supabase.co/rest/v1/roamsonio_editorial_destinations?status=eq.published&select=id,name,build_destination,roamsonio_editorial_photos(url,role,sort_order,approved)&order=name.asc";
+  var editorialUrl="https://vqtqchxoecrahtrnoocy.supabase.co/rest/v1/roamsonio_editorial_destinations?status=eq.published&select=id,name,type,seasons,activities,build_destination,tagline,roamsonio_editorial_photos(url,role,sort_order,approved)&order=name.asc";
   fetch(editorialUrl,{headers:{apikey:"sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy",Authorization:"Bearer sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy"},cache:"no-store"}).then(function(res){if(!res.ok)throw new Error("Editorial library unavailable");return res.json();}).then(function(rows){
     (rows||[]).forEach(function(row){
       var photos=(row.roamsonio_editorial_photos||[]).filter(function(p){return p.approved===true&&p.url;}).sort(function(a,b){var ar=a.role==="hero"?0:a.role==="secondary"?1:2,br=b.role==="hero"?0:b.role==="secondary"?1:2;return ar-br||(Number(a.sort_order)||0)-(Number(b.sort_order)||0);});
