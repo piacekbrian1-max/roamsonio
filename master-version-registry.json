@@ -534,6 +534,14 @@
       "status": "SUCCESS",
       "rollbackEligible": true,
       "notes": "User tested the Home page on iPad and confirmed Amalfi Coast appears as the weekly Editorial slot with the approved Amalfi photography, while the existing seasonal inspiration cards remain intact. This validates the Editorial Library → approved photography → weekly Home inspiration flow. No existing trips, saved data, identity, routing or persistence logic changed."
+    },
+    {
+      "sha": "7c9d124051b9d5e9890b772085fb8b85220f7bed",
+      "date": "2026-10-05",
+      "title": "Route inspiration cards to trip builder",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Routes Home weekly inspiration cards to Build Your Trip with the selected destination instead of the saved-trip workspace. This prevents an inspiration click from falling through to My Trips when no saved trip exists. No trip is created automatically; existing trips and persistence are untouched. Awaiting user testing."
     }
   ]
 }
