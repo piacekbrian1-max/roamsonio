@@ -391,7 +391,7 @@ for(var i=0;i<pool.length&&selected.length<6;i++)selected.push(pool[(offset+i)%p
 var box=document.getElementById("suggestGrid");if(!box)return;
 var seasonEl=document.getElementById("suggestSeason");if(seasonEl)seasonEl.textContent=season+" · new adventures every Sunday";
 box.innerHTML=selected.map(function(name){
-var x=catalog[name],v=base[x[4]]||{place:x[0],image:""},editorialImage=editorialImages[String(x[4]||"").trim().toLowerCase()]||editorialImages[String(v.place||"").trim().toLowerCase()]||"",href="trip-workspace.html?inspiration="+encodeURIComponent(x[4])+"&adventure="+encodeURIComponent(name)+"&magazine=1&v="+Date.now();
+var x=catalog[name],v=base[x[4]]||{place:x[0],image:""},editorialImage=editorialImages[String(x[4]||"").trim().toLowerCase()]||editorialImages[String(v.place||"").trim().toLowerCase()]||"",href="build-trip.html?destination="+encodeURIComponent(x[4])+"&inspiration="+encodeURIComponent(name);
 return "<a class='suggestCard' href='"+href+"' aria-label='Explore "+esc(name)+" as a 7-day inspiration trip' style=\"--suggest-image:url('"+(editorialImage||v.image)+"')\"><div class='suggestContent'><div class='suggestTag'>"+esc(x[1])+"</div><h3>"+esc(name)+"</h3><p>"+esc(x[0])+" · "+esc(x[2])+"</p><span class='suggestAction'>"+esc(x[3])+" · Explore this trip</span></div></a>";
 }).join("");
 }
