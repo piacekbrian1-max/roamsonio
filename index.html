@@ -476,6 +476,8 @@ box.innerHTML=selected.map(function(name){
 var x=catalog[name],v=base[x[4]]||{place:x[0],image:""},editorialImage=editorialImages[String(x[4]||"").trim().toLowerCase()]||editorialImages[String(v.place||"").trim().toLowerCase()]||"",href="build-trip.html?destination="+encodeURIComponent(x[4])+"&inspiration="+encodeURIComponent(name);
 return "<a class='suggestCard' href='"+href+"' aria-label='Explore "+esc(name)+" as a 7-day inspiration trip' style=\"--suggest-image:url('"+(editorialImage||v.image)+"')\"><div class='suggestContent'><div class='suggestTag'>"+esc(x[1])+"</div><h3>"+esc(name)+"</h3><p>"+esc(x[0])+" · "+esc(x[2])+"</p><span class='suggestAction'>"+esc(x[3])+" · Explore this trip</span></div></a>";
 }).join("");
+var feature=document.querySelector(".editorialFeatureImage"),first=box.querySelector(".suggestCard");
+if(feature&&first){var bg=first.style.getPropertyValue("--suggest-image");if(bg)feature.style.backgroundImage="linear-gradient(90deg,#071E33e8 0%,#071E3370 42%,#071E3310 78%),"+bg;var title=first.querySelector("h3"),desc=first.querySelector("p"),fl=feature.querySelector(".editorialFeatureLink");var fh=feature.querySelector(".editorialFeatureCopy h3"),fp=feature.querySelector(".editorialFeatureCopy p");if(fh&&title)fh.textContent=title.textContent;if(fp&&desc)fp.textContent=desc.textContent;if(fl){fl.textContent="Explore this edit →";fl.href=first.getAttribute("href")||"#suggestGrid";}}
 }
 function renderUpcomingTrips(all,current){
 var box=document.getElementById("upcomingTrips");if(!box)return;
