@@ -539,9 +539,9 @@
       "sha": "7c9d124051b9d5e9890b772085fb8b85220f7bed",
       "date": "2026-10-05",
       "title": "Route inspiration cards to trip builder",
-      "status": "TESTING",
-      "rollbackEligible": false,
-      "notes": "Routes Home weekly inspiration cards to Build Your Trip with the selected destination instead of the saved-trip workspace. This prevents an inspiration click from falling through to My Trips when no saved trip exists. No trip is created automatically; existing trips and persistence are untouched. Awaiting user testing."
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "User tested the Amalfi Coast Home inspiration card on iPad and confirmed it opens Build Your Trip with Amalfi Coast, Italy pre-filled. No trip was automatically created and existing trips remain untouched. Approved as a rollback target."
     }
   ]
 }
