@@ -360,7 +360,7 @@ function applyDestinationKnowledge(c,knowledge){
 function dayPlan(c,d,pace,mobility,prefs,must,group,kids,evening,energy){
 var out=[],family=group==="Family with kids"||group==="Mixed ages / extended family",ages=arr(kids);
 for(var i=0;i<d;i++){
- var a=c.sights[i%c.sights.length],b=c.sights[(i+1)%c.sights.length],food=c.food[i%c.food.length],area=c.areas[i%c.areas.length];
+ var a=c.sights[(i*2)%c.sights.length],b=c.sights[(i*2+1)%c.sights.length],food=c.food[i%c.food.length],area=c.areas[i%c.areas.length];
  var focus=i===0?"Arrival + orientation":i===d-1?"Final favorites + flexible time":prefs.indexOf("Local food")>=0?"Neighborhood + food":"Signature sights + neighborhood";
  if(must.length&&i===0)focus="Must-see priority + orientation";
  if(family&&i%2===1)focus="Family-friendly highlight + neighborhood";
