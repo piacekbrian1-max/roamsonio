@@ -367,7 +367,7 @@ for(var i=0;i<d;i++){
  if(evening.indexOf("Nightlife")>=0&&i>0)food=food+" · add a live-music or evening option";
  var note=mobility.indexOf("Easy")>=0?"Keep this day flexible with shorter walking segments and breaks.":energy.indexOf("Easygoing")>=0?"Start later and leave room for cafés, photos and wandering.":pace.indexOf("Relaxed")>=0?"Leave open time for wandering, cafés and unexpected finds.":"Group nearby stops to reduce backtracking.";
  if(family)note+=" "+(ages.length?"Use the kids' ages ("+ages.join(", ")+") to fine-tune attraction timing.":"Favor shorter activity blocks and easy breaks.");
- out.push({day:i+1,title:focus,morning:a,afternoon:b,evening:food,area:area,note:note})
+ out.push({day:i+1,title:area+" · "+focus,morning:a,afternoon:b,lunch:c.food[(i*2)%c.food.length],dinner:c.food[(i*2+1)%c.food.length],evening:(c.local&&c.local.length?c.local[i%c.local.length]:"Flexible evening · explore the neighborhood"),area:area,note:note})
 }return out}
 window.buildTrip=async function(){
 var dest=document.getElementById("dest").value.trim(),d=days();
