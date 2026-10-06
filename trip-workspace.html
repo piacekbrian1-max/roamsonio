@@ -2020,10 +2020,24 @@ if(items.length)return items;
 /* First-class destination knowledge supplies real places for destinations that
    do not have a hand-curated profile. Existing curated destinations keep their
    existing data above. */
-var dk=trip.destinationKnowledge,food=dk&&Array.isArray(dk.food)?dk.food:[],todo=dk&&Array.isArray(dk.thingsToDo)?dk.thingsToDo:[];
+var dk=trip.destinationKnowledge,food=dk&&Array.isArray(dk.food)?dk.food:[],todo=dk&&Array.isArray(dk.thingsToDo)?dk.thingsToDo:[],ent=dk&&Array.isArray(dk.entertainment)?dk.entertainment:[];
+/* Use the saved build data first, so Editorial Library food remains available even when live POI discovery is sparse. */
+if(!food.length&&Array.isArray(trip.food))food=trip.food;
 var foodCategories=["Breakfast","Lunch","Dinner","Special Occasions","Bars","Breweries","Coffee & Bakeries"];
 if(food.length&&foodCategories.indexOf(category)>=0){
-  var foodItems=food.map(function(x){
+  if(category==="Music"||category==="Theater & Shows"){
+  var entItems=ent.map(function(x){
+    var name=typeof x==="string"?x:String(x&&x.name||"").trim(),kind=typeof x==="object"&&x?(x.category||"Entertainment"):"Entertainment";
+    return [name,"Destination area",kind,"OpenStreetMap destination discovery"];
+  }).filter(function(x){return !!x[0]});
+  if(entItems.length)return entItems;
+  var entTodo=todo.map(function(x){
+    var name=typeof x==="string"?x:String(x&&x.name||"").trim(),kind=typeof x==="object"&&x?(x.category||"Attraction"):"Attraction";
+    return [name,"Destination area",kind,"Destination knowledge"];
+  }).filter(function(x){return !!x[0]&&/music|theatre|theater|nightclub|club|concert|show|performance|arts/.test(String(x[2]).toLowerCase())});
+  if(entTodo.length)return entTodo;
+}
+var foodItems=food.map(function(x){
     var name=typeof x==="string"?x:String(x&&x.name||"").trim();
     var area=typeof x==="object"&&x?(x.area||x.neighborhood||"Destination"): "Destination";
     var kind=typeof x==="object"&&x?(x.category||"Food & drink"):"Food & drink";
