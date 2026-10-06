@@ -378,12 +378,12 @@ var locationIdentity;
 try{locationIdentity=await resolveDestination(dest)}catch(e){status.textContent=e&&e.message?e.message:"We couldn't identify that destination. Please refine the location.";return}
 var resolvedName=locationIdentity.city||locationIdentity.name||dest;
 var c=catalog(resolvedName);
-status.textContent="Loading editorial destination knowledge…";
-var editorialProfile=await fetchEditorialBuildProfile(dest);
-c=applyEditorialBuildProfile(c,editorialProfile);
 status.textContent="Building destination knowledge…";
 var destinationKnowledge=await fetchDestinationKnowledge(locationIdentity);
 c=applyDestinationKnowledge(c,destinationKnowledge);
+status.textContent="Loading editorial destination knowledge…";
+var editorialProfile=await fetchEditorialBuildProfile(dest);
+c=applyEditorialBuildProfile(c,editorialProfile);
 var ps=selected(),must=arr(document.getElementById("must").value),avoid=arr(document.getElementById("avoid").value);
 var group=document.getElementById("groupType").value,kids=document.getElementById("kidsAges").value,energy=document.getElementById("energy").value,evening=document.getElementById("evening").value;
 var plan=dayPlan(c,d,document.getElementById("pace").value,document.getElementById("mobility").value,ps,must,group,kids,evening,energy);
