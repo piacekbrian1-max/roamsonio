@@ -640,10 +640,11 @@ function renderHomeRoamSonio(){
   count.textContent=total+" saved experience"+(total===1?"":"s")+" across your trips";
   groups.innerHTML=html||"<div class='rwHomeEmpty'>Your personal collection will appear here automatically as you rate, favorite, recommend or visit restaurants, attractions and activities inside your trips.</div>";
 }
-renderDashboard();
-buildSuggestions();
-renderHomeRoamSonio();
-setInterval(renderDashboard,60000);
+/* Keep inspiration rendering independent from trip-dashboard rendering. */
+try{buildSuggestions();}catch(e){console.error('RoamSonio Explore failed to initialize',e);}
+try{renderDashboard();}catch(e){console.error('RoamSonio trip dashboard failed to initialize',e);}
+try{renderHomeRoamSonio();}catch(e){console.error('RoamSonio saved experiences failed to initialize',e);}
+setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio trip dashboard refresh failed',e);}},60000);
 })();
 </script>
 <style id="roamsonio-auth-nav">
