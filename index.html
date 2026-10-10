@@ -447,9 +447,9 @@ if(!box)return;
 var seasonEl=document.getElementById("suggestSeason");
 if(seasonEl)seasonEl.textContent="Published destinations · approved photography only";
 box.innerHTML="<div class='exploreStatus' role='status'>Loading approved destinations from the RoamSonio master library…</div>";
-var editorialUrl="https://vqtqchxoecrahtrnoocy.supabase.co/rest/v1/roamsonio_editorial_destinations?status=eq.published&select=id,name,status,type,seasons,activities,build_destination,tagline,roamsonio_editorial_photos(url,role,sort_order,approved)&order=name.asc";
+var editorialUrl="https://vqtqchxoecrahtrnoocy.supabase.co/rest/v1/roamsonio_editorial_destinations?status=eq.published&select=id,name,status,type,seasons,activities,build_destination,tagline,metadata,roamsonio_editorial_photos(url,role,sort_order,approved)&order=name.asc";
 fetch(editorialUrl,{headers:{apikey:"sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy",Authorization:"Bearer sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy"},cache:"no-store"}).then(function(res){if(!res.ok)throw new Error("Editorial library request failed ("+res.status+")");return res.json();}).then(function(rows){
-  var approved=(rows||[]).filter(function(row){return String(row.status||"").toLowerCase()==="published";}).map(function(row){
+  var easternParts=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());var easternToday=easternParts.find(function(p){return p.type==="year"}).value+"-"+easternParts.find(function(p){return p.type==="month"}).value+"-"+easternParts.find(function(p){return p.type==="day"}).value;var approved=(rows||[]).filter(function(row){var release=String((row.metadata||{}).homepage_eligible_from||"");return String(row.status||"").toLowerCase()==="published"&&(!release||release<=easternToday);}).map(function(row){
     var photos=(row.roamsonio_editorial_photos||[]).filter(function(p){return p&&p.approved===true&&p.url&&/^https:\/\//i.test(p.url);}).sort(function(a,b){var ar=a.role==="hero"?0:a.role==="secondary"?1:2,br=b.role==="hero"?0:b.role==="secondary"?1:2;return ar-br||(Number(a.sort_order)||0)-(Number(b.sort_order)||0);});
     if(!row.name||!photos.length)return null;
     var destination=String(row.build_destination||row.name).trim();
