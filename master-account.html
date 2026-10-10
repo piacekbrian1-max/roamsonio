@@ -698,7 +698,7 @@ if(masterSignOutLink){
     }
   }
   async function edSave(statusOverride){
-    const x=edReadForm();if(!x.id||!x.name){edSetStatus("ID and Name are required.");return;}
+    const x=edReadForm();if((statusOverride||x.status)==="published"){edSetStatus("Publishing is only available through “Approve Draft + 3 Photos + Publish” after all required photos are reviewed.");return;}if(!x.id||!x.name){edSetStatus("ID and Name are required.");return;}
     if(!selectedEditorialId){
       const existing=editorialEntries.find(e=>String(e.id)===String(x.id));
       if(existing) selectedEditorialId=x.id;
@@ -710,7 +710,7 @@ if(masterSignOutLink){
   }
   document.getElementById("newEditorialBtn").addEventListener("click",()=>{selectedEditorialId="";edFill({type:"City",status:"draft",buildable:true});document.getElementById("editorialEditorTitle").textContent="New editorial entry";});
   document.getElementById("saveEditorialBtn").addEventListener("click",()=>edSave());
-  document.getElementById("publishEditorialBtn").addEventListener("click",()=>edSave("published"));
+  document.getElementById("publishEditorialBtn").addEventListener("click",()=>edSetStatus("Publishing is protected: select the draft, complete all three photo roles, then use Approve Draft + 3 Photos + Publish."));
 
   document.getElementById("approveEditorialPackageBtn").addEventListener("click",async()=>{
     const entry=edReadForm();
@@ -737,7 +737,7 @@ if(masterSignOutLink){
       const {error}=await client.rpc("roamsonio_admin_upsert_editorial_destination",{
         p_id:entry.id,p_name:entry.name,p_type:entry.type,p_category:entry.category,p_seasons:entry.seasons,
         p_activities:entry.activities,p_buildable:entry.buildable,p_build_destination:entry.build_destination,
-        p_tagline:entry.tagline,p_status:"published",p_metadata:{}
+        p_tagline:entry.tagline,p_status:"published",p_metadata:Object.assign({},current.metadata||{},{homepage_eligible_from:editorialNextSundayKey(),homepage_edition_policy:"next-sunday-boundary"})
       });
       if(error)throw error;
       await Promise.all([edLoad(),photoLoad()]);
@@ -754,7 +754,8 @@ if(masterSignOutLink){
     edRender();
   }));
   document.getElementById("editorialSearch").addEventListener("input",edRender);
-  function suggestionSlug(value){
+  function editorialNextSundayKey(){const parts=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());const get=t=>parts.find(p=>p.type===t)?.value;const date=new Date(Number(get("year")),Number(get("month"))-1,Number(get("day")));date.setDate(date.getDate()+((7-date.getDay())||7));return date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0");}
+function suggestionSlug(value){
     return String(value||"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,72);
   }
   function suggestionSetStatus(message){
