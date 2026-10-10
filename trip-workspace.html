@@ -2039,7 +2039,7 @@ var active=trip.guideCategory||"Dinner",cuisine=trip.guideCuisine||"All cuisines
 var liveGuideCache={};
 var liveGuidePending={};
 function discoverLiveGuidePlaces(category,done){
-var key=slug((trip.destinations||[])[0]||trip.name||"")+"|"+category;
+var key=slug((trip.destinations||[])[0]||trip.name||"")+"|v2|"+category;
 trip.liveGuidePlaces=trip.liveGuidePlaces||{};
 if(Array.isArray(trip.liveGuidePlaces[key])&&trip.liveGuidePlaces[key].length){liveGuideCache[key]=trip.liveGuidePlaces[key];done(liveGuideCache[key]);return}
 if(liveGuideCache[key]&&liveGuideCache[key].length){done(liveGuideCache[key]);return}
@@ -2078,7 +2078,7 @@ return Promise.any(requests).catch(function(){throw Error("all place providers u
 .finally(function(){delete liveGuidePending[key]});
 }
 function destinationItems(category){
-var liveKey=slug((trip.destinations||[])[0]||trip.name||"")+"|"+category;
+var liveKey=slug((trip.destinations||[])[0]||trip.name||"")+"|v2|"+category;
 trip.liveGuidePlaces=trip.liveGuidePlaces||{};
 if(Array.isArray(trip.liveGuidePlaces[liveKey])&&trip.liveGuidePlaces[liveKey].length)return trip.liveGuidePlaces[liveKey];
 if(liveGuideCache[liveKey]&&liveGuideCache[liveKey].length)return liveGuideCache[liveKey];
