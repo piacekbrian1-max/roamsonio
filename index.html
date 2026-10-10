@@ -433,7 +433,14 @@ function readiness(t){var checks=[
   {label:"Dates",ok:!!(t.start&&t.end)},
   {label:"Destination",ok:!!(t.destinations&&t.destinations.length)},
   {label:"Travelers",ok:Number(t.travelers)>0},
-  {label:"Stay",ok:!!(t.stay||t.stayLink||(function buildSuggestions(){
+  {label:"Stay",ok:!!(t.stay||t.stayLink||(t.stays&&t.stays.length))},
+  {label:"Travel",ok:!!(t.flights||t.flightLink||(t.flightsData&&t.flightsData.length)||t.transport)},
+  {label:"Itinerary",ok:!!(t.plan&&t.plan.length)}
+];var missing=checks.filter(function(x){return !x.ok}).map(function(x){return x.label});return{done:checks.length-missing.length,total:checks.length,missing:missing}}
+function countdownLabel(t){var d=daysUntil(t.start);if(d===null)return"Dates not set";if(d>1)return d+" days";if(d===1)return"Tomorrow";if(d===0)return"Today";var left=Math.abs(d);return left+" days ago"}
+function completedTripModel(){return{name:"European Thanksgiving Adventure 2026",start:"2026-11-26",end:"2026-12-04",destinations:["Trnava","Prague","Pilsen","Hluboká nad Vltavou","Vienna"],travelers:3,state:"Completed planning",ready:true,missing:[],image:"images/prague-christmas.jpg",href:"current-trip.html"}}
+function currentTripModel(){return{id:"febaebf6-7369-4922-b069-c745eee8c16f",name:"New Orleans · Jan 16–20, 2027",start:"2027-01-16",end:"2027-01-20",destinations:["New Orleans"],travelers:3,state:"In Progress",ready:false,missing:["Finish trip details"],image:images.neworleans,href:"trip-workspace.html?id=febaebf6-7369-4922-b069-c745eee8c16f&destination=New%20Orleans&v=nola-home-model"}}
+function buildSuggestions(){
 /* Editorial-only Explore: never substitute destinations that are not published in Master. */
 var box=document.getElementById("suggestGrid");
 if(!box)return;
@@ -458,7 +465,8 @@ fetch(editorialUrl,{headers:{apikey:"sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_T_FWO
   var ordered=approved.slice(offset).concat(approved.slice(0,offset)).slice(0,6);
   box.innerHTML=ordered.map(function(c,i){
     var href="build-trip.html?destination="+encodeURIComponent(c.destination)+"&inspiration="+encodeURIComponent(c.title);
-    return "<a class='suggestCard' data-explore-index='"+i+"' href='"+href+"' aria-label='Explore "+esc(c.title)+" as a trip' style=\"--suggest-image:url('"+c.image.replace(/['\\\\()\s]/g,function(ch){return encodeURIComponent(ch);})+"')\"><div class='suggestContent'><div class='suggestTag'>"+esc(c.tag)+"</div><h3>"+esc(c.title)+"</h3><p>"+esc(c.place)+" · "+esc(c.desc)+"</p><span class='suggestAction'>"+esc(c.activity)+" · Explore this trip</span></div></a>";
+    var image=c.image.replace(/['\\\\()\s]/g,function(ch){return encodeURIComponent(ch);});
+    return "<a class='suggestCard' data-explore-index='"+i+"' href='"+href+"' aria-label='Explore "+esc(c.title)+" as a trip' style=\"--suggest-image:url('"+image+"')\"><div class='suggestContent'><div class='suggestTag'>"+esc(c.tag)+"</div><h3>"+esc(c.title)+"</h3><p>"+esc(c.place)+" · "+esc(c.desc)+"</p><span class='suggestAction'>"+esc(c.activity)+" · Explore this trip</span></div></a>";
   }).join("");
   if(seasonEl)seasonEl.textContent=ordered.length+" published destinations · approved photography";
   var feature=document.querySelector(".editorialFeatureImage"),first=box.querySelector(".suggestCard");
@@ -473,18 +481,6 @@ fetch(editorialUrl,{headers:{apikey:"sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_T_FWO
   box.innerHTML="<div class='exploreStatus' role='status'>We couldn’t load the approved destination library. Please try again shortly. No unapproved destinations are being shown.</div>";
   if(seasonEl)seasonEl.textContent="Master library · connection issue";
 });
-}.roamsonio_editorial_photos||[]).filter(function(p){return p&&p.approved===true&&p.url&&/^https:\/\//i.test(p.url);}).sort(function(a,b){var ar=a.role==="hero"?0:a.role==="secondary"?1:2,br=b.role==="hero"?0:b.role==="secondary"?1:2;return ar-br||(Number(a.sort_order)||0)-(Number(b.sort_order)||0);});
-    if(!row.name||!photos.length)return null;
-    var destination=String(row.build_destination||row.name).trim();
-    var acts=Array.isArray(row.activities)?row.activities:String(row.activities||"").split(/[,;|]/);
-    return {title:String(row.name).trim(),place:destination,tag:"Editorial · "+String(row.type||"Destination"),desc:String(row.tagline||"Explore this destination through the RoamSonio Edit."),activity:acts.slice(0,3).join(" + ")||"Explore the destination",destination:destination,image:photos[0].url};
-  }).filter(Boolean);
-  if(!editorial.length)return;
-  var lead=editorial[week%editorial.length],cards=[lead];
-  editorial.forEach(function(c){if(cards.length<6&&c.title!==lead.title)cards.push(c);});
-  rotated.forEach(function(c){if(cards.length<6&&!cards.some(function(x){return x.title===c.title;}))cards.push(c);});
-  paint(cards);
-}).catch(function(err){console.warn("RoamSonio Explore is using its built-in destination set",err);});
 }
 function renderUpcomingTrips(all,current){
 var box=document.getElementById("upcomingTrips");if(!box)return;
