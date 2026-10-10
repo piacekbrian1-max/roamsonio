@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
           { role: "user", content: "Existing entries to avoid: " + JSON.stringify((existing || []).map((x: any) => ({ name: x.name, destination: x.build_destination, id: x.id }))) + ". Create a balanced new batch of candidates for the next weekly editorial edition." }
         ]
       })
-    }).then(async r => ({ ok: r.ok, status: r.status, body: await r.json() }));
+    });
     const responseBody = await response.json();
     if (!response.ok) throw new Error("OpenAI candidate generation failed (" + response.status + "): " + JSON.stringify(responseBody).slice(0, 400));
     const raw = responseBody.choices?.[0]?.message?.content;
