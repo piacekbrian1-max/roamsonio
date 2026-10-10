@@ -2055,12 +2055,12 @@ var qcats={
 "Breweries":'["craft"="brewery"]',
 "Coffee & Bakeries":'["amenity"~"cafe|bakery"]',
 "Museums":'["tourism"="museum"]',
-"Markets":'["amenity"="marketplace"]',
-"Family":'["tourism"~"zoo|aquarium|theme_park"]',
+"Markets":'["amenity"~"marketplace|food_court"]',
+"Family":'["tourism"~"zoo|aquarium|theme_park|attraction|museum"]',
 "Neighborhoods":'["place"~"suburb|quarter|neighbourhood"]',
 "Music":'["amenity"~"music_venue|nightclub"]',
 "Theater & Shows":'["amenity"="theatre"]',
-"Activities":'["tourism"~"attraction|museum|gallery|viewpoint"]'
+"Activities":'["tourism"~"attraction|museum|gallery|viewpoint|artwork"]'
 };
 var selector=qcats[category]||'["tourism"~"attraction|museum|gallery"]';
 fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q="+encodeURIComponent(place),{headers:{"Accept-Language":"en"}})
