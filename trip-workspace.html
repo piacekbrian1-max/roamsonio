@@ -1525,6 +1525,10 @@ var guideMatch=Object.keys(guideAliases).find(function(key){
 return guideAliases[key].some(function(alias){return destination.indexOf(slug(alias))>=0||tripNameKey.indexOf(slug(alias))>=0});
 });
 if(guideMatch)city=guideMatch;
+var guideHasCuratedData=!!((isN&&nolaGuide[active]&&nolaGuide[active].length)||
+(isAtlanta&&atlantaGuide[active]&&atlantaGuide[active].length)||
+(activityGuide[city]&&activityGuide[city][active]&&activityGuide[city][active].length)||
+(localGuide[city]&&localGuide[city][active]&&localGuide[city][active].length));
 
 var destinationSources={
 munich:"https://www.munich.travel/en/topics/eat-drink",
@@ -2431,7 +2435,7 @@ draw();
    Do not rely on city-profile flags: they can classify a destination without
    providing actual venue records, which previously prevented Kyoto and others
    from ever reaching the live lookup. */
-var firstItem=destinationItems(active)[0],liveKey=slug((trip.destinations||[])[0]||trip.name||"")+"|v2|"+active,hasLive=!!((trip.liveGuidePlaces&&Array.isArray(trip.liveGuidePlaces[liveKey])&&trip.liveGuidePlaces[liveKey].length)||(liveGuideCache[liveKey]&&liveGuideCache[liveKey].length)),hasCurated=!!((isN&&nolaGuide[active]&&nolaGuide[active].length)||(isAtlanta&&atlantaGuide[active]&&atlantaGuide[active].length)||(activityGuide[city]&&activityGuide[city][active]&&activityGuide[city][active].length)||(localGuide[city]&&localGuide[city][active]&&localGuide[city][active].length)),needsLive=!hasLive&&!hasCurated;
+var firstItem=destinationItems(active)[0],liveKey=slug((trip.destinations||[])[0]||trip.name||"")+"|v2|"+active,hasLive=!!((trip.liveGuidePlaces&&Array.isArray(trip.liveGuidePlaces[liveKey])&&trip.liveGuidePlaces[liveKey].length)||(liveGuideCache[liveKey]&&liveGuideCache[liveKey].length)),hasCurated=guideHasCuratedData,needsLive=!hasLive&&!hasCurated;
 if(needsLive){
 discoverLiveGuidePlaces(active,function(found){
 if(found&&found.length){guidePages[active+"|"+cuisine]=0;draw()}
