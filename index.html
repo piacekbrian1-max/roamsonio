@@ -505,8 +505,7 @@ var pool=pools[season]||pools.Fall;
 var editorialKeys=[];
 (editorialRows||[]).forEach(function(row){
   var photos=(row.roamsonio_editorial_photos||[]).filter(function(p){return p.approved===true&&p.url;});
-  var seasons=Array.isArray(row.seasons)?row.seasons:[];
-  if(!photos.length||!seasons.some(function(s){return String(s).toLowerCase()===season.toLowerCase();}))return;
+  if(!photos.length)return;
   var key=String(row.name||"").trim();
   if(!key||catalog[key])return;
   catalog[key]=[
@@ -519,7 +518,11 @@ var editorialKeys=[];
   editorialKeys.push(key);
 });
 var anchor=new Date(2020,0,5),days=Math.floor((now-anchor)/86400000),sundayWeek=Math.floor(days/7),offset=(sundayWeek*3)%pool.length,selected=[];
-if(editorialKeys.length)selected.push(editorialKeys[sundayWeek%editorialKeys.length]);
+if(editorialKeys.length){
+  var featuredKey=editorialKeys[sundayWeek%editorialKeys.length];
+  selected.push(featuredKey);
+  editorialKeys.forEach(function(key){if(key!==featuredKey)selected.push(key);});
+}
 for(var i=0;i<pool.length&&selected.length<6;i++)selected.push(pool[(offset+i)%pool.length]);
 var box=document.getElementById("suggestGrid");if(!box)return;
 var seasonEl=document.getElementById("suggestSeason");if(seasonEl)seasonEl.textContent=season+" · new adventures every Sunday";
