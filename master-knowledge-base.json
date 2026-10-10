@@ -2,51 +2,59 @@
   "schemaVersion": 1,
   "title": "RoamSonio Master Knowledge Base",
   "description": "Operational documentation for Master Account functions and future pilot operations.",
-  "lastReviewed": "2026-10-04",
+  "lastReviewed": "2026-10-10",
   "sections": [
     {
       "id": "editorial-library",
-      "title": "Editorial Library",
+      "title": "PUBLISH AN EDITORIAL DESTINATION — SIMPLE STEPS",
       "status": "active",
-      "purpose": "Manage the curated inspiration catalog used by The RoamSonio Edit and future Home page editorial experiences.",
+      "purpose": "A short, click-by-click checklist for preparing and publishing a destination or experience to RoamSonio Home.",
       "howTo": [
-        "Choose an existing entry to review or select New Entry.",
-        "Maintain a permanent ID; do not reuse an ID for a different destination.",
-        "Set type, category, seasons and activities.",
-        "Set Buildable when users should be able to use the entry to start a trip.",
-        "Use Build Destination to define what is passed to the existing trip builder.",
-        "Keep editorial photography approved and documented before publishing.",
-        "Use Draft while preparing content; Publish only after review."
+        "1. Open Master Account and go to Editorial Library.",
+        "2. Select the destination you want to finish. Use New Entry only when it does not already exist.",
+        "3. Check the name, type, category, seasons, activities, tagline and Build Destination. Keep the existing permanent ID when editing an entry.",
+        "4. If users should be able to start a trip from this entry, turn Buildable on and confirm Build Destination is correct.",
+        "5. Add or review its photography using the Editorial Photography steps in KB0002. Make sure the intended photo is saved and marked Approved.",
+        "6. Return to the destination details. Leave Status as Draft while anything is incomplete.",
+        "7. When the details and approved photo are ready, choose Publish and save the entry.",
+        "8. Open the RoamSonio Home page and refresh. Confirm the destination appears with the right photo and opens the expected destination/trip-builder path.",
+        "9. If it does not appear or something looks wrong, do not keep changing unrelated settings. Record the issue and ask for help."
       ],
       "safety": [
-        "Do not edit existing saved trip records from the Editorial Library.",
-        "Changing an editorial entry must not change a user's saved trip.",
-        "Use permanent IDs so published links remain stable.",
-        "Test a new published entry from the Home page before declaring it production-ready."
+        "Never create a duplicate entry just because an existing destination needs editing.",
+        "Do not change the permanent ID of an existing destination.",
+        "Do not edit existing saved trip records from the Editorial Library; publishing must not change a user's saved trip.",
+        "A destination should be published only after its content and intended photography are ready.",
+        "The weekly Home Edit uses eligible published entries; publishing does not guarantee every entry appears immediately in the current week's rotation.",
+        "Test the published entry on Home before calling it complete."
       ],
       "kbNumber": "KB0001",
-      "version": "v1",
-      "lastUpdated": "2026-10-04"
+      "version": "v2",
+      "lastUpdated": "2026-10-10"
     },
     {
       "id": "editorial-photography",
       "title": "Editorial Photography",
-      "status": "planned",
+      "status": "active",
       "purpose": "Maintain controlled, high-quality destination photography for the luxury travel-magazine presentation.",
       "howTo": [
-        "Add a photo with destination, role, source URL, credit and alt text.",
-        "Use hero for the primary editorial image, secondary for supporting cards and mobile for an approved mobile crop.",
-        "Approve only images that meet the RoamSonio photography standard.",
-        "Preview the destination before publishing."
+        "1. In Master Account, open Editorial Library and select the destination.",
+        "2. Open its Editorial Photography area and choose Add Photo.",
+        "3. Choose a suitable candidate or enter the image details.",
+        "4. Check the image preview. Confirm the role (Hero, Secondary or Mobile), source URL, photographer credit and alt text are correct.",
+        "5. Mark Approved only when the image is suitable and the source/credit are recorded.",
+        "6. Choose Save Photo. Reopen or refresh the photo list and confirm the saved photo is still there.",
+        "7. Return to KB0001 and publish the destination only when its content and photography are ready."
       ],
       "safety": [
         "Do not replace existing trip photos through this library.",
-        "Never rely on random image selection for published editorial cards.",
-        "Keep source and credit information with every approved image."
+        "Do not mark a photo Approved before reviewing it.",
+        "Keep source URL and photographer credit with every approved image.",
+        "Saving a photo and publishing a destination are two separate actions."
       ],
       "kbNumber": "KB0002",
-      "version": "v1",
-      "lastUpdated": "2026-10-04"
+      "version": "v2",
+      "lastUpdated": "2026-10-10"
     },
     {
       "id": "weekly-edit",
