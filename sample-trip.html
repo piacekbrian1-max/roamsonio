@@ -126,7 +126,27 @@ function initDates(){var start=new Date();start.setDate(start.getDate()+30);var 
 var p=profileFor(destination);if(p===generic&&title!==destination)p=profileFor(title);document.getElementById("heroTitle").textContent=title;document.getElementById("introTitle").textContent="What makes "+title+" special";document.getElementById("introText").textContent=p.why;document.getElementById("tripName").value=title+" Adventure";document.getElementById("highlights").innerHTML=p.high.map(function(x){return "<span class='pill'>"+esc(x)+"</span>"}).join("");if(photo){document.getElementById("hero").style.setProperty("--hero-image","linear-gradient(0deg,#071e33e8 0%,#071e3350 55%,#071e3305 100%),url('"+photo.replace(/['\\()]/g,"") +"')")}
 initDates();
 var daysEl=document.getElementById("days");
-function renderDays(){daysEl.innerHTML=p.days.map(function(d,i){var names=["Morning","Lunch","Afternoon","Dinner","Evening"];return "<article class='day'><div class='daytop'><div class='daynum'>DAY "+(i+1)+" OF 5</div><h3>"+esc(d[0])+"</h3><p>"+esc(d[1])+"</p></div><div class='daybody'>"+names.map(function(n,j){return "<div class='field'><label>"+n+"</label><textarea data-day='"+i+"' data-slot='"+j+"'>"+esc(d[j+2])+"</textarea></div>"}).join("")+"</div></article>"}).join("")}
+function normalizeDaySlots(d){
+ var out=d.slice(2,7),rules=[
+  /\\b(breakfast|coffee|sunrise|early|morning|visit .*early|start at|begin at|head to .*early)\\b/i,
+  /\\b(lunch|luncheon|midday|panino|sandwich|seafood lunch|pasta lunch|market lunch|eat near|try .*dish|have a .*meal|grab .*bite)\\b/i,
+  /\\b(afternoon|after lunch|then visit|spend the afternoon|explore .*museum|visit .*museum|garden|gallery|tour|walk to|wander|browse|cloister|cathedral|castle|temple|park|viewpoint|beach|shore|trail|waterfront)\\b/i,
+  /\\b(dinner|supper|restaurant|reserve|reservation|evening meal|dine|eat in|book .*meal)\\b/i,
+  /\\b(evening|sunset|after dark|night|lantern|live music|concert|stargaz|lit-up|after dinner)\\b/i
+ ];
+ // Only correct a slot when its wording strongly signals a different meal/time; preserve user-edited values after initial render.
+ for(var i=0;i<out.length;i++){
+  var text=String(out[i]||"");
+  var wrong=[];
+  for(var j=0;j<rules.length;j++)if(j!==i&&rules[j].test(text))wrong.push(j);
+  if(wrong.length===1&&!rules[i].test(text)){
+   var target=wrong[0],candidate=out[target];
+   if(!rules[target].test(String(candidate||""))){out[target]=text;out[i]=candidate}
+  }
+ }
+ return out;
+}
+function renderDays(){daysEl.innerHTML=p.days.map(function(d,i){var names=["Morning","Lunch","Afternoon","Dinner","Evening"],slots=normalizeDaySlots(d);return "<article class='day'><div class='daytop'><div class='daynum'>DAY "+(i+1)+" OF 5</div><h3>"+esc(d[0])+"</h3><p>"+esc(d[1])+"</p></div><div class='daybody'>"+names.map(function(n,j){return "<div class='field'><label>"+n+"</label><textarea data-day='"+i+"' data-slot='"+j+"'>"+esc(slots[j])+"</textarea></div>"}).join("")+"</div></article>"}).join("")}
 renderDays();
 var destWrap=document.getElementById("destinations"),destinations=[destination];
 function renderDestinations(){destWrap.innerHTML=destinations.map(function(d,i){return "<div class='destrow'><div class='field'><label>Additional destination "+(i+1)+"</label><input data-dest='"+i+"' value='"+esc(d)+"' placeholder='City, region, or activity'></div>"+(i===0?"":"<button class='btn' type='button' data-remove='"+i+"'>Remove</button>")+"</div>"}).join("");destWrap.querySelectorAll("[data-dest]").forEach(function(el){el.addEventListener("input",function(){destinations[Number(el.dataset.dest)]=el.value})});destWrap.querySelectorAll("[data-remove]").forEach(function(el){el.addEventListener("click",function(){destinations.splice(Number(el.dataset.remove),1);renderDestinations()})})}
