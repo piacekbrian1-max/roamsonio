@@ -178,6 +178,19 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
         <div><h2>Editorial Library</h2><p>Curated inspiration, buildable destinations & approved photography</p></div>
       </div>
       <div class="editorialStats" id="editorialStats"><span class="editorialStat">Loading library…</span></div>
+      <div class="editorialEditor" style="margin-bottom:14px">
+        <div class="ey">Suggestion Studio</div>
+        <h3 style="font:600 22px/1.15 'Playfair Display',serif;margin:6px 0 8px">Create a new inspiration draft</h3>
+        <p style="font-size:10px;line-height:1.6;color:var(--slate);margin:0 0 12px">Enter a place or experience. RoamSonio will create a protected Draft in the Editorial Library. It will not appear on the homepage until you add and approve its photography and publish it.</p>
+        <div class="editorialForm">
+          <label class="editorialFull">Destination or experience<input id="suggestionSeed" placeholder="e.g. Dolomites hiking, Kyoto in autumn, Portugal coastal road trip"></label>
+          <label>Suggestion type<select id="suggestionType"><option>City</option><option>Region</option><option>Ski & Snowboard</option><option>Outdoor</option><option>Coast & Island</option><option>Road Trip</option><option>Seasonal Experience</option></select></label>
+          <label>Best season<select id="suggestionSeason"><option value="Spring, Summer, Fall, Winter">All seasons</option><option>Spring</option><option>Summer</option><option>Fall</option><option>Winter</option><option>Spring, Fall</option><option>Winter, Spring</option></select></label>
+          <label class="editorialFull">Activities / editorial angle<input id="suggestionActivities" placeholder="e.g. Hiking, scenic rail, photography, local food"></label>
+        </div>
+        <div class="editorialActions"><button type="button" class="transferBtn" id="createSuggestionBtn">Create Draft Suggestion</button></div>
+        <div class="editorialStatus" id="suggestionStatus" role="status">Draft only · no auto-publishing · existing trips are never modified.</div>
+      </div>
       <div class="editorialActions" style="margin:0 0 12px">
         <label style="font-size:9px;font-weight:800;align-self:center">SHOW DESTINATIONS</label>
         <div class="editorialStatusTabs" id="editorialStatusTabs" role="group" aria-label="Filter editorial destinations">
@@ -682,6 +695,54 @@ if(masterSignOutLink){
     edRender();
   }));
   document.getElementById("editorialSearch").addEventListener("input",edRender);
+  function suggestionSlug(value){
+    return String(value||"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,72);
+  }
+  function suggestionSetStatus(message){
+    const el=document.getElementById("suggestionStatus");if(el)el.textContent=message;
+  }
+  function createEditorialSuggestion(){
+    const seed=document.getElementById("suggestionSeed").value.trim();
+    const type=document.getElementById("suggestionType").value;
+    const seasons=document.getElementById("suggestionSeason").value.split(",").map(x=>x.trim()).filter(Boolean);
+    const activityText=document.getElementById("suggestionActivities").value.trim();
+    if(!seed){suggestionSetStatus("Enter a destination or experience first.");document.getElementById("suggestionSeed").focus();return;}
+    const normalized=seed.toLowerCase().replace(/\\s+/g," ").trim();
+    const duplicate=editorialEntries.find(x=>
+      String(x.name||"").toLowerCase().replace(/\\s+/g," ").trim()===normalized ||
+      String(x.build_destination||x.buildDestination||"").toLowerCase().replace(/\\s+/g," ").trim()===normalized ||
+      String(x.id||"")===suggestionSlug(seed)
+    );
+    if(duplicate){
+      edFill(duplicate);
+      suggestionSetStatus("This suggestion already exists ("+(duplicate.status||"draft")+"). Opened the existing entry instead of creating a duplicate.");
+      return;
+    }
+    const id=suggestionSlug(seed);
+    if(!id){suggestionSetStatus("Please use a destination or experience name with letters or numbers.");return;}
+    const angle=activityText||seed;
+    const tagline=type==="Ski & Snowboard"?"Mountain days, fresh-air adventure and memorable alpine evenings.":
+      type==="Outdoor"?"A fresh-air escape shaped by open landscapes, active days and local discoveries.":
+      type==="Coast & Island"?"Coastal scenery, local character and time to explore at your own pace.":
+      type==="Road Trip"?"A flexible route through memorable landscapes, local stops and unexpected discoveries.":
+      type==="Seasonal Experience"?"A timely travel idea built around the season, local character and memorable experiences.":
+      "A RoamSonio inspiration draft exploring "+angle.toLowerCase()+".";
+    const draft={id:id,name:seed,type:type,category:activityText||type,seasons:seasons,activities:activityText.split(/[,;|]/).map(x=>x.trim()).filter(Boolean),buildable:true,build_destination:seed,tagline:tagline,status:"draft"};
+    edFill(draft);
+    document.getElementById("edId").value=id;
+    document.getElementById("edStatus").value="draft";
+    document.getElementById("edBuildable").checked=true;
+    suggestionSetStatus("Creating protected draft…");
+    edSave("draft").then(function(){
+      const exists=editorialEntries.some(x=>String(x.id)===id);
+      if(exists){
+        document.getElementById("suggestionSeed").value="";
+        suggestionSetStatus("Draft saved. Review its details, add and approve the required Hero, Secondary and Mobile photos, then publish when ready. No trip records were changed.");
+      }
+    });
+  }
+  document.getElementById("createSuggestionBtn").addEventListener("click",createEditorialSuggestion);
+
 
   let editorialPhotos=[];
   let selectedPhotoId=null;
