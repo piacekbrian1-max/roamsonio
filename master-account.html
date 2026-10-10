@@ -918,30 +918,49 @@ function suggestionSlug(value){
     const entry=editorialEntries.find(x=>String(x.id)===String(selectedEditorialId));
     if(!entry){box.hidden=true;return;}
     const destination=String(entry.build_destination||entry.buildDestination||entry.name||"").trim();
-    if(!destination){box.hidden=true;return;}
-    document.getElementById("photoEditor").hidden=false;
+    if(!destination){box.hidden=false;grid.textContent="Add a destination name before searching for photos.";return;}
+    document.getElementById("photoEditor").hidden=false;box.hidden=false;
     const activities=Array.isArray(entry.activities)?entry.activities.join(" "):String(entry.activities||"");
     const base=[destination,String(entry.name||""),String(entry.category||""),activities].filter(Boolean).join(" ").trim();
-    const queries=[destination+" landscape",destination+" village architecture",destination+" "+(activities.split(/[,;|]/)[0]||entry.type||"travel"),String(entry.name||destination)+" scenic travel"];
-    box.hidden=false;grid.innerHTML="<div class='row'><span>Searching several destination-specific angles for a larger photo gallery…</span></div>";
+    const activity=(activities.split(/[,;|]/)[0]||entry.type||"travel").trim();
+    const queries=[destination,destination+" landscape",destination+" "+activity,String(entry.name||destination)+" scenic travel"];
+    grid.textContent="Searching Wikimedia Commons for "+destination+"…";
     try{
       const results=await Promise.all(queries.map(async query=>{
-        const url="https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch="+encodeURIComponent(query)+"&gsrnamespace=6&gsrqiprofile=popular&gsrlimit=18&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=900&format=json&origin=*";
-        const res=await fetch(url,{cache:"no-store"});if(!res.ok)throw new Error("Wikimedia Commons search failed");
-        const data=await res.json();
-        return Object.values((data.query&&data.query.pages)||{}).map(p=>{
+        const params=new URLSearchParams({action:"query",list:"search",srsearch:query,srnamespace:"6",srlimit:"20",format:"json",origin:"*"});
+        const response=await fetch("https://commons.wikimedia.org/w/api.php?"+params.toString(),{cache:"no-store"});
+        if(!response.ok)throw new Error("Wikimedia search returned HTTP "+response.status);
+        const data=await response.json();
+        if(data.error)throw new Error(data.error.info||"Wikimedia API error");
+        const pages=(data.query&&data.query.search)||[];
+        if(!pages.length)return [];
+        const ids=pages.map(p=>p.pageid).filter(Boolean).join("|");
+        const detailParams=new URLSearchParams({action:"query",pageids:ids,prop:"imageinfo",iiprop:"url|extmetadata",iiurlwidth:"900",format:"json",origin:"*"});
+        const detailResponse=await fetch("https://commons.wikimedia.org/w/api.php?"+detailParams.toString(),{cache:"no-store"});
+        if(!detailResponse.ok)throw new Error("Wikimedia image details returned HTTP "+detailResponse.status);
+        const detail=await detailResponse.json();
+        if(detail.error)throw new Error(detail.error.info||"Wikimedia image details error");
+        return Object.values((detail.query&&detail.query.pages)||{}).map(p=>{
           const info=(p.imageinfo&&p.imageinfo[0])||{},meta=info.extmetadata||{};
           const plain=v=>photoPlainMetadata(v&&v.value);
           const license=plain(meta.LicenseShortName),artist=plain(meta.Artist);
-          return {title:p.title||"",url:info.thumburl||info.url||"",source_url:"https://commons.wikimedia.org/wiki/"+encodeURIComponent((p.title||"").replace(/ /g,"_")),credit:[artist,license?"License: "+license:""].filter(Boolean).join(" · ")||"Wikimedia Commons — verify creator/license",alt_text:plain(meta.ImageDescription)||base+" travel photography",license:license,license_url:plain(meta.LicenseUrl)};
-        }).filter(x=>x.url&&/^https:\/\//i.test(x.url)&&x.source_url);
+          return {title:p.title||"",url:info.thumburl||info.url||"",source_url:"https://commons.wikimedia.org/wiki/"+encodeURIComponent((p.title||"").replace(/ /g,"_")),credit:[artist,license?"License: "+license:""].filter(Boolean).join(" · "),alt_text:plain(meta.ImageDescription)||base+" travel photography",license:license,license_url:plain(meta.LicenseUrl)};
+        }).filter(x=>x.url&&/^https:\/\//i.test(x.url)&&x.source_url&&x.credit&&x.license);
       }));
       const seen=new Set();
       photoCandidates=results.flat().filter(x=>{const k=x.url.toLowerCase();if(seen.has(k))return false;seen.add(k);return true;}).slice(0,60);
-      grid.innerHTML=photoCandidates.length?photoCandidates.map((x,i)=>"<button type='button' class='photoCandidate' data-index='"+i+"' title='Select to preview and assign'><img src='"+esc(x.url)+"' alt='"+esc(x.alt_text)+"' loading='lazy' onerror=\"this.alt='Image unavailable — refresh candidates';this.style.background='#eef1f4';this.style.minHeight='110px'\"><small>"+esc(x.title.replace(/^File:/i,""))+"<br>"+esc(x.license||"License needs review")+"</small></button>").join(""):"<div class='row'><span>No candidates found across the searches. Try Refresh or enter a photo URL manually.</span></div>";
-      grid.querySelectorAll(".photoCandidate").forEach(b=>b.addEventListener("click",()=>photoUseCandidate(photoCandidates[Number(b.dataset.index)])));
-      photoSetStatus("Found "+photoCandidates.length+" unique photo candidates across multiple searches. Choosing a candidate only fills the editor; save it to attach it, and review source/licensing before approval.");
-    }catch(e){grid.innerHTML="<div class='row'><span>Photo search unavailable: "+esc(e.message||"Unknown error")+". You can still enter a photo URL manually.</span></div>";}
+      if(!photoCandidates.length){grid.textContent="No usable photos returned. The search completed but found no images with usable URLs and license metadata. Try Refresh or a more specific destination name.";photoSetStatus("Photo search returned zero usable licensed candidates. No photos were changed.");return;}
+      grid.innerHTML=photoCandidates.map((x,i)=>"<button type='button' class='photoCandidate' data-index='"+i+"'><img src='"+esc(x.url)+"' alt='"+esc(x.alt_text)+"' loading='lazy'><small>"+esc(x.title.replace(/^File:/i,""))+"<br>"+esc(x.license)+"</small></button>").join("");
+      grid.querySelectorAll(".photoCandidate").forEach(b=>{
+        const img=b.querySelector("img");
+        img.addEventListener("error",()=>{img.alt="Image unavailable — refresh candidates";img.style.background="#eef1f4";img.style.minHeight="110px";});
+        b.addEventListener("click",()=>photoUseCandidate(photoCandidates[Number(b.dataset.index)]));
+      });
+      photoSetStatus("Found "+photoCandidates.length+" unique candidates with license metadata. Failed images remain visible with an error indication. Nothing is approved automatically.");
+    }catch(e){
+      grid.textContent="Photo search failed: "+(e.message||"Unknown error")+". No photos were changed.";
+      photoSetStatus("Photo search failed: "+(e.message||"Unknown error"));
+    }
   }
   function photoUseCandidate(x){
     if(!x)return;
