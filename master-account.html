@@ -40,7 +40,12 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
 .masterViewTab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
 .masterViewTab:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .masterViewTab[aria-selected="true"]{box-shadow:0 2px 5px #0B2D4A18}
-@media(max-width:700px){.masterViewNav{top:70px;display:grid;grid-template-columns:1fr 1fr}.masterViewTab{min-height:40px;padding:9px 7px}.masterViewTab[data-master-view="editorial"]{grid-column:1/-1}}
+.masterViewLink{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--gold);border-radius:8px;padding:10px 13px;background:#fff8e8;color:var(--navy);font:800 9px/1.2 "DM Sans",sans-serif;white-space:nowrap}
+.pendingPill{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:99px;background:#A84B3D;color:#fff;font-size:9px;font-weight:800}
+.pendingPill.zero{background:#DDE8DD;color:#315B3B}
+.pendingCard{border-color:#D9B56C;background:#FFF9EC;cursor:pointer;transition:transform .15s ease}
+.pendingCard:hover{transform:translateY(-2px)}.pendingCard .num{color:#8B5D10}
+@media(max-width:700px){.masterViewNav{top:70px;display:grid;grid-template-columns:1fr 1fr}.masterViewTab,.masterViewLink{min-height:40px;padding:9px 7px}.masterViewTab[data-master-view="editorial"]{grid-column:1/-1}.masterViewLink{grid-column:1/-1}}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:26px}
 .card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:19px;min-height:132px}
 .card .num{font:600 31px/1 "Playfair Display";color:var(--navy)}
@@ -167,6 +172,7 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
       <button type="button" class="masterViewTab" data-master-view="editorial" role="tab" aria-selected="false">Editorial Studio</button>
       <button type="button" class="masterViewTab" data-master-view="knowledge" role="tab" aria-selected="false">Knowledge Base</button>
       <button type="button" class="masterViewTab" data-master-view="activity" role="tab" aria-selected="false">Activity Log</button>
+      <a class="masterViewLink" href="master-suggestions.html" aria-label="Open pending editorial suggestions">Suggestion Inbox <span class="pendingPill" id="pendingSuggestionNavCount">…</span></a>
     </nav>
 
     <section class="grid" id="masterOverviewStats">
@@ -174,6 +180,7 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
       <div class="card"><div class="num" id="tripCount">—</div><small>Total Trips</small></div>
       <div class="card"><div class="num" id="familyCount">—</div><small>Families & Groups</small></div>
       <div class="card"><div class="num" id="supportCount">—</div><small>Open Support</small></div>
+      <a class="card pendingCard" href="master-suggestions.html" aria-label="Review pending editorial suggestions"><div class="num" id="pendingSuggestionCount">—</div><small>Pending Suggestions · Review Inbox</small><p id="suggestionAutomationNote" style="margin:10px 0 0;color:var(--slate);font-size:9px;line-height:1.5">Checking editorial queue…</p></a>
     </section>
 
     <section class="section" id="administrationSection">
@@ -419,6 +426,7 @@ if(masterSignOutLink){
     loadMasterSummary();
     loadTransferUsers();
     loadAdminActivity();
+    loadEditorialPendingCount();
     return;
   }
 
@@ -613,6 +621,28 @@ if(masterSignOutLink){
 
   document.getElementById("closeTransferReview").addEventListener("click",()=>{document.getElementById("transferReview").hidden=true;});
   document.getElementById("closeTransferReviewFallback").addEventListener("click",()=>{document.getElementById("transferReview").hidden=true;});
+
+  async function loadEditorialPendingCount(){
+    const nav=document.getElementById("pendingSuggestionNavCount");
+    const card=document.getElementById("pendingSuggestionCount");
+    const note=document.getElementById("suggestionAutomationNote");
+    try{
+      const {data,error}=await client.rpc("roamsonio_admin_editorial_destinations");
+      if(error)throw error;
+      const entries=data||[];
+      const drafts=entries.filter(x=>(x.status||"draft")==="draft");
+      const automatic=drafts.filter(x=>x.metadata&&x.metadata.generated_by==="weekly-editorial-generator");
+      const count=drafts.length;
+      if(nav){nav.textContent=String(count);nav.classList.toggle("zero",count===0);}
+      if(card)card.textContent=String(count);
+      if(note)note.textContent=automatic.length+" auto-generated · "+(count-automatic.length)+" other drafts. Open inbox to review.";
+    }catch(e){
+      if(nav){nav.textContent="!";nav.classList.remove("zero");}
+      if(card)card.textContent="—";
+      if(note)note.textContent="Queue count unavailable. Open the inbox to check access and connection.";
+      console.error("Editorial pending count failed:",e);
+    }
+  }
 
   async function loadMasterSummary(){
     try{
