@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "title": "RoamSonio Weekly Editorial Suggestions",
+  "status": "policy-defined-generator-not-yet-connected",
+  "schedule": {
+    "frequency": "weekly",
+    "day": "Sunday",
+    "timezone": "UTC",
+    "note": "Choose and configure the editorial timezone before enabling the live scheduled job."
+  },
+  "weeklyMix": [
+    {
+      "id": "iconic",
+      "label": "Famous cities and bucket-list places",
+      "targetShare": 0.2
+    },
+    {
+      "id": "regional",
+      "label": "Regional favorites and hidden gems",
+      "targetShare": 0.2
+    },
+    {
+      "id": "experiences",
+      "label": "Unique activities and experiences",
+      "targetShare": 0.2
+    },
+    {
+      "id": "seasonal",
+      "label": "Current and upcoming seasonal ideas",
+      "targetShare": 0.2
+    },
+    {
+      "id": "planning",
+      "label": "Domestic and international advance-planning ideas",
+      "targetShare": 0.2
+    }
+  ],
+  "seasonPlanning": {
+    "currentSeasonShare": 0.3,
+    "nextSeasonShare": 0.3,
+    "advancePlanningShare": 0.3,
+    "flexibleDiscoveryShare": 0.1,
+    "advanceMonths": [
+      3,
+      6
+    ],
+    "note": "Season is evaluated for the destination's hemisphere and local conditions, not inferred from the user's season alone."
+  },
+  "geography": {
+    "domesticAndInternationalRequired": true,
+    "rotateRegions": true,
+    "avoidCityOnlyBias": true
+  },
+  "candidateFields": [
+    "name",
+    "type",
+    "category",
+    "destination",
+    "tagline",
+    "activities",
+    "bestTravelWindow",
+    "season",
+    "hemisphere",
+    "domesticOrInternational",
+    "region",
+    "planningHorizon",
+    "researchNotes",
+    "sources",
+    "duplicateKey"
+  ],
+  "photoPackage": {
+    "requiredRoles": [
+      "hero",
+      "secondary",
+      "mobile"
+    ],
+    "eachRequires": [
+      "httpsImageUrl",
+      "sourceUrl",
+      "credit",
+      "altText",
+      "destinationMatchCheck"
+    ],
+    "approvalDefault": false,
+    "missingOrUnverifiedPhotoAction": "keep-incomplete-draft"
+  },
+  "workflow": {
+    "generatedStatus": "draft",
+    "steps": [
+      "discover candidates",
+      "research and score candidates",
+      "deduplicate against existing library and recent suggestions",
+      "prepare editorial copy and three sourced photo candidates",
+      "save complete packages as drafts",
+      "admin reviews destination and all three photos together",
+      "single explicit admin action approves all photo roles and publishes destination"
+    ],
+    "autoPublish": false,
+    "homepageReadsPublishedApprovedEntriesOnly": true,
+    "weeklyHomepageEditionStableUntilNextSunday": true,
+    "preserveExistingTrips": true,
+    "editorialGenerationMayMutateTripRecords": false
+  },
+  "display": {
+    "homepageCount": 6,
+    "rotateWeekly": true,
+    "balanceFamiliarAndUnexpected": true,
+    "useOnlyApprovedDestinationSpecificPhotos": true,
+    "hideDrafts": true,
+    "keepCurrentPublishedEditionWhenGenerationFails": true
+  },
+  "deduplication": {
+    "compareNormalizedName": true,
+    "compareDestinationIdentity": true,
+    "compareAliases": true,
+    "lookbackWeeks": 12
+  },
+  "safety": {
+    "doNotInventSourcesOrCredits": true,
+    "doNotMarkImagesApprovedAutomatically": true,
+    "doNotPublishWithoutAllThreePhotoRoles": true,
+    "doNotReplaceCurrentEditionUntilScheduledPublicationBoundary": true,
+    "logRunResultsAndFailures": true
+  }
+}
