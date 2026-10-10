@@ -667,9 +667,9 @@
       "sha": "b3a2512123cf6180f9a4ea257a6ba08d11eddd53",
       "date": "2026-10-10",
       "title": "Add editorial photo set approval and library status filters",
-      "status": "TESTING",
+      "status": "ISSUE",
       "rollbackEligible": false,
-      "notes": "Adds status counts and destination search/filter controls in Master Account, plus a guarded one-click approval action for an existing complete Hero/Secondary/Mobile photo set. Filter control behavior was verified by the user after a follow-up touch-friendly filter update. The one-click photo approval action still awaits testing. Each image must have URL, source URL, credit and alt text; approvals save sequentially through the existing protected photo RPC. Destination publishing remains separate. No trip pages, saved trips, auth/MFA, or editorial records were changed by this code update."
+      "notes": "User reported existing Editorial Photography roles appeared missing after the later Master Account UI changes. This unverified photo-set approval/status-count/search update was removed by restoring verified Master Account checkpoint 1127f7ecc9427844f648310c97be661c7f1e16ab. Previously validated touch-friendly status filters remain. No database photo records or saved trips were changed by the revert."
     },
     {
       "sha": "1127f7ecc9427844f648310c97be661c7f1e16ab",
@@ -683,9 +683,9 @@
       "sha": "80644d07441e9d8883c8e06d52828feaea8c6ae7",
       "date": "2026-10-10",
       "title": "Add automatic editorial photo set preparation",
-      "status": "TESTING",
+      "status": "ISSUE",
       "rollbackEligible": false,
-      "notes": "Adds a Prepare for Publishing action that searches Wikimedia Commons for candidates with source, credit, license metadata, and minimum image dimensions; fills missing Hero/Secondary/Mobile roles as unapproved drafts through the existing protected RPC. It does not replace existing role records, approve photos, or publish the destination. Existing approved imagery and saved trips are protected. Requires live test on a draft destination such as Vienna; candidate API results and Supabase save behavior are not yet verified."
+      "notes": "User reported the Prepare for Publishing button did nothing and existing photo roles appeared missing after deployment. Reverted Master Account UI to verified checkpoint 1127f7ecc9427844f648310c97be661c7f1e16ab. No database photo records or saved trips were changed by the revert. Requires diagnosis and a fresh isolated implementation before retry."
     }
   ]
 }
