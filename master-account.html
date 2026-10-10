@@ -1005,7 +1005,7 @@ function suggestionSlug(value){
   document.getElementById("deletePhotoBtn").addEventListener("click",photoDelete);
   ["photoUrl"].forEach(id=>document.getElementById(id).addEventListener("input",e=>photoPreview(e.target.value.trim())));
   const originalEdFill=edFill;
-  edFill=function(x){ originalEdFill(x); photoLoad(); };
+  edFill=function(x){ originalEdFill(x); photoLoad(); loadPhotoCandidates(); };
   // Initialize the Editorial Library after the protected Master Admin session is ready.
   // edLoad() is invoked only after the Master Admin + MFA gate succeeds.
   </script>
