@@ -105,6 +105,11 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
 .editorialActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
 .editorialStatus{margin-top:10px;padding:10px 12px;border-radius:8px;background:#F1EADB;color:#5F5137;font-size:9px;line-height:1.45}
 .editorialStats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px}
+.editorialStatusTabs{display:flex;gap:6px;flex-wrap:wrap}
+.editorialStatusTab{appearance:none;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--navy);padding:10px 13px;font:700 10px/1 "DM Sans",sans-serif;cursor:pointer;touch-action:manipulation}
+.editorialStatusTab:hover{background:#F7F2E8}
+.editorialStatusTab.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.editorialStatusTab:focus-visible{outline:3px solid #C69A43;outline-offset:2px}
 .editorialStat{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.07em}
 @media(max-width:800px){.editorialGrid{grid-template-columns:1fr}.editorialList{max-height:300px}.editorialForm{grid-template-columns:1fr}}
 
@@ -175,7 +180,12 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
       <div class="editorialStats" id="editorialStats"><span class="editorialStat">Loading library…</span></div>
       <div class="editorialActions" style="margin:0 0 12px">
         <label style="font-size:9px;font-weight:800;align-self:center">SHOW DESTINATIONS</label>
-        <select id="editorialStatusFilter" class="confirmInput" style="width:auto;min-width:160px"><option value="all">All statuses</option><option value="draft">Drafts</option><option value="published">Published</option><option value="archived">Archived</option></select>
+        <div class="editorialStatusTabs" id="editorialStatusTabs" role="group" aria-label="Filter editorial destinations">
+          <button type="button" class="editorialStatusTab active" data-status="all" aria-pressed="true">All</button>
+          <button type="button" class="editorialStatusTab" data-status="draft" aria-pressed="false">Drafts</button>
+          <button type="button" class="editorialStatusTab" data-status="published" aria-pressed="false">Published</button>
+          <button type="button" class="editorialStatusTab" data-status="archived" aria-pressed="false">Archived</button>
+        </div>
         <input id="editorialSearch" class="confirmInput" style="width:auto;min-width:190px" placeholder="Search destination or activity">
       </div>
       <div class="editorialGrid">
@@ -634,7 +644,7 @@ if(masterSignOutLink){
     const sorted=editorialEntries.slice().sort((a,b)=>(a.type||"").localeCompare(b.type||"")||(a.name||"").localeCompare(b.name||""));
     const counts={draft:0,published:0,archived:0};sorted.forEach(x=>counts[x.status||"draft"]=(counts[x.status||"draft"]||0)+1);
     document.getElementById("editorialStats").innerHTML="<span class='editorialStat'>"+sorted.length+" Total</span><span class='editorialStat'>"+counts.draft+" Drafts</span><span class='editorialStat'>"+counts.published+" Published</span><span class='editorialStat'>"+counts.archived+" Archived</span>";
-    const filter=document.getElementById("editorialStatusFilter").value;
+    const filter=document.querySelector(".editorialStatusTab.active")?.dataset.status||"all";
     const q=document.getElementById("editorialSearch").value.trim().toLowerCase();
     sorted.filter(x=>(filter==="all"||(x.status||"draft")===filter)&&(!q||[x.name,x.id,x.type,x.category,x.build_destination,x.tagline,...(x.activities||[]),...(x.seasons||x.season||[])].join(" ").toLowerCase().includes(q))).forEach(x=>{
       const b=document.createElement("button");b.type="button";b.className="editorialItem";b.dataset.id=x.id;
@@ -667,7 +677,10 @@ if(masterSignOutLink){
   document.getElementById("newEditorialBtn").addEventListener("click",()=>{selectedEditorialId="";edFill({type:"City",status:"draft",buildable:true});document.getElementById("editorialEditorTitle").textContent="New editorial entry";});
   document.getElementById("saveEditorialBtn").addEventListener("click",()=>edSave());
   document.getElementById("publishEditorialBtn").addEventListener("click",()=>edSave("published"));
-  document.getElementById("editorialStatusFilter").addEventListener("change",edRender);
+  document.querySelectorAll(".editorialStatusTab").forEach(btn=>btn.addEventListener("click",()=>{
+    document.querySelectorAll(".editorialStatusTab").forEach(tab=>{const active=tab===btn;tab.classList.toggle("active",active);tab.setAttribute("aria-pressed",String(active));});
+    edRender();
+  }));
   document.getElementById("editorialSearch").addEventListener("input",edRender);
 
   let editorialPhotos=[];
