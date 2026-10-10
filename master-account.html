@@ -273,7 +273,7 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
                 <div class="photoPreview" id="photoPreview"><span>Photo preview</span></div>
                 <div class="photoCandidates" id="photoCandidates" hidden>
                   <div class="photoCandidatesHead"><strong>Photography candidates</strong><button type="button" class="secondaryBtn" id="refreshPhotoCandidates">Refresh</button></div>
-                  <div class="editorialStatus">Select an image to load it into the editor. Nothing is approved or saved until you explicitly save it.</div>
+                  <div class="editorialStatus">Browse the larger candidate gallery. Select an image to preview it, then save it into the chosen role. Existing photos can be replaced or deleted. Nothing is approved automatically.</div>
                   <div class="photoCandidatesGrid" id="photoCandidatesGrid"></div>
                 </div>
                 <div class="editorialForm">
@@ -915,21 +915,31 @@ function suggestionSlug(value){
     const box=document.getElementById("photoCandidates"),grid=document.getElementById("photoCandidatesGrid");
     if(!selectedEditorialId){box.hidden=true;return;}
     const entry=editorialEntries.find(x=>String(x.id)===String(selectedEditorialId));
-    const query=(entry&&(entry.build_destination||entry.buildDestination||entry.name)||"").trim();
-    if(!query){box.hidden=true;return;}
-    box.hidden=false; grid.innerHTML="<div class='row'><span>Finding approved-source candidates…</span></div>";
+    if(!entry){box.hidden=true;return;}
+    const destination=String(entry.build_destination||entry.buildDestination||entry.name||"").trim();
+    if(!destination){box.hidden=true;return;}
+    const activities=Array.isArray(entry.activities)?entry.activities.join(" "):String(entry.activities||"");
+    const base=[destination,String(entry.name||""),String(entry.category||""),activities].filter(Boolean).join(" ").trim();
+    const queries=[destination+" landscape",destination+" village architecture",destination+" "+(activities.split(/[,;|]/)[0]||entry.type||"travel"),String(entry.name||destination)+" scenic travel"];
+    box.hidden=false;grid.innerHTML="<div class='row'><span>Searching several destination-specific angles for a larger photo gallery…</span></div>";
     try{
-      const url="https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch="+encodeURIComponent(query)+"&gsrnamespace=6&gsrlimit=9&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=700&format=json&origin=*";
-      const res=await fetch(url,{cache:"no-store"}); if(!res.ok)throw new Error("Wikimedia request failed");
-      const data=await res.json();
-      const pages=Object.values((data.query&&data.query.pages)||{});
-      photoCandidates=pages.map(p=>{
-        const info=(p.imageinfo&&p.imageinfo[0])||{},meta=info.extmetadata||{};
-        return {title:p.title||"",url:info.thumburl||info.url||"",source_url:"https://commons.wikimedia.org/wiki/"+encodeURIComponent((p.title||"").replace(/ /g,"_")),credit:photoPlainMetadata(meta.Artist&&meta.Artist.value)||"Wikimedia Commons",alt_text:query+" travel photography"};
-      }).filter(x=>x.url);
-      grid.innerHTML=photoCandidates.length?photoCandidates.map((x,i)=>"<button type='button' class='photoCandidate' data-index='"+i+"'><img src='"+esc(x.url)+"' alt='"+esc(x.alt_text)+"'><small>"+esc(x.title.replace(/^File:/i,""))+"</small></button>").join(""):"<div class='row'><span>No candidates found. Try Refresh or add a source URL manually.</span></div>";
+      const results=await Promise.all(queries.map(async query=>{
+        const url="https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch="+encodeURIComponent(query)+"&gsrnamespace=6&gsrqiprofile=popular&gsrlimit=18&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=900&format=json&origin=*";
+        const res=await fetch(url,{cache:"no-store"});if(!res.ok)throw new Error("Wikimedia Commons search failed");
+        const data=await res.json();
+        return Object.values((data.query&&data.query.pages)||{}).map(p=>{
+          const info=(p.imageinfo&&p.imageinfo[0])||{},meta=info.extmetadata||{};
+          const plain=v=>photoPlainMetadata(v&&v.value);
+          const license=plain(meta.LicenseShortName),artist=plain(meta.Artist);
+          return {title:p.title||"",url:info.thumburl||info.url||"",source_url:"https://commons.wikimedia.org/wiki/"+encodeURIComponent((p.title||"").replace(/ /g,"_")),credit:[artist,license?"License: "+license:""].filter(Boolean).join(" · ")||"Wikimedia Commons — verify creator/license",alt_text:plain(meta.ImageDescription)||base+" travel photography",license:license,license_url:plain(meta.LicenseUrl)};
+        }).filter(x=>x.url&&/^https:\/\//i.test(x.url)&&x.source_url);
+      }));
+      const seen=new Set();
+      photoCandidates=results.flat().filter(x=>{const k=x.url.toLowerCase();if(seen.has(k))return false;seen.add(k);return true;}).slice(0,60);
+      grid.innerHTML=photoCandidates.length?photoCandidates.map((x,i)=>"<button type='button' class='photoCandidate' data-index='"+i+"' title='Select to preview and assign'><img src='"+esc(x.url)+"' alt='"+esc(x.alt_text)+"' loading='lazy' onerror=\"this.closest('button').style.display='none'\"><small>"+esc(x.title.replace(/^File:/i,""))+"<br>"+esc(x.license||"License needs review")+"</small></button>").join(""):"<div class='row'><span>No candidates found across the searches. Try Refresh or enter a photo URL manually.</span></div>";
       grid.querySelectorAll(".photoCandidate").forEach(b=>b.addEventListener("click",()=>photoUseCandidate(photoCandidates[Number(b.dataset.index)])));
-    }catch(e){grid.innerHTML="<div class='row'><span>Candidate search unavailable. You can still enter a photo URL manually.</span></div>";}
+      photoSetStatus("Found "+photoCandidates.length+" unique photo candidates across multiple searches. Choosing a candidate only fills the editor; save it to attach it, and review source/licensing before approval.");
+    }catch(e){grid.innerHTML="<div class='row'><span>Photo search unavailable: "+esc(e.message||"Unknown error")+". You can still enter a photo URL manually.</span></div>";}
   }
   function photoUseCandidate(x){
     if(!x)return;
@@ -938,7 +948,7 @@ function suggestionSlug(value){
     document.getElementById("photoCredit").value=x.credit;
     document.getElementById("photoAlt").value=x.alt_text;
     photoPreview(x.url);
-    photoSetStatus("Candidate loaded. Review the image and licensing/source details, then explicitly approve and save it.");
+    photoSetStatus("Candidate loaded into the preview. Confirm the image matches the destination, check source and license, choose the intended role, and save. This does not approve it.");
   }
 
   function photoSetStatus(msg){
