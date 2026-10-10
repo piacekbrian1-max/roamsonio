@@ -2240,8 +2240,20 @@ cuisineSel.onchange=function(){cuisine=this.value;trip.guideCuisine=cuisine;guid
 }else{cuisineRow.style.display="none";cuisineSel.innerHTML="";cuisine="All cuisines";trip.guideCuisine="All cuisines"}
 sel.onchange=function(){trip.guideCategory=this.value;trip.guideCuisine="All cuisines";guidePages={};save();renderGuide()};
 draw();
-if(!localGuide[city]&&!activityGuide[city]&&!isN&&!isAtlanta){
-discoverLiveGuidePlaces(active,function(found){if(found&&found.length){guidePages[active+"|"+cuisine]=0;draw()}});
+/* Trigger live place lookup whenever the visible list is still a discovery fallback.
+   Do not rely on city-profile flags: they can classify a destination without
+   providing actual venue records, which previously prevented Kyoto and others
+   from ever reaching the live lookup. */
+var firstItem=destinationItems(active)[0],needsLive=!firstItem||/^Find |^Explore /.test(String(firstItem[0]||""));
+if(needsLive){
+discoverLiveGuidePlaces(active,function(found){
+if(found&&found.length){guidePages[active+"|"+cuisine]=0;draw()}
+else{
+var status=document.getElementById("guideLiveStatus");
+if(!status){status=document.createElement("p");status.id="guideLiveStatus";status.className="guideNote";grid.parentNode.insertBefore(status,grid)}
+status.textContent="Live place results could not be loaded for this category. Try Refresh Places or open the map search; no venues have been invented.";
+}
+});
 }
 }
 function renderEvents(){
