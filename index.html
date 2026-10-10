@@ -433,110 +433,69 @@ function readiness(t){var checks=[
 function countdownLabel(t){var d=daysUntil(t.start);if(d===null)return"Dates not set";if(d>1)return d+" days";if(d===1)return"Tomorrow";if(d===0)return"Today";var left=Math.abs(d);return left+" days ago"}
 function completedTripModel(){return{name:"European Thanksgiving Adventure 2026",start:"2026-11-26",end:"2026-12-04",destinations:["Trnava","Prague","Pilsen","Hluboká nad Vltavou","Vienna"],travelers:3,state:"Completed planning",ready:true,missing:[],image:"images/prague-christmas.jpg",href:"current-trip.html"}}
 function currentTripModel(){return{id:"febaebf6-7369-4922-b069-c745eee8c16f",name:"New Orleans · Jan 16–20, 2027",start:"2027-01-16",end:"2027-01-20",destinations:["New Orleans"],travelers:3,state:"In Progress",ready:false,missing:["Finish trip details"],image:images.neworleans,href:"trip-workspace.html?id=febaebf6-7369-4922-b069-c745eee8c16f&destination=New%20Orleans&v=nola-home-model"}}
-function buildSuggestions(editorialImages,editorialRows){
-if(!editorialImages){
-  editorialImages={};
-  /* Render seasonal fallback immediately so a slow or stalled editorial API cannot leave Home Explore empty. */
-  buildSuggestions(editorialImages,[]);
-  var editorialUrl="https://vqtqchxoecrahtrnoocy.supabase.co/rest/v1/roamsonio_editorial_destinations?status=eq.published&select=id,name,type,seasons,activities,build_destination,tagline,roamsonio_editorial_photos(url,role,sort_order,approved)&order=name.asc";
-  fetch(editorialUrl,{headers:{apikey:"sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy",Authorization:"Bearer sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy"},cache:"no-store"}).then(function(res){if(!res.ok)throw new Error("Editorial library unavailable");return res.json();}).then(function(rows){
-    (rows||[]).forEach(function(row){
-      var photos=(row.roamsonio_editorial_photos||[]).filter(function(p){return p.approved===true&&p.url;}).sort(function(a,b){var ar=a.role==="hero"?0:a.role==="secondary"?1:2,br=b.role==="hero"?0:b.role==="secondary"?1:2;return ar-br||(Number(a.sort_order)||0)-(Number(b.sort_order)||0);});
-      var image=photos.length?photos[0].url:"";
-      if(!image)return;
-      [row.name,row.build_destination].forEach(function(key){if(key)editorialImages[String(key).trim().toLowerCase()]=image;});
-    });
-    buildSuggestions(editorialImages,rows||[]);
-  }).catch(function(){/* Keep the already-rendered seasonal fallback if the editorial request fails. */});
-  return;
-}
+function buildSuggestions(){
+/* Home Explore rebuilt as an independent six-card editorial spread.
+   It renders its own safe fallback first; editorial data can enhance it but cannot blank it. */
+var box=document.getElementById("suggestGrid");
+if(!box)return;
+var seasonEl=document.getElementById("suggestSeason");
 var now=new Date(),month=now.getMonth()+1;
 var season=month<=2||month===12?"Winter":month<=5?"Spring":month<=8?"Summer":"Fall";
-var pools={
-Winter:["Munich · Alpine Ski + Snowboard","Montreal · Winter Adventure","Santa Fe · Winter Trails","Vienna · Winter Culture","New York City · Winter City","Charleston · Coastal Escape","Lisbon · Mild-Weather Escape","Kyoto · Winter Tradition","Barcelona · Mediterranean Escape","Savannah · Coastal Winter"],
-Spring:["Barcelona · Bike + Beach","Lisbon · Coast + Cycling","Santa Fe · Hiking + High Desert","Charleston · Paddle + Coast","Savannah · Bike + Beach","Kyoto · Gardens + Cycling","Munich · Lakes + Alps","New York City · City Cycling","Montreal · Spring Outdoors","Vienna · Danube Cycling"],
-Summer:["Barcelona · Swim + Cycle","Lisbon · Surf + Coast","Santa Fe · Trails + Mountains","Charleston · Beach + Paddle","Savannah · Coast + Kayak","Kyoto · Hiking + Waterfalls","Munich · Lakes + Alps","New York City · City Cycling","Montreal · Spring Outdoors","Vienna · Danube Cycling"],
-Fall:["New York City · Fall City Adventure","Montreal · Fall Outdoors","Santa Fe · Hiking + High Desert","Charleston · Food + Coast","Savannah · Bike + Coast","Munich · Alpine Escape","Vienna · Danube Cycling","Kyoto · Fall Trails","Barcelona · Coastal Cycling","Lisbon · Coast + Walking"]
-};
-var base={
-"Charleston":{place:"Charleston + Lowcountry · USA",image:"https://images.unsplash.com/photo-1643063708982-0556158f4775?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
-"Santa Fe":{place:"Santa Fe + New Mexico · USA",image:"https://images.unsplash.com/photo-1777931407549-86d4771c9063?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
-"New York City":{place:"New York · USA",image:"https://images.unsplash.com/photo-1665399320309-e9757b31a5fe?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
-"Lisbon":{place:"Lisbon + Atlantic coast · Portugal",image:"https://images.unsplash.com/photo-1598535301312-5b3f8abd2a88?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
-"Vienna":{place:"Vienna + Danube · Austria",image:"https://images.unsplash.com/photo-1641309043676-34128e15917e?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
-"Kyoto":{place:"Kyoto + surrounding hills · Japan",image:"https://images.unsplash.com/photo-1589908234698-8e38077ca1f0?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
-"Savannah":{place:"Savannah + Georgia coast · USA",image:"https://images.unsplash.com/photo-1780348544952-42690c752e19?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
-"Montreal":{place:"Montréal + Québec · Canada",image:"https://images.unsplash.com/photo-1761920274681-18ba06a25d7c?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
-"Barcelona":{place:"Barcelona + Catalonia coast · Spain",image:"https://images.unsplash.com/photo-1780305807326-5724054ae6c6?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
-"Munich":{place:"Munich + Bavarian Alps · Germany",image:"https://images.unsplash.com/photo-1783091478517-e6fb341b516e?auto=format&fit=crop&fm=jpg&q=82&w=1800"}
-};
-var catalog={
-"Munich · Alpine Ski + Snowboard":["Munich + Bavarian Alps","Adventure · Ski + snowboard","Use Munich as a cultural base, then head into the Bavarian Alps for skiing, snowboarding and mountain scenery.","Skiing + snowboarding","Munich"],
-"Montreal · Winter Adventure":["Montréal + Québec","Adventure · Winter","Ice, winter trails, food and neighborhood culture turn Montréal into a cold-weather playground.","Ice skating + winter trails","Montreal"],
-"Santa Fe · Winter Trails":["Santa Fe + New Mexico","Adventure · Trails","High-desert scenery, mountain trails, dramatic light and a city made for wandering.","Hiking + scenic trails","Santa Fe"],
-"Vienna · Winter Culture":["Vienna","City · Winter culture","Imperial architecture, cafés, seasonal markets and easy walks through the historic center.","Walking + seasonal markets","Vienna"],
-"New York City · Winter City":["New York","City · Winter adventure","Museums, skating, neighborhoods, shows and a city that rewards exploring on foot.","Walking + skating","New York City"],
-"Charleston · Coastal Escape":["Charleston + Lowcountry","Adventure · Coast","Historic streets meet beaches, waterways, paddling and Lowcountry landscapes.","Kayaking + beach","Charleston"],
-"Lisbon · Mild-Weather Escape":["Lisbon + Atlantic coast","Adventure · Coast","Clifftop views, coastal walks, surf, cycling and historic neighborhoods under Atlantic light.","Surfing + cycling","Lisbon"],
-"Kyoto · Winter Tradition":["Kyoto","Culture · Winter walking","Temples, gardens, quiet lanes and seasonal landscapes create a slower winter adventure.","Walking + temple trails","Kyoto"],
-"Barcelona · Mediterranean Escape":["Barcelona + Mediterranean","Adventure · Mediterranean","Gaudí, old-city streets, beaches and cycling create an active city-and-sea week.","Swimming + cycling","Barcelona"],
-"Savannah · Coastal Winter":["Savannah + Georgia coast","Adventure · Coast","Oak-lined streets, marshes and the coast create an easy winter outdoor escape.","Walking + beach","Savannah"],
-"Barcelona · Bike + Beach":["Barcelona + Catalonia coast","Adventure · Bike + beach","Ride through neighborhoods and along the Mediterranean, then finish the day at the beach.","Cycling + swimming","Barcelona"],
-"Lisbon · Coast + Cycling":["Lisbon + Cascais","Adventure · Cycling + coast","Combine historic Lisbon with Atlantic cycling, viewpoints, beaches and coastal roads.","Cycling + swimming","Lisbon"],
-"Santa Fe · Hiking + High Desert":["Santa Fe + New Mexico","Adventure · Hiking","High-desert trails, mountain scenery, adobe towns and big Southwestern skies.","Hiking + scenic drives","Santa Fe"],
-"Charleston · Paddle + Coast":["Charleston + Lowcountry","Adventure · Paddle + coast","Paddle tidal waterways, explore barrier-island beaches and return to Charleston's food scene.","Kayaking + swimming","Charleston"],
-"Savannah · Bike + Beach":["Savannah + Tybee Island","Adventure · Bike + beach","Cycle historic squares, ride toward the coast and spend an easy day around Tybee Island.","Cycling + swimming","Savannah"],
-"Kyoto · Gardens + Cycling":["Kyoto","Adventure · Cycling + culture","Cycle between temples, gardens and riverside neighborhoods for a more immersive Kyoto.","Cycling + walking","Kyoto"],
-"Munich · Lakes + Alps":["Munich + Bavaria","Adventure · Lakes + Alps","Mix city culture with lakes, mountain scenery, cycling and easy Alpine escapes.","Cycling + hiking","Munich"],
-"New York City · City Cycling":["New York","Adventure · Urban cycling","Explore waterfront greenways, bridges, parks and neighborhoods by bike.","Cycling + walking","New York City"],
-"Montreal · Spring Outdoors":["Montréal + Québec","Adventure · Cycling + parks","Ride the waterfront and neighborhood paths as Montréal wakes up for spring.","Cycling + walking","Montreal"],
-"Vienna · Danube Cycling":["Vienna + Danube","Adventure · Cycling","Ride the Danube, explore riverside landscapes and return to Vienna's cafés and culture.","Cycling + walking","Vienna"],
-"Barcelona · Swim + Cycle":["Barcelona + Mediterranean","Adventure · Swim + cycle","A Mediterranean active escape combining cycling, beaches, architecture and food.","Swimming + cycling","Barcelona"],
-"Lisbon · Surf + Coast":["Lisbon + Atlantic coast","Adventure · Surf + coast","Use Lisbon as a base for surf beaches, coastal walks, viewpoints and seafood.","Surfing + swimming","Lisbon"],
-"Kyoto · Hiking + Waterfalls":["Kyoto + surrounding mountains","Adventure · Trails","Step beyond the city into forested trails, waterfalls, temples and mountain villages.","Hiking + waterfalls","Kyoto"],
-"Santa Fe · Trails + Mountains":["Santa Fe + Sangre de Cristo Mountains","Adventure · Mountain trails","Mountain trails and high-desert scenery sit close to Santa Fe's galleries and food.","Hiking + mountain biking","Santa Fe"],
-"New York City · Fall City Adventure":["New York","Adventure · Parks + city","Fall foliage, waterfront paths, museums and neighborhood exploration in one city week.","Cycling + walking","New York City"],
-"Montreal · Fall Outdoors":["Montréal + Québec","Adventure · Fall scenery","Autumn color, parks, waterfront rides and a food-rich city base.","Cycling + hiking","Montreal"],
-"Charleston · Food + Coast":["Charleston + Lowcountry","City + adventure · Food + coast","Historic streets and exceptional food paired with beaches and Lowcountry scenery.","Walking + beach","Charleston"],
-"Savannah · Bike + Coast":["Savannah + Georgia coast","Adventure · Bike + coast","Ride through oak-lined historic streets, then head toward marshes and the coast.","Cycling + beach","Savannah"],
-"Munich · Alpine Escape":["Munich + Bavarian Alps","Adventure · Alps","Pair Munich's culture with an Alpine day for skiing, snow views, mountain walks and villages.","Skiing + hiking","Munich"],
-"Kyoto · Fall Trails":["Kyoto + surrounding hills","Adventure · Fall hiking","Autumn color, temple trails, mountain paths and traditional neighborhoods.","Hiking + walking","Kyoto"],
-"Barcelona · Coastal Cycling":["Barcelona + Catalonia coast","Adventure · Cycling + coast","Ride the waterfront and coastal roads while mixing beaches with Catalan towns.","Cycling + swimming","Barcelona"],
-"Lisbon · Coast + Walking":["Lisbon + Atlantic coast","Adventure · Walking + coast","Clifftop paths, historic neighborhoods and Atlantic viewpoints make walking the main event.","Walking + coastal hiking","Lisbon"]
-};
-var pool=pools[season]||pools.Fall;
-var editorialKeys=[];
-(editorialRows||[]).forEach(function(row){
-  var photos=(row.roamsonio_editorial_photos||[]).filter(function(p){return p.approved===true&&p.url;});
-  if(!photos.length)return;
-  var key=String(row.name||"").trim();
-  if(!key)return;
-  catalog[key]=[
-    String(row.build_destination||row.name||"").trim(),
-    "Editorial · "+String(row.type||"Destination"),
-    String(row.tagline||"Explore the destination through the RoamSonio Edit."),
-    (Array.isArray(row.activities)?row.activities:String(row.activities||"").split(/[,;|]/)).slice(0,3).join(" + ")||"Explore the destination",
-    String(row.build_destination||row.name||"").trim()
-  ];
-  editorialKeys.push(key);
-});
-var anchor=new Date(2020,0,5),days=Math.floor((now-anchor)/86400000),sundayWeek=Math.floor(days/7),offset=(sundayWeek*3)%pool.length,selected=[];
-if(editorialKeys.length){
-  var featuredKey=editorialKeys[sundayWeek%editorialKeys.length];
-  selected.push(featuredKey);
-  editorialKeys.forEach(function(key){if(key!==featuredKey)selected.push(key);});
+if(seasonEl)seasonEl.textContent=season+" · new adventures every Sunday";
+var fallback=[
+{title:"Kyoto · Gardens + Trails",place:"Kyoto + surrounding hills · Japan",tag:"Culture + outdoors",desc:"Temple lanes, gardens and forested trails beyond the city.",activity:"Gardens + hiking",destination:"Kyoto",image:"https://images.unsplash.com/photo-1589908234698-8e38077ca1f0?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
+{title:"Lisbon · Coast + Cycling",place:"Lisbon + Atlantic coast · Portugal",tag:"Coast + cycling",desc:"Historic neighborhoods, Atlantic viewpoints and coastal rides.",activity:"Cycling + coast",destination:"Lisbon",image:"https://images.unsplash.com/photo-1598535301312-5b3f8abd2a88?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
+{title:"Santa Fe · Desert Trails",place:"Santa Fe + New Mexico · USA",tag:"Hiking + scenery",desc:"High-desert trails, adobe streets and big Southwestern skies.",activity:"Hiking + scenic drives",destination:"Santa Fe",image:"https://images.unsplash.com/photo-1777931407549-86d4771c9063?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
+{title:"Barcelona · Bike + Beach",place:"Barcelona + Catalonia · Spain",tag:"City + Mediterranean",desc:"Architecture, lively neighborhoods, waterfront rides and beaches.",activity:"Cycling + swimming",destination:"Barcelona",image:"https://images.unsplash.com/photo-1780305807326-5724054ae6c6?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
+{title:"Savannah · Squares + Coast",place:"Savannah + Georgia coast · USA",tag:"Southern escape",desc:"Oak-lined squares, historic streets and easy coastal days.",activity:"Walking + beach",destination:"Savannah",image:"https://images.unsplash.com/photo-1780348544952-42690c752e19?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
+{title:"Vienna · Danube + Culture",place:"Vienna + Danube · Austria",tag:"Culture + cycling",desc:"Grand cafés, historic streets and riverside paths to explore.",activity:"Cycling + walking",destination:"Vienna",image:"https://images.unsplash.com/photo-1641309043676-34128e15917e?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
+{title:"Montréal · Food + Outdoors",place:"Montréal + Québec · Canada",tag:"City + outdoors",desc:"A food-loving city with parks, waterfront paths and neighborhoods.",activity:"Cycling + food",destination:"Montreal",image:"https://images.unsplash.com/photo-1761920274681-18ba06a25d7c?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
+{title:"Charleston · Lowcountry",place:"Charleston + Lowcountry · USA",tag:"Food + coast",desc:"Historic lanes, tidal waterways, beaches and Lowcountry flavor.",activity:"Kayaking + beach",destination:"Charleston",image:"https://images.unsplash.com/photo-1643063708982-0556158f4775?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
+{title:"New York · Neighborhoods",place:"New York City · USA",tag:"City adventure",desc:"Museums, waterfront paths, parks, shows and neighborhood discoveries.",activity:"Walking + cycling",destination:"New York City",image:"https://images.unsplash.com/photo-1665399320309-e9757b31a5fe?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
+{title:"Munich · Lakes + Alps",place:"Munich + Bavarian Alps · Germany",tag:"Mountains + lakes",desc:"Pair city culture with alpine lakes, mountain villages and trails.",activity:"Hiking + alpine escapes",destination:"Munich",image:"https://images.unsplash.com/photo-1783091478517-e6fb341b516e?auto=format&fit=crop&fm=jpg&q=82&w=1800"}
+];
+var anchor=new Date(2020,0,5),week=Math.floor(Math.floor((now-anchor)/86400000)/7),offset=(week*3)%fallback.length;
+var rotated=fallback.slice(offset).concat(fallback.slice(0,offset));
+var chosen=rotated.slice(0,6);
+function paint(cards){
+  try{
+    var safeCards=(cards||[]).filter(function(c){return c&&c.title&&c.destination;}).slice(0,6);
+    while(safeCards.length<6){var add=rotated.find(function(c){return !safeCards.some(function(x){return x.title===c.title;});});if(!add)break;safeCards.push(add);}
+    box.innerHTML=safeCards.map(function(c,i){
+      var href="build-trip.html?destination="+encodeURIComponent(c.destination)+"&inspiration="+encodeURIComponent(c.title);
+      return "<a class='suggestCard' data-explore-index='"+i+"' href='"+href+"' aria-label='Explore "+esc(c.title)+" as a trip'><div class='suggestContent'><div class='suggestTag'>"+esc(c.tag||"RoamSonio edit")+"</div><h3>"+esc(c.title)+"</h3><p>"+esc(c.place||c.destination)+" · "+esc(c.desc||"Find your next reason to roam.")+"</p><span class='suggestAction'>"+esc(c.activity||"Explore")+" · Explore this trip</span></div></a>";
+    }).join("");
+    Array.prototype.forEach.call(box.querySelectorAll(".suggestCard"),function(card,i){
+      var url=String(safeCards[i].image||"");
+      if(/^https:\/\//i.test(url))card.style.setProperty("--suggest-image","url("+JSON.stringify(url.replace(/[\\"]/g,""))+")");
+    });
+    var feature=document.querySelector(".editorialFeatureImage"),first=box.querySelector(".suggestCard");
+    if(feature&&first){
+      var bg=first.style.getPropertyValue("--suggest-image");
+      if(bg){feature.style.backgroundImage="linear-gradient(90deg,#071E33e8 0%,#071E3370 42%,#071E3310 78%),"+bg;var hero=document.getElementById("rsHeroPhoto");if(hero){hero.style.backgroundImage=bg;hero.href=first.getAttribute("href")||"#editorialFeatureWrap";}}
+      var title=first.querySelector("h3"),desc=first.querySelector("p"),fl=feature.querySelector(".editorialFeatureLink"),fh=feature.querySelector(".editorialFeatureCopy h3"),fp=feature.querySelector(".editorialFeatureCopy p");
+      if(fh&&title)fh.textContent=title.textContent;if(fp&&desc)fp.textContent=desc.textContent;if(fl){fl.textContent="Explore this edit →";fl.href=first.getAttribute("href")||"#suggestGrid";}
+    }
+  }catch(err){console.error("RoamSonio Explore render failed",err);}
 }
-for(var i=0;i<pool.length&&selected.length<6;i++)selected.push(pool[(offset+i)%pool.length]);
-/* Home Explore is a six-card editorial spread: one feature plus five supporting destinations. */
-selected=selected.slice(0,6);
-var box=document.getElementById("suggestGrid");if(!box)return;
-var seasonEl=document.getElementById("suggestSeason");if(seasonEl)seasonEl.textContent=season+" · new adventures every Sunday";
-box.innerHTML=selected.map(function(name){
-var x=catalog[name],v=base[x[4]]||{place:x[0],image:""},editorialImage=editorialImages[String(x[4]||"").trim().toLowerCase()]||editorialImages[String(v.place||"").trim().toLowerCase()]||"",href="build-trip.html?destination="+encodeURIComponent(x[4])+"&inspiration="+encodeURIComponent(name);
-return "<a class='suggestCard' href='"+href+"' aria-label='Explore "+esc(name)+" as a 7-day inspiration trip' style=\"--suggest-image:url('"+(editorialImage||v.image)+"')\"><div class='suggestContent'><div class='suggestTag'>"+esc(x[1])+"</div><h3>"+esc(name)+"</h3><p>"+esc(x[0])+" · "+esc(x[2])+"</p><span class='suggestAction'>"+esc(x[3])+" · Explore this trip</span></div></a>";
-}).join("");
-var feature=document.querySelector(".editorialFeatureImage"),first=box.querySelector(".suggestCard");
-if(feature&&first){var bg=first.style.getPropertyValue("--suggest-image");if(bg){feature.style.backgroundImage="linear-gradient(90deg,#071E33e8 0%,#071E3370 42%,#071E3310 78%),"+bg;var hero=document.getElementById("rsHeroPhoto");if(hero){hero.style.backgroundImage=bg;hero.href=first.getAttribute("href")||"#editorialFeatureWrap";hero.setAttribute("aria-label","Explore "+((first.querySelector("h3")||{}).textContent||"this week's featured destination"));}}var title=first.querySelector("h3"),desc=first.querySelector("p"),fl=feature.querySelector(".editorialFeatureLink");var fh=feature.querySelector(".editorialFeatureCopy h3"),fp=feature.querySelector(".editorialFeatureCopy p");if(fh&&title)fh.textContent=title.textContent;if(fp&&desc)fp.textContent=desc.textContent;if(fl){fl.textContent="Explore this edit →";fl.href=first.getAttribute("href")||"#suggestGrid";}}
+/* Paint six complete cards before making any network request. */
+paint(chosen);
+/* Approved Editorial Library entries may replace fallback cards, but any API/data error leaves six visible cards. */
+var editorialUrl="https://vqtqchxoecrahtrnoocy.supabase.co/rest/v1/roamsonio_editorial_destinations?status=eq.published&select=id,name,type,seasons,activities,build_destination,tagline,roamsonio_editorial_photos(url,role,sort_order,approved)&order=name.asc";
+fetch(editorialUrl,{headers:{apikey:"sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_T_FWO5vsy",Authorization:"Bearer sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_T_FWO5vsy"},cache:"no-store"}).then(function(res){if(!res.ok)throw new Error("Editorial library unavailable");return res.json();}).then(function(rows){
+  var editorial=(rows||[]).map(function(row){
+    var photos=(row.roamsonio_editorial_photos||[]).filter(function(p){return p&&p.approved===true&&p.url&&/^https:\/\//i.test(p.url);}).sort(function(a,b){var ar=a.role==="hero"?0:a.role==="secondary"?1:2,br=b.role==="hero"?0:b.role==="secondary"?1:2;return ar-br||(Number(a.sort_order)||0)-(Number(b.sort_order)||0);});
+    if(!row.name||!photos.length)return null;
+    var destination=String(row.build_destination||row.name).trim();
+    var acts=Array.isArray(row.activities)?row.activities:String(row.activities||"").split(/[,;|]/);
+    return {title:String(row.name).trim(),place:destination,tag:"Editorial · "+String(row.type||"Destination"),desc:String(row.tagline||"Explore this destination through the RoamSonio Edit."),activity:acts.slice(0,3).join(" + ")||"Explore the destination",destination:destination,image:photos[0].url};
+  }).filter(Boolean);
+  if(!editorial.length)return;
+  var lead=editorial[week%editorial.length],cards=[lead];
+  editorial.forEach(function(c){if(cards.length<6&&c.title!==lead.title)cards.push(c);});
+  rotated.forEach(function(c){if(cards.length<6&&!cards.some(function(x){return x.title===c.title;}))cards.push(c);});
+  paint(cards);
+}).catch(function(err){console.warn("RoamSonio Explore is using its built-in destination set",err);});
 }
 function renderUpcomingTrips(all,current){
 var box=document.getElementById("upcomingTrips");if(!box)return;
