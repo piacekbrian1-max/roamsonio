@@ -678,6 +678,14 @@
       "status": "SUCCESS",
       "rollbackEligible": true,
       "notes": "User tested on iPad on 2026-10-10 and confirmed All, Drafts and Published status controls respond correctly and the active selection follows the chosen filter. Touch-friendly filter change is now a verified checkpoint. No database records, photo approvals, saved trips, auth/MFA, or Home page logic changed."
+    },
+    {
+      "sha": "80644d07441e9d8883c8e06d52828feaea8c6ae7",
+      "date": "2026-10-10",
+      "title": "Add automatic editorial photo set preparation",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds a Prepare for Publishing action that searches Wikimedia Commons for candidates with source, credit, license metadata, and minimum image dimensions; fills missing Hero/Secondary/Mobile roles as unapproved drafts through the existing protected RPC. It does not replace existing role records, approve photos, or publish the destination. Existing approved imagery and saved trips are protected. Requires live test on a draft destination such as Vienna; candidate API results and Supabase save behavior are not yet verified."
     }
   ]
 }
