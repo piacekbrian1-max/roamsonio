@@ -2065,17 +2065,15 @@ var qcats={
 var selector=qcats[category]||'["tourism"~"attraction|museum|gallery"]';
 fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q="+encodeURIComponent(place),{headers:{"Accept-Language":"en"}})
 .then(function(r){if(!r.ok)throw Error("geocode unavailable");return r.json()})
-.then(function(rows){if(!rows||!rows.length)throw Error("destination not found");var p=rows[0],lat=Number(p.lat),lon=Number(p.lon),query='[out:json][timeout:22];(node'+selector+'(around:18000,'+lat+','+lon+');way'+selector+'(around:18000,'+lat+','+lon+');relation'+selector+'(around:18000,'+lat+','+lon+'););out center tags 60;';
+.then(function(rows){if(!rows||!rows.length)throw Error("destination not found");var p=rows[0],lat=Number(p.lat),lon=Number(p.lon),query='[out:json][timeout:10];(node'+selector+'(around:12000,'+lat+','+lon+');way'+selector+'(around:18000,'+lat+','+lon+');relation'+selector+'(around:18000,'+lat+','+lon+'););out center tags 60;';
 var endpoints=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter","https://overpass.nchc.org.tw/api/interpreter"];
-function tryEndpoint(index){
-if(index>=endpoints.length)throw Error("all place providers unavailable");
-return fetch(endpoints[index],{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:"data="+encodeURIComponent(query)})
+var requests=endpoints.map(function(endpoint){
+return fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:"data="+encodeURIComponent(query)})
 .then(function(r){if(!r.ok)throw Error("place provider unavailable");return r.json()})
-.then(function(data){if(!data||!Array.isArray(data.elements))throw Error("invalid place data");return data})
-.catch(function(){return tryEndpoint(index+1)});
-}
-return tryEndpoint(0)})
-.then(function(data){var seen={},places=(data.elements||[]).map(function(el){var tags=el.tags||{},name=tags.name||tags["name:en"];if(!name||seen[name.toLowerCase()])return null;seen[name.toLowerCase()]=true;var lat=el.lat||(el.center&&el.center.lat),lon=el.lon||(el.center&&el.center.lon),area=tags["addr:suburb"]||tags["addr:neighbourhood"]||tags["addr:city"]||"Local area",kind=tags.cuisine||tags.amenity||tags.tourism||tags.shop||tags.leisure||tags.craft||"Place";return [name,area,String(kind).replace(/_/g," "), "OpenStreetMap place data",lat&&lon?"https://www.openstreetmap.org/?mlat="+lat+"&mlon="+lon+"&zoom=17":""]}).filter(Boolean).slice(0,24);liveGuideCache[key]=places;if(places.length){trip.liveGuidePlaces=trip.liveGuidePlaces||{};trip.liveGuidePlaces[key]=places;save()}done(places)})
+.then(function(data){if(!data||!Array.isArray(data.elements))throw Error("invalid place data");return data});
+});
+return Promise.any(requests).catch(function(){throw Error("all place providers unavailable")}))
+.then(function(data){var seen={},places=(data.elements||[]).map(function(el){var tags=el.tags||{},name=tags["name:en"]||tags["official_name:en"]||tags.int_name||tags.name;if(!name||seen[name.toLowerCase()])return null;seen[name.toLowerCase()]=true;var lat=el.lat||(el.center&&el.center.lat),lon=el.lon||(el.center&&el.center.lon),area=tags["addr:suburb"]||tags["addr:neighbourhood"]||tags["addr:city"]||"Local area",kind=tags.cuisine||tags.amenity||tags.tourism||tags.shop||tags.leisure||tags.craft||"Place";return [name,area,String(kind).replace(/_/g," "), "OpenStreetMap place data",lat&&lon?"https://www.openstreetmap.org/?mlat="+lat+"&mlon="+lon+"&zoom=17":""]}).filter(Boolean).slice(0,24);liveGuideCache[key]=places;if(places.length){trip.liveGuidePlaces=trip.liveGuidePlaces||{};trip.liveGuidePlaces[key]=places;save()}done(places)})
 .catch(function(){liveGuideCache[key]=[];done([])})
 .finally(function(){delete liveGuidePending[key]});
 }
