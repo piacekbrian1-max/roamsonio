@@ -515,7 +515,7 @@ var editorialKeys=[];
     String(row.build_destination||row.name||"").trim(),
     "Editorial · "+String(row.type||"Destination"),
     String(row.tagline||"Explore the destination through the RoamSonio Edit."),
-    (row.activities||[]).slice(0,3).join(" + ")||"Explore the destination",
+    (Array.isArray(row.activities)?row.activities:String(row.activities||"").split(/[,;|]/)).slice(0,3).join(" + ")||"Explore the destination",
     String(row.build_destination||row.name||"").trim()
   ];
   editorialKeys.push(key);
