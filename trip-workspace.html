@@ -2095,24 +2095,34 @@ if(todo.length){
   if(todoItems.length)return todoItems;
 }
 
-/* For categories without curated destination data, provide destination-specific
-   discovery lanes rather than borrowing another city's content. */
-var areaSets={
-prague:["Staré Město","Malá Strana","Vinohrady","Karlín","Holešovice","Nové Město"],
-vienna:["Innere Stadt","Neubau","Mariahilf","Leopoldstadt","Alsergrund","Landstraße"],
-pilsen:["City Centre","Old Town","Brewery District","Lochotín"],
-trnava:["City Centre","Main Street","Trinity Square","Historic Centre"],
-hluboka:["Town Centre","Castle route","Park Hluboká","Hluboká area"],
-default:["City Centre","Historic Centre","Downtown","Main Square","Local neighbourhoods","Nearby"]
+/* Universal destination-aware fallback.
+   Never fabricate venue names such as "Explore Breakfast in City Centre".
+   When the library/build has no curated venues for this destination/category,
+   show a small number of honest, destination-specific discovery options that
+   search the selected destination and category. */
+var destLabel=(trip.destinations||[])[0]||trip.name||destination||"this destination";
+var categoryQueries={
+"Breakfast":["best breakfast cafés and bakeries","highly rated breakfast spots"],
+"Lunch":["local lunch restaurants and markets","top-rated lunch spots"],
+"Dinner":["local restaurants for dinner","highly rated dinner restaurants"],
+"Special Occasions":["special occasion and fine dining restaurants","romantic restaurants"],
+"Bars":["popular local bars","cocktail bars"],
+"Breweries":["local breweries and brewpubs","craft beer breweries"],
+"Coffee & Bakeries":["specialty coffee shops and bakeries","local pastry shops"],
+"Music":["live music venues and concert halls","music events"],
+"Theater & Shows":["theatres and performing arts venues","live shows and performances"],
+"Museums":["top museums and galleries","local history museums"],
+"Markets":["markets and food markets","local artisan markets"],
+"Family":["family attractions and activities","family-friendly museums and parks"],
+"Neighborhoods":["historic neighborhoods and districts","local neighborhoods worth exploring"],
+"Breweries":["breweries and brewpubs","craft beer destinations"],
+"Activities":["top attractions and things to do","landmarks and cultural sights"]
 };
-var areas=areaSets[city]||areaSets.default,arr=[];
-for(var q=0;q<areas.length;q++)arr.push([
-"Explore "+category+" in "+areas[q],
-areas[q],
-"Search current "+category.toLowerCase()+" options in this destination area",
-"Destination discovery"
-]);
-return arr;
+var queries=categoryQueries[category]||["top "+String(category||"attractions").toLowerCase()+" and things to do","best "+String(category||"attractions").toLowerCase()+" in the area"];
+return queries.map(function(q,i){
+var searchQuery=encodeURIComponent(destLabel+" "+q);
+return ["Find "+q+" in "+destLabel,destLabel,"Destination-specific discovery. Search current places, then confirm opening hours and details before visiting.","Destination discovery", "https://www.google.com/maps/search/"+searchQuery];
+});
 }
 function classifyDestinationCuisine(item,category){
 var n=slug((item[0]||"")+" "+(item[2]||"")+" "+(item[3]||"")),c=slug(category||"");
