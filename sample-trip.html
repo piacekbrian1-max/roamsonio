@@ -157,6 +157,7 @@ function collectPlan(){var plan=[];daysEl.querySelectorAll(".day").forEach(funct
 document.getElementById("saveTrip").onclick=async function(){
 var button=this,status=document.getElementById("status");button.disabled=true;status.textContent="Checking your RoamSonio account…";
 try{
+await editorialLoad;
 var sb=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy");
 var auth=await sb.auth.getSession();if(!auth.data.session){status.innerHTML="Please <a href='login.html?return="+encodeURIComponent("sample-trip.html"+location.search)+"'>sign in</a> to save this customized trip. Your current page remains open in this tab.";button.disabled=false;return}
 var start=document.getElementById("start").value,end=document.getElementById("end").value;if(!start||!end||end<start){status.textContent="Choose a valid start and end date before saving.";button.disabled=false;return}
