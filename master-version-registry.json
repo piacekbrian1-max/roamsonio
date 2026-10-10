@@ -12,9 +12,9 @@
       "sha": "4c7eb77ddf01d8a20f3dcf4085033e72f62cdbef",
       "date": "2026-10-10",
       "title": "Show six Home Explore destination cards on all screen sizes",
-      "status": "TESTING",
+      "status": "ISSUE",
       "rollbackEligible": false,
-      "notes": "Home Explore now renders a six-card editorial spread instead of hiding cards after the fifth. Desktop keeps one tall feature beside five supporting destination cards; tablet and iPhone layouts reveal all six cards, including the sixth card on mobile. Selection is capped to six for the intended Home magazine layout. Only index.html presentation/rendering changed; no Supabase records, saved trips, trip builder or trip persistence changed. Awaiting iPad verification."
+      "notes": "User tested the deployed Home page and confirmed no change: Prague remains the only visible destination image. The six-card CSS adjustment did not solve the underlying issue and must not be treated as a successful checkpoint. Current code inspection confirms the Home has a dynamic Explore grid and a separate large featured-image area; the remaining failure is likely in runtime data/image rendering or the deployed page being viewed, not the card-count CSS alone. No Supabase records, photo approvals, or saved trips were changed."
     },
     {
       "sha": "a955f87ba77758deb9c44384020fae60fe0373c8",
