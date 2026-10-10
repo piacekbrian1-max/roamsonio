@@ -507,7 +507,7 @@ var editorialKeys=[];
   var photos=(row.roamsonio_editorial_photos||[]).filter(function(p){return p.approved===true&&p.url;});
   if(!photos.length)return;
   var key=String(row.name||"").trim();
-  if(!key||catalog[key])return;
+  if(!key)return;
   catalog[key]=[
     String(row.build_destination||row.name||"").trim(),
     "Editorial · "+String(row.type||"Destination"),
