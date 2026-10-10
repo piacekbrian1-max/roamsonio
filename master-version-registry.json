@@ -711,5 +711,15 @@
       "rollbackEligible": false,
       "notes": "Home now includes every published editorial destination with at least one approved photo in the Explore collection, not only destinations matching the current season. The weekly featured destination remains first and rotates by week; seasonal inspiration fills remaining slots up to six. Presentation/content selection only; no database, saved trip, trip builder, or existing trip persistence changes. Awaiting user test with six published locations."
     }
+  ],
+  "plannedChanges": [
+    {
+      "id": "home-explore-editorial-fallback-20261010",
+      "date": "2026-10-10",
+      "title": "Home Explore editorial destination fallback",
+      "status": "PLANNED",
+      "rollbackEligible": false,
+      "notes": "Planned change only; no code deployed yet. Make Home Explore resilient so all six published editorial destinations remain available if the live editorial fetch fails, while using approved photos when available. Must not modify trips or Supabase data. After code commit, replace this planning record with the actual commit SHA in versions and mark TESTING."
+    }
   ]
 }
