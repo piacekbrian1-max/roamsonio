@@ -1,12 +1,13 @@
 {
   "schemaVersion": 1,
   "title": "RoamSonio Weekly Editorial Suggestions",
-  "status": "policy-defined-generator-not-yet-connected",
+  "status": "implementation-committed-deployment-and-secrets-required",
   "schedule": {
     "frequency": "weekly",
     "day": "Sunday",
-    "timezone": "UTC",
-    "note": "Choose and configure the editorial timezone before enabling the live scheduled job."
+    "timezone": "America/New_York",
+    "localTime": "09:00",
+    "note": "GitHub Actions workflow checks both UTC slots and runs only when the local Eastern clock is 09:00. Live generation remains inactive until the Supabase Edge Function is deployed and OPENAI_API_KEY and EDITORIAL_JOB_SECRET are configured."
   },
   "weeklyMix": [
     {
@@ -99,7 +100,10 @@
     "homepageReadsPublishedApprovedEntriesOnly": true,
     "weeklyHomepageEditionStableUntilNextSunday": true,
     "preserveExistingTrips": true,
-    "editorialGenerationMayMutateTripRecords": false
+    "editorialGenerationMayMutateTripRecords": false,
+    "generatorImplementation": "supabase/functions/editorial-suggestion-generator/index.ts",
+    "scheduledWorkflow": ".github/workflows/editorial-suggestions.yml",
+    "deploymentRequired": true
   },
   "display": {
     "homepageCount": 6,
