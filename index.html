@@ -48,11 +48,11 @@ footer{background:#0B2D4A;color:#4F6B8A;padding:38px 0}.foot{max-width:1440px;wi
 .editorialExplore{padding:18px 0 80px}
 .editorialSectionHead{display:flex;justify-content:space-between;align-items:end;gap:30px;margin-bottom:26px}
 .editorialSectionHead h2{font-size:clamp(34px,4.2vw,58px)}
-.editorialSuggestGrid{grid-template-columns:1.35fr .82fr .82fr!important;grid-template-rows:260px 260px;gap:12px;margin-bottom:0}
+.editorialSuggestGrid{grid-template-columns:1.35fr .82fr .82fr!important;grid-template-rows:170px 170px 170px;gap:12px;margin-bottom:0}
 .editorialSuggestGrid .suggestCard{min-height:0;border-radius:2px}
-.editorialSuggestGrid .suggestCard:first-child{grid-row:1 / span 2;min-height:532px}
+.editorialSuggestGrid .suggestCard:first-child{grid-row:1 / span 3;min-height:532px}
 .editorialSuggestGrid .suggestCard:nth-child(2){grid-column:2}.editorialSuggestGrid .suggestCard:nth-child(3){grid-column:3}.editorialSuggestGrid .suggestCard:nth-child(4){grid-column:2}.editorialSuggestGrid .suggestCard:nth-child(5){grid-column:3}
-.editorialSuggestGrid .suggestCard:nth-child(n+6){display:none}
+
 .editorialSuggestGrid .suggestContent h3{font-size:31px}
 .editorialJourneys{padding:78px 0 88px;border-top:1px solid #D9E0E7}
 .journeyColumn{margin-top:28px}.journeyLabel{display:flex;align-items:center;gap:13px;margin-bottom:12px}.journeyLabel span{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#A47C2F;font-weight:800}.journeyLabel i{height:1px;background:#D9E0E7;flex:1}
@@ -524,6 +524,8 @@ if(editorialKeys.length){
   editorialKeys.forEach(function(key){if(key!==featuredKey)selected.push(key);});
 }
 for(var i=0;i<pool.length&&selected.length<6;i++)selected.push(pool[(offset+i)%pool.length]);
+/* Home Explore is a six-card editorial spread: one feature plus five supporting destinations. */
+selected=selected.slice(0,6);
 var box=document.getElementById("suggestGrid");if(!box)return;
 var seasonEl=document.getElementById("suggestSeason");if(seasonEl)seasonEl.textContent=season+" · new adventures every Sunday";
 box.innerHTML=selected.map(function(name){
