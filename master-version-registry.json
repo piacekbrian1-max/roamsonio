@@ -686,6 +686,14 @@
       "status": "ISSUE",
       "rollbackEligible": false,
       "notes": "User reported the Prepare for Publishing button did nothing and existing photo roles appeared missing after deployment. Reverted Master Account UI to verified checkpoint 1127f7ecc9427844f648310c97be661c7f1e16ab. No database photo records or saved trips were changed by the revert. Requires diagnosis and a fresh isolated implementation before retry."
+    },
+    {
+      "sha": "de57a3bb6171fd2ecedfb7968124441bea545b9d",
+      "date": "2026-10-10",
+      "title": "Show all published editorial destinations on Home",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Home now includes every published editorial destination with at least one approved photo in the Explore collection, not only destinations matching the current season. The weekly featured destination remains first and rotates by week; seasonal inspiration fills remaining slots up to six. Presentation/content selection only; no database, saved trip, trip builder, or existing trip persistence changes. Awaiting user test with six published locations."
     }
   ]
 }
