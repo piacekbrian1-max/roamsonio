@@ -1235,7 +1235,7 @@ document.getElementById("dashTitle").textContent=trip.name||"Your trip";document
 document.getElementById("overviewLead").textContent="RoamSonio uses the completed European Thanksgiving trip as the master template, then adapts the same structure to this destination, your dates, home base, interests and traveler profile.";
 document.getElementById("homeBase").value=trip.homeBase&&trip.homeBase!=="Downtown / city center"?trip.homeBase:"";
 document.getElementById("smartTransport").value=trip.transport||"Walk + transit";document.getElementById("smartRadius").value=trip.walkingRadius||"Moderate — combine nearby areas";
-var d0=ds[0]||"";document.getElementById("heroMain").src=destinationImage(d0,0);document.getElementById("heroMain").alt=d0;
+var d0=ds[0]||"",samplePhoto=new URLSearchParams(location.search).get("photo")||"";document.getElementById("heroMain").src=/^https:\/\//i.test(samplePhoto)?samplePhoto:destinationImage(d0,0);document.getElementById("heroMain").alt=d0;
 document.getElementById("heroSide1").src=destinationImage(d0,1);document.getElementById("heroSide2").src=destinationImage(d0,2);document.getElementById("side1Label").textContent=d0+" · local character";document.getElementById("side2Label").textContent=d0+" · seasonal atmosphere";
  document.getElementById("heroPhotoCredit").textContent=slug(d0).indexOf("new orleans")>=0?"Photography · Wikimedia Commons":"Destination editorial image";
 document.getElementById("routeMap").href="https://www.google.com/maps/dir/"+encodeURIComponent((trip.homeBase||"Downtown "+d0))+"/"+encodeURIComponent(d0);
