@@ -1507,15 +1507,23 @@ filter.innerHTML="";sel.innerHTML="";
    The guide engine is shared, but every destination owns its own data/source rules.
    Never fall back to another city's restaurants. */
 var destination=destinationKey,city=destination;
-if(destination.indexOf("new orleans")>=0||destination==="nola")city="neworleans";
-else if(destination.indexOf("kyoto")>=0)city="kyoto";
-else if(destination.indexOf("prague")>=0||destination.indexOf("praha")>=0)city="prague";
-else if(destination.indexOf("vienna")>=0||destination.indexOf("wien")>=0)city="vienna";
-else if(destination.indexOf("munich")>=0||destination.indexOf("münchen")>=0)city="munich";
-else if(destination.indexOf("pilsen")>=0||destination.indexOf("plzen")>=0)city="pilsen";
-else if(destination.indexOf("trnava")>=0)city="trnava";
-else if(destination.indexOf("hluboka")>=0)city="hluboka";
-else if(destination.indexOf("atlanta")>=0)city="atlanta";
+/* Resolve destination names centrally so "Kyoto, Japan", "Praha", "Plzeň",
+   "Hluboká Castle" and similar labels map to the same guide-data keys. */
+var guideAliases={
+neworleans:["new orleans","nola","neworleans"],
+atlanta:["atlanta"],
+kyoto:["kyoto"],
+prague:["prague","praha"],
+vienna:["vienna","wien"],
+munich:["munich","munchen","muenchen"],
+pilsen:["pilsen","plzen","plzeň"],
+trnava:["trnava"],
+hluboka:["hluboka","hluboka nad vltavou"]
+};
+var guideMatch=Object.keys(guideAliases).find(function(key){
+return guideAliases[key].some(function(alias){return destination.indexOf(slug(alias))>=0||tripNameKey.indexOf(slug(alias))>=0});
+});
+if(guideMatch)city=guideMatch;
 
 var destinationSources={
 munich:"https://www.munich.travel/en/topics/eat-drink",
