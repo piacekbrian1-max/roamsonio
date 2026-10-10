@@ -173,6 +173,11 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
         <div><h2>Editorial Library</h2><p>Curated inspiration, buildable destinations & approved photography</p></div>
       </div>
       <div class="editorialStats" id="editorialStats"><span class="editorialStat">Loading library…</span></div>
+      <div class="editorialActions" style="margin:0 0 12px">
+        <label style="font-size:9px;font-weight:800;align-self:center">SHOW DESTINATIONS</label>
+        <select id="editorialStatusFilter" class="confirmInput" style="width:auto;min-width:160px"><option value="all">All statuses</option><option value="draft">Drafts</option><option value="published">Published</option><option value="archived">Archived</option></select>
+        <input id="editorialSearch" class="confirmInput" style="width:auto;min-width:190px" placeholder="Search destination or activity">
+      </div>
       <div class="editorialGrid">
         <div class="editorialList" id="editorialList"><div class="row"><span>Loading editorial destinations…</span></div></div>
         <div class="editorialEditor">
@@ -198,8 +203,8 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
           <div class="editorialStatus" id="editorialStatus">The editorial database is protected by Master Admin + MFA. Photography management will use the same protected library.</div>
           <div class="photoManager" id="photoManager">
             <div class="photoManagerHead">
-              <div><div class="ey">Editorial photography</div><h4>Approved image set</h4><p>Manage controlled hero, secondary and mobile photography for the selected editorial entry.</p></div>
-              <button type="button" class="transferBtn" id="newPhotoBtn">Add Photo</button>
+              <div><div class="ey">Editorial photography</div><h4>Photo approval</h4><p>Track approval by role. Approve a reviewed Hero + Secondary + Mobile set in one action.</p></div>
+              <div class="editorialActions" style="margin:0"><button type="button" class="secondaryBtn" id="approvePhotoSetBtn" disabled>Approve Complete Set</button><button type="button" class="transferBtn" id="newPhotoBtn">Add Photo</button></div>
             </div>
             <div class="photoGrid">
               <div class="photoList" id="photoList"><div class="row"><span>Select a destination to manage its photography.</span></div></div>
@@ -627,9 +632,16 @@ if(masterSignOutLink){
   function edRender(){
     const list=document.getElementById("editorialList");list.innerHTML="";
     const sorted=editorialEntries.slice().sort((a,b)=>(a.type||"").localeCompare(b.type||"")||(a.name||"").localeCompare(b.name||""));
-    sorted.forEach(x=>{const b=document.createElement("button");b.type="button";b.className="editorialItem";b.dataset.id=x.id;b.innerHTML="<strong>"+esc(x.name)+"</strong><small>"+esc(x.type)+" · "+esc(x.status||"draft")+" · "+(x.buildable!==false?"Buildable":"Editorial only")+"</small>";b.onclick=()=>edFill(x);list.appendChild(b);});
-    const counts={};sorted.forEach(x=>counts[x.type]=(counts[x.type]||0)+1);
-    document.getElementById("editorialStats").innerHTML="<span class='editorialStat'>"+sorted.length+" Entries</span>"+Object.keys(counts).map(k=>"<span class='editorialStat'>"+esc(k)+" · "+counts[k]+"</span>").join("");
+    const counts={draft:0,published:0,archived:0};sorted.forEach(x=>counts[x.status||"draft"]=(counts[x.status||"draft"]||0)+1);
+    document.getElementById("editorialStats").innerHTML="<span class='editorialStat'>"+sorted.length+" Total</span><span class='editorialStat'>"+counts.draft+" Drafts</span><span class='editorialStat'>"+counts.published+" Published</span><span class='editorialStat'>"+counts.archived+" Archived</span>";
+    const filter=document.getElementById("editorialStatusFilter").value;
+    const q=document.getElementById("editorialSearch").value.trim().toLowerCase();
+    sorted.filter(x=>(filter==="all"||(x.status||"draft")===filter)&&(!q||[x.name,x.id,x.type,x.category,x.build_destination,x.tagline,...(x.activities||[]),...(x.seasons||x.season||[])].join(" ").toLowerCase().includes(q))).forEach(x=>{
+      const b=document.createElement("button");b.type="button";b.className="editorialItem";b.dataset.id=x.id;
+      b.innerHTML="<strong>"+esc(x.name)+"</strong><small>"+esc(x.type)+" · "+esc(x.status||"draft")+" · "+(x.buildable!==false?"Buildable":"Editorial only")+"</small>";
+      b.onclick=()=>edFill(x);list.appendChild(b);
+    });
+    if(!list.children.length)list.innerHTML='<div class="row"><span>No destinations match this filter.</span></div>';
   }
   async function edLoad(){
     try{
@@ -655,6 +667,8 @@ if(masterSignOutLink){
   document.getElementById("newEditorialBtn").addEventListener("click",()=>{selectedEditorialId="";edFill({type:"City",status:"draft",buildable:true});document.getElementById("editorialEditorTitle").textContent="New editorial entry";});
   document.getElementById("saveEditorialBtn").addEventListener("click",()=>edSave());
   document.getElementById("publishEditorialBtn").addEventListener("click",()=>edSave("published"));
+  document.getElementById("editorialStatusFilter").addEventListener("change",edRender);
+  document.getElementById("editorialSearch").addEventListener("input",edRender);
 
   let editorialPhotos=[];
   let selectedPhotoId=null;
@@ -728,18 +742,31 @@ if(masterSignOutLink){
     document.querySelectorAll(".photoItem").forEach(b=>b.classList.toggle("active",String(b.dataset.id)===String(selectedPhotoId)));
   }
   function photoRender(){
-    const list=document.getElementById("photoList"); list.innerHTML="";
-    if(!selectedEditorialId){
-      list.innerHTML='<div class="row"><span>Select a destination to manage its photography.</span></div>'; return;
-    }
-    if(!editorialPhotos.length){
-      list.innerHTML='<div class="row"><span>No photography added yet. Add the first approved image set.</span></div>'; return;
-    }
-    editorialPhotos.slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)||(a.id||0)-(b.id||0)).forEach(x=>{
-      const b=document.createElement("button"); b.type="button"; b.className="photoItem"; b.dataset.id=x.id;
-      b.innerHTML="<strong>"+esc(x.role||"photo")+"</strong><small>"+esc(x.approved?"Approved":"Draft")+" · "+esc(x.credit||"Credit not entered")+"</small>";
-      b.onclick=()=>photoFill(x); list.appendChild(b);
+    const list=document.getElementById("photoList");list.innerHTML="";
+    const roles=["hero","secondary","mobile"];
+    const roleRows=roles.map(role=>editorialPhotos.find(p=>String(p.role||"").toLowerCase()===role));
+    const complete=roleRows.every(Boolean);
+    const metadataReady=complete&&roleRows.every(p=>p.url&&p.source_url&&p.credit&&p.alt_text);
+    const allApproved=complete&&roleRows.every(p=>p.approved===true);
+    const approveBtn=document.getElementById("approvePhotoSetBtn");
+    approveBtn.disabled=!metadataReady||allApproved||!selectedEditorialId;
+    approveBtn.textContent=allApproved?"Complete Set Approved":"Approve Complete Set";
+    if(!selectedEditorialId){list.innerHTML='<div class="row"><span>Select a destination to manage its photography.</span></div>';return;}
+    if(!editorialPhotos.length){list.innerHTML='<div class="row"><span>No photography added yet. Add Hero, Secondary and Mobile images.</span></div>';return;}
+    roles.forEach((role,i)=>{
+      const p=roleRows[i],b=document.createElement("button");b.type="button";b.className="photoItem";
+      b.innerHTML="<strong>"+role+"</strong><small>"+(p?(p.approved?"✓ Approved":"Needs approval")+" · "+esc(p.credit||"Credit missing")+(p.source_url?"":" · Source missing"):"Missing image")+"</small>";
+      if(p){b.dataset.id=p.id;b.onclick=()=>photoFill(p);}else{b.disabled=true;b.style.opacity=".6";}
+      list.appendChild(b);
     });
+    editorialPhotos.filter(p=>!roles.includes(String(p.role||"").toLowerCase())).forEach(p=>{
+      const b=document.createElement("button");b.type="button";b.className="photoItem";b.dataset.id=p.id;
+      b.innerHTML="<strong>"+esc(p.role||"photo")+"</strong><small>"+(p.approved?"✓ Approved":"Needs approval")+" · "+esc(p.credit||"Credit missing")+"</small>";
+      b.onclick=()=>photoFill(p);list.appendChild(b);
+    });
+    const note=document.createElement("div");note.className="editorialStatus";
+    note.textContent=allApproved?"All three image roles are approved.":!complete?"Set incomplete: add the missing roles.":!metadataReady?"Set needs review: each image needs source URL, credit and alt text.":"Complete set ready for one-click approval.";
+    list.appendChild(note);
   }
   async function photoLoad(){
     if(!selectedEditorialId){editorialPhotos=[];photoRender();return;}
@@ -787,6 +814,17 @@ if(masterSignOutLink){
     loadPhotoCandidates();
   });
   document.getElementById("refreshPhotoCandidates").addEventListener("click",loadPhotoCandidates);
+  document.getElementById("approvePhotoSetBtn").addEventListener("click",async()=>{
+    const roles=["hero","secondary","mobile"],set=roles.map(role=>editorialPhotos.find(p=>String(p.role||"").toLowerCase()===role));
+    if(set.some(p=>!p||!p.url||!p.source_url||!p.credit||!p.alt_text)){photoSetStatus("Approval stopped: all three roles need an image, source URL, credit and alt text.");return;}
+    if(!confirm("Approve the reviewed Hero, Secondary and Mobile images for "+(document.getElementById("edName").value||selectedEditorialId)+"? This does not publish the destination or change saved trips."))return;
+    const btn=document.getElementById("approvePhotoSetBtn");btn.disabled=true;btn.textContent="Approving…";
+    try{
+      for(const p of set){const {error}=await client.rpc("roamsonio_admin_upsert_editorial_photo",{p_photo_id:p.id,p_destination_id:selectedEditorialId,p_url:p.url,p_alt_text:p.alt_text,p_credit:p.credit,p_source_url:p.source_url,p_role:p.role,p_sort_order:p.sort_order||0,p_approved:true});if(error)throw error;}
+      await photoLoad();photoSetStatus("Hero, Secondary and Mobile saved as approved. Destination publishing remains separate.");
+    }catch(e){photoSetStatus("Set approval could not finish: "+(e.message||"Unknown error")+". Refresh and verify each role before retrying.");await photoLoad();}
+    finally{photoRender();}
+  });
   document.getElementById("savePhotoBtn").addEventListener("click",photoSave);
   document.getElementById("deletePhotoBtn").addEventListener("click",photoDelete);
   ["photoUrl"].forEach(id=>document.getElementById(id).addEventListener("input",e=>photoPreview(e.target.value.trim())));
