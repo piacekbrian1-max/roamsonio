@@ -662,6 +662,14 @@
       "status": "SUCCESS",
       "rollbackEligible": true,
       "notes": "User tested the live Master Account on 2026-10-10 and confirmed the Sign Out flow works. Sign Out clears the current browser's Master Admin session and returns to the dedicated Google sign-in page. Existing Master Admin role and AAL2 checks remain unchanged. No trip data, Editorial Library records, routing or persistence logic was changed."
+    },
+    {
+      "sha": "b3a2512123cf6180f9a4ea257a6ba08d11eddd53",
+      "date": "2026-10-10",
+      "title": "Add editorial photo set approval and library status filters",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds status counts and destination search/filter controls in Master Account, plus a guarded one-click approval action for an existing complete Hero/Secondary/Mobile photo set. Each image must have URL, source URL, credit and alt text; approvals save sequentially through the existing protected photo RPC. Destination publishing remains separate. No trip pages, saved trips, auth/MFA, or editorial records were changed by this code update. Awaiting user live test, including filter visibility and all-three-role approval persistence."
     }
   ]
 }
