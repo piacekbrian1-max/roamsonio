@@ -1497,7 +1497,7 @@ return ["All cuisines"];
 function renderGuide(){
 var destinationKey=slug((trip.destinations||[])[0]||""),tripNameKey=slug(trip.name||""),
 isAtlanta=destinationKey.indexOf("atlanta")>=0||tripNameKey.indexOf("atlanta")>=0,
-isN=!!cityProfile()&&!isAtlanta,
+isN=(destinationKey.indexOf("new orleans")>=0||destinationKey==="nola"||tripNameKey.indexOf("new orleans")>=0)&&!isAtlanta,
 filter=document.getElementById("guideFilter"),sel=document.getElementById("guideSelect"),
 cuisineRow=document.getElementById("guideCuisineRow"),cuisineSel=document.getElementById("guideCuisine"),
 grid=document.getElementById("guideGrid"),count=document.getElementById("guideCount");
@@ -2047,25 +2047,25 @@ if(liveGuidePending[key])return;
 liveGuidePending[key]=true;
 var place=(trip.destinations||[])[0]||trip.name||"";
 var qcats={
-"Breakfast":'["amenity"~"cafe|bakery"]',
-"Lunch":'["amenity"~"restaurant|fast_food|food_court"]',
-"Dinner":'["amenity"="restaurant"]',
-"Special Occasions":'["amenity"="restaurant"]',
-"Bars":'["amenity"~"bar|pub|nightclub"]',
-"Breweries":'["craft"="brewery"]',
-"Coffee & Bakeries":'["amenity"~"cafe|bakery"]',
-"Museums":'["tourism"="museum"]',
-"Markets":'["amenity"~"marketplace|food_court"]',
-"Family":'["tourism"~"zoo|aquarium|theme_park|attraction|museum"]',
-"Neighborhoods":'["place"~"suburb|quarter|neighbourhood"]',
-"Music":'["amenity"~"music_venue|nightclub"]',
-"Theater & Shows":'["amenity"="theatre"]',
-"Activities":'["tourism"~"attraction|museum|gallery|viewpoint|artwork"]'
+"Breakfast":['["amenity"~"cafe|bakery"]'],
+"Lunch":['["amenity"~"restaurant|fast_food|food_court"]'],
+"Dinner":['["amenity"="restaurant"]'],
+"Special Occasions":['["amenity"="restaurant"]'],
+"Bars":['["amenity"~"bar|pub|nightclub"]'],
+"Breweries":['["craft"~"brewery|microbrewery"]','["microbrewery"="yes"]','["brewery"="yes"]','["industrial"="brewery"]','["amenity"="brewery"]'],
+"Coffee & Bakeries":['["amenity"~"cafe|bakery"]'],
+"Museums":['["tourism"="museum"]'],
+"Markets":['["amenity"="marketplace"]','["shop"~"market|farm"]','["amenity"="food_court"]'],
+"Family":['["tourism"~"zoo|aquarium|theme_park|attraction|museum"]','["leisure"~"park|playground"]','["amenity"="playground"]'],
+"Neighborhoods":['["place"~"suburb|quarter|neighbourhood"]'],
+"Music":['["amenity"~"music_venue|nightclub"]'],
+"Theater & Shows":['["amenity"="theatre"]'],
+"Activities":['["tourism"~"attraction|museum|gallery|viewpoint|artwork"]','["leisure"~"park|garden"]']
 };
-var selector=qcats[category]||'["tourism"~"attraction|museum|gallery"]';
+var selectors=qcats[category]||['["tourism"~"attraction|museum|gallery"]'];
 fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q="+encodeURIComponent(place),{headers:{"Accept-Language":"en"}})
 .then(function(r){if(!r.ok)throw Error("geocode unavailable");return r.json()})
-.then(function(rows){if(!rows||!rows.length)throw Error("destination not found");var p=rows[0],lat=Number(p.lat),lon=Number(p.lon),query='[out:json][timeout:7];(node'+selector+'(around:8000,'+lat+','+lon+');way'+selector+'(around:8000,'+lat+','+lon+');relation'+selector+'(around:8000,'+lat+','+lon+'););out center tags 40;';
+.then(function(rows){if(!rows||!rows.length)throw Error("destination not found");var p=rows[0],lat=Number(p.lat),lon=Number(p.lon),blocks=[];selectors.forEach(function(selector){blocks.push('node'+selector+'(around:12000,'+lat+','+lon+');way'+selector+'(around:12000,'+lat+','+lon+');relation'+selector+'(around:12000,'+lat+','+lon+');')});var query='[out:json][timeout:12];('+blocks.join('')+');out center tags 60;';
 var endpoints=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter","https://overpass.nchc.org.tw/api/interpreter"];
 var requests=endpoints.map(function(endpoint){
 return fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:"data="+encodeURIComponent(query)})
