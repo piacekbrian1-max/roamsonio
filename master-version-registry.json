@@ -654,6 +654,14 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Documentation-only update to KB0001 and KB0002. Adds numbered, click-by-click steps for editing, adding and approving photos, publishing an editorial destination, and checking it on Home. No application code, trip data, Editorial Library records, routing or persistence changed. Awaiting user confirmation that the instructions are easy to follow."
+    },
+    {
+      "sha": "a2c5dfc11560845168ef2a376b43a1b29617c1b7",
+      "date": "2026-10-10",
+      "title": "Add explicit Master Account sign out",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Adds a visible Sign Out action to Master Account. It clears the current browser's Master Admin Supabase session and returns to the dedicated Google sign-in page. Existing sessions remain persistent until sign-out or expiration, and the existing Master Admin role plus AAL2 checks remain unchanged. No trip data, Editorial Library records, routing or persistence logic was changed. Awaiting user test of sign-out and fresh sign-in/MFA flow."
     }
   ]
 }
