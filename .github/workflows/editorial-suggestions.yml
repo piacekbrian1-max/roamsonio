@@ -1,0 +1,42 @@
+name: Weekly RoamSonio Editorial Suggestions
+
+on:
+  schedule:
+    # Run at 09:00 America/New_York year-round; only one of these UTC checks proceeds.
+    - cron: "0 13,14 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-editorial-drafts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Keep the weekly run at 9 AM Eastern
+        id: clock
+        shell: bash
+        run: |
+          HOUR="$(TZ=America/New_York date +%H)"
+          if [ "$HOUR" != "09" ]; then
+            echo "run_now=false" >> "$GITHUB_OUTPUT"
+            echo "This UTC schedule slot is not 09:00 Eastern; skip to avoid duplicate runs."
+          else
+            echo "run_now=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Generate protected editorial drafts
+        if: steps.clock.outputs.run_now == 'true' || github.event_name == 'workflow_dispatch'
+        env:
+          EDITORIAL_JOB_SECRET: ${{ secrets.EDITORIAL_JOB_SECRET }}
+        shell: bash
+        run: |
+          if [ -z "$EDITORIAL_JOB_SECRET" ]; then
+            echo "::error::Add the EDITORIAL_JOB_SECRET repository Actions secret after deploying the Supabase Edge Function."
+            exit 1
+          fi
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Authorization: Bearer $EDITORIAL_JOB_SECRET" \
+            --header "Content-Type: application/json" \
+            --data '{}' \
+            "https://vqtqchxoecrahtrnoocy.supabase.co/functions/v1/editorial-suggestion-generator"
