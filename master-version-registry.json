@@ -9,6 +9,14 @@
   },
   "versions": [
     {
+      "sha": "175cdac452e47d62fde284148092bbe7e1dc7a06",
+      "date": "2026-10-10",
+      "title": "Render Home Explore fallback before editorial fetch",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Home Explore now renders its six seasonal fallback cards synchronously before requesting the Supabase editorial library. If the request is slow, stalled, or fails, the fallback remains visible instead of leaving the grid empty. A successful request then replaces the fallback with eligible published editorial destinations. Presentation/rendering only; no trip records, photo approvals, or Supabase data changed. Await user verification on deployed site."
+    },
+    {
       "sha": "4c7eb77ddf01d8a20f3dcf4085033e72f62cdbef",
       "date": "2026-10-10",
       "title": "Show six Home Explore destination cards on all screen sizes",
