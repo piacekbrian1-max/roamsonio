@@ -272,7 +272,7 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
               <div class="photoEditor" id="photoEditor" hidden>
                 <div class="photoPreview" id="photoPreview"><span>Photo preview</span></div>
                 <div class="photoCandidates" id="photoCandidates" hidden>
-                  <div class="photoCandidatesHead"><strong>Photography candidates</strong><button type="button" class="secondaryBtn" id="refreshPhotoCandidates">Refresh</button></div>
+                  <div class="photoCandidatesHead"><strong>Photography candidates</strong><div class="editorialActions" style="margin:0"><button type="button" class="secondaryBtn" id="refreshPhotoCandidates">Refresh</button><button type="button" class="transferBtn" id="attachPhotoCandidatesBtn">Auto-fill missing roles</button></div></div>
                   <div class="editorialStatus">Browse the larger candidate gallery. Select an image to preview it, then save it into the chosen role. Existing photos can be replaced or deleted. Nothing is approved automatically.</div>
                   <div class="photoCandidatesGrid" id="photoCandidatesGrid"></div>
                 </div>
@@ -918,6 +918,7 @@ function suggestionSlug(value){
     if(!entry){box.hidden=true;return;}
     const destination=String(entry.build_destination||entry.buildDestination||entry.name||"").trim();
     if(!destination){box.hidden=true;return;}
+    document.getElementById("photoEditor").hidden=false;
     const activities=Array.isArray(entry.activities)?entry.activities.join(" "):String(entry.activities||"");
     const base=[destination,String(entry.name||""),String(entry.category||""),activities].filter(Boolean).join(" ").trim();
     const queries=[destination+" landscape",destination+" village architecture",destination+" "+(activities.split(/[,;|]/)[0]||entry.type||"travel"),String(entry.name||destination)+" scenic travel"];
@@ -1056,6 +1057,28 @@ function suggestionSlug(value){
     loadPhotoCandidates();
   });
   document.getElementById("refreshPhotoCandidates").addEventListener("click",loadPhotoCandidates);
+  document.getElementById("attachPhotoCandidatesBtn").addEventListener("click",async()=>{
+    if(!selectedEditorialId){photoSetStatus("Select a destination first.");return;}
+    if(!photoCandidates.length){photoSetStatus("No candidates are loaded yet. Refresh the gallery first.");return;}
+    const roles=["hero","secondary","mobile"];
+    const existingByRole=Object.fromEntries(roles.map(role=>[role,editorialPhotos.find(p=>String(p.role||"").toLowerCase()===role)]));
+    const missing=roles.filter(role=>!existingByRole[role]);
+    if(!missing.length){photoSetStatus("All three photo roles already have images. Select a role to replace it, or delete it first.");return;}
+    const choices=photoCandidates.filter(x=>x.url&&x.source_url&&x.credit&&x.alt_text).slice(0,missing.length);
+    if(choices.length<missing.length){photoSetStatus("Not enough candidates with source and credit metadata to fill every missing role. Review or add photos manually.");return;}
+    if(!confirm("Attach "+choices.length+" candidate image(s) to the missing roles ("+missing.join(", ")+") for this draft? Images will remain UNAPPROVED and unpublished. Existing photos and saved trips will not be changed."))return;
+    const btn=document.getElementById("attachPhotoCandidatesBtn");btn.disabled=true;btn.textContent="Attaching…";
+    try{
+      for(let i=0;i<missing.length;i++){
+        const x=choices[i],role=missing[i];
+        const {error}=await client.rpc("roamsonio_admin_upsert_editorial_photo",{p_photo_id:null,p_destination_id:selectedEditorialId,p_url:x.url,p_alt_text:x.alt_text,p_credit:x.credit,p_source_url:x.source_url,p_role:role,p_sort_order:roles.indexOf(role),p_approved:false});
+        if(error)throw error;
+      }
+      await photoLoad();
+      photoSetStatus("Filled missing photo roles as unapproved candidates. Review each image and its license before using Approve Complete Set.");
+    }catch(e){photoSetStatus("Could not attach candidates: "+(e.message||"Unknown error")+". Refresh the photo list and verify which roles were saved.");await photoLoad();}
+    finally{btn.disabled=false;btn.textContent="Auto-fill missing roles";}
+  });
   document.getElementById("approvePhotoSetBtn").addEventListener("click",async()=>{
     const roles=["hero","secondary","mobile"],set=roles.map(role=>editorialPhotos.find(p=>String(p.role||"").toLowerCase()===role));
     if(set.some(p=>!p||!p.url||!p.source_url||!p.credit||!p.alt_text)){photoSetStatus("Approval stopped: all three roles need an image, source URL, credit and alt text.");return;}
