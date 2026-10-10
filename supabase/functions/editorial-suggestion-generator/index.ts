@@ -11,19 +11,33 @@ const slug = (v: string) => v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").t
 const normalized = (v: string) => v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 
 async function commonsCandidates(query: string) {
-  const url = new URL("https://commons.wikimedia.org/w/api.php");
-  url.search = new URLSearchParams({
-    action: "query", generator: "search", gsrsearch: query, gsrnamespace: "6", gsrqiprofile: "popular",
-    gsrlimit: "12", prop: "imageinfo", iiprop: "url|extmetadata", iiurlwidth: "1200", format: "json", origin: "*"
+  // Use two explicit API requests: Commons search first, then fetch imageinfo by page ID.
+  // This avoids the combined generator=search + imageinfo lookup that returned empty galleries in the admin UI.
+  const searchUrl = new URL("https://commons.wikimedia.org/w/api.php");
+  searchUrl.search = new URLSearchParams({
+    action: "query", list: "search", srsearch: query, srnamespace: "6", srlimit: "24",
+    format: "json", origin: "*"
   }).toString();
-  const response = await fetch(url, { headers: { "User-Agent": "RoamSonioEditorialBot/1.0 (editorial draft generation)" } });
-  if (!response.ok) throw new Error("Wikimedia Commons search failed");
-  const data = await response.json();
-  const pages = Object.values(data?.query?.pages || {}) as any[];
+  const searchResponse = await fetch(searchUrl, { headers: { "User-Agent": "RoamSonioEditorialBot/1.0 (editorial draft generation)" } });
+  if (!searchResponse.ok) throw new Error("Wikimedia Commons search failed (" + searchResponse.status + ")");
+  const searchData = await searchResponse.json();
+  if (searchData?.error) throw new Error("Wikimedia Commons search error: " + String(searchData.error.info || "unknown error"));
+  const hits = (searchData?.query?.search || []) as any[];
+  if (!hits.length) return [];
+  const detailUrl = new URL("https://commons.wikimedia.org/w/api.php");
+  detailUrl.search = new URLSearchParams({
+    action: "query", pageids: hits.map((p: any) => String(p.pageid)).filter(Boolean).join("|"),
+    prop: "imageinfo", iiprop: "url|extmetadata", iiurlwidth: "1200", format: "json", origin: "*"
+  }).toString();
+  const detailResponse = await fetch(detailUrl, { headers: { "User-Agent": "RoamSonioEditorialBot/1.0 (editorial draft generation)" } });
+  if (!detailResponse.ok) throw new Error("Wikimedia Commons image details failed (" + detailResponse.status + ")");
+  const detailData = await detailResponse.json();
+  if (detailData?.error) throw new Error("Wikimedia Commons image detail error: " + String(detailData.error.info || "unknown error"));
+  const pages = Object.values(detailData?.query?.pages || {}) as any[];
   return pages.map((p: any) => {
     const info = p.imageinfo?.[0] || {};
     const meta = info.extmetadata || {};
-    const plain = (x: any) => String(x?.value || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    const plain = (x: any) => String(x?.value || "").replace(/<[^>]*>/g, " ").replace(/\\s+/g, " ").trim();
     const artist = plain(meta.Artist);
     const license = plain(meta.LicenseShortName);
     const description = plain(meta.ImageDescription);
@@ -35,7 +49,7 @@ async function commonsCandidates(query: string) {
       alt_text: description || query + " travel photography",
       license_url: String(meta.LicenseUrl?.value || ""),
     };
-  }).filter((p: any) => p.url.startsWith("https://") && p.source_url.startsWith("https://") && p.credit && p.title);
+  }).filter((p: any) => p.url.startsWith("https://") && p.source_url.startsWith("https://") && p.credit && p.title && p.license_url);
 }
 
 Deno.serve(async (req) => {
