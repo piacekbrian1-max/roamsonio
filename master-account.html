@@ -164,7 +164,7 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
       <button type="button" class="masterViewTab" data-master-view="activity" role="tab" aria-selected="false">Recent Activity</button>
     </nav>
 
-    <section class="grid">
+    <section class="grid" id="masterOverviewStats">
       <div class="card"><div class="num" id="userCount">—</div><small>Total Users</small></div>
       <div class="card"><div class="num" id="tripCount">—</div><small>Total Trips</small></div>
       <div class="card"><div class="num" id="familyCount">—</div><small>Families & Groups</small></div>
@@ -977,7 +977,7 @@ if(masterSignOutLink){
 
 <script id="master-view-navigation">
 (function(){
-  const views={overview:["administrationSection"],editorial:["editorialLibrarySection"],knowledge:["knowledgeBaseSection"],transfer:["accountTransferSection"],activity:["recentActivitySection"]};
+  const views={overview:["masterOverviewStats","administrationSection"],editorial:["editorialLibrarySection"],knowledge:["knowledgeBaseSection"],transfer:["accountTransferSection"],activity:["recentActivitySection"]};
   const tabs=Array.from(document.querySelectorAll("[data-master-view]"));
   function activate(name){
     Object.entries(views).forEach(([key,ids])=>ids.forEach(id=>{const el=document.getElementById(id);if(el)el.hidden=key!==name;}));
