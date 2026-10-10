@@ -2037,14 +2037,14 @@ var cats=isN?categories:(isAtlanta?atlantaCategories:["Breakfast","Lunch","Dinne
 var active=trip.guideCategory||"Dinner",cuisine=trip.guideCuisine||"All cuisines",guidePages={};
 
 var liveGuideCache={};
-var liveGuidePending={};
+var liveGuidePending={},liveGuideWaiters={};
 function discoverLiveGuidePlaces(category,done){
 var key=slug((trip.destinations||[])[0]||trip.name||"")+"|v2|"+category;
 trip.liveGuidePlaces=trip.liveGuidePlaces||{};
 if(Array.isArray(trip.liveGuidePlaces[key])&&trip.liveGuidePlaces[key].length){liveGuideCache[key]=trip.liveGuidePlaces[key];done(liveGuideCache[key]);return}
 if(liveGuideCache[key]&&liveGuideCache[key].length){done(liveGuideCache[key]);return}
-if(liveGuidePending[key])return;
-liveGuidePending[key]=true;
+if(liveGuidePending[key]){liveGuideWaiters[key]=liveGuideWaiters[key]||[];liveGuideWaiters[key].push(done);return;}
+liveGuidePending[key]=true;liveGuideWaiters[key]=[];
 var place=(trip.destinations||[])[0]||trip.name||"";
 var qcats={
 "Breakfast":['["amenity"~"cafe|bakery"]'],
@@ -2065,16 +2065,12 @@ var qcats={
 var selectors=qcats[category]||['["tourism"~"attraction|museum|gallery"]'];
 fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q="+encodeURIComponent(place),{headers:{"Accept-Language":"en"}})
 .then(function(r){if(!r.ok)throw Error("geocode unavailable");return r.json()})
-.then(function(rows){if(!rows||!rows.length)throw Error("destination not found");var p=rows[0],lat=Number(p.lat),lon=Number(p.lon),blocks=[];selectors.forEach(function(selector){blocks.push('node'+selector+'(around:12000,'+lat+','+lon+');way'+selector+'(around:12000,'+lat+','+lon+');relation'+selector+'(around:12000,'+lat+','+lon+');')});var query='[out:json][timeout:12];('+blocks.join('')+');out center tags 60;';
+.then(function(rows){if(!rows||!rows.length)throw Error("destination not found");var p=rows[0],lat=Number(p.lat),lon=Number(p.lon),blocks=[];selectors.forEach(function(selector){blocks.push('node'+selector+'(around:12000,'+lat+','+lon+');way'+selector+'(around:12000,'+lat+','+lon+');relation'+selector+'(around:12000,'+lat+','+lon+');')});var query='[out:json][timeout:7];('+blocks.join('')+');out center tags 40;';
 var endpoints=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter","https://overpass.nchc.org.tw/api/interpreter"];
-var requests=endpoints.map(function(endpoint){
-return fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:"data="+encodeURIComponent(query)})
-.then(function(r){if(!r.ok)throw Error("place provider unavailable");return r.json()})
-.then(function(data){if(!data||!Array.isArray(data.elements))throw Error("invalid place data");return data});
-});
+var requests=endpoints.map(function(endpoint){return new Promise(function(resolve,reject){var timer=setTimeout(function(){reject(Error("place provider timed out"))},6500);fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:"data="+encodeURIComponent(query)}).then(function(r){if(!r.ok)throw Error("place provider unavailable");return r.json()}).then(function(data){if(!data||!Array.isArray(data.elements))throw Error("invalid place data");clearTimeout(timer);resolve(data)}).catch(function(e){clearTimeout(timer);reject(e)});});});
 return Promise.any(requests).catch(function(){throw Error("all place providers unavailable")})})
-.then(function(data){var seen={},places=(data.elements||[]).map(function(el){var tags=el.tags||{},amenity=String(tags.amenity||"");if(category==="Breakfast"&&amenity!=="cafe"&&amenity!=="bakery")return null;if(category==="Lunch"&&["restaurant","fast_food","food_court"].indexOf(amenity)<0)return null;if(category==="Dinner"&&amenity!=="restaurant")return null;var name=tags["name:en"]||tags["official_name:en"]||tags.int_name||tags.name;if(!name||seen[name.toLowerCase()])return null;seen[name.toLowerCase()]=true;var lat=el.lat||(el.center&&el.center.lat),lon=el.lon||(el.center&&el.center.lon),area=tags["addr:suburb"]||tags["addr:neighbourhood"]||tags["addr:city"]||"Local area",kind=tags.cuisine||tags.amenity||tags.tourism||tags.shop||tags.leisure||tags.craft||"Place";return [name,area,String(kind).replace(/_/g," "), "OpenStreetMap place data",lat&&lon?"https://www.openstreetmap.org/?mlat="+lat+"&mlon="+lon+"&zoom=17":""]}).filter(Boolean);if(category==="Lunch"||category==="Dinner"){var other=category==="Lunch"?"Breakfast":"Lunch",prior=trip.liveGuidePlaces[slug((trip.destinations||[])[0]||trip.name||"")+"|v2|"+other]||liveGuideCache[slug((trip.destinations||[])[0]||trip.name||"")+"|v2|"+other]||[],priorNames={};prior.forEach(function(p){if(p&&p[0])priorNames[String(p[0]).toLowerCase()]=true});places=places.filter(function(p){return !priorNames[String(p[0]).toLowerCase()]});}places=places.slice(0,24);liveGuideCache[key]=places;if(places.length){trip.liveGuidePlaces=trip.liveGuidePlaces||{};trip.liveGuidePlaces[key]=places;save()}done(places)})
-.catch(function(){liveGuideCache[key]=[];done([])})
+.then(function(data){var seen={},places=(data.elements||[]).map(function(el){var tags=el.tags||{},amenity=String(tags.amenity||"");if(category==="Breakfast"&&amenity!=="cafe"&&amenity!=="bakery")return null;if(category==="Lunch"&&["restaurant","fast_food","food_court"].indexOf(amenity)<0)return null;if(category==="Dinner"&&amenity!=="restaurant")return null;var name=tags["name:en"]||tags["official_name:en"]||tags.int_name||tags.name;if(!name||seen[name.toLowerCase()])return null;seen[name.toLowerCase()]=true;var lat=el.lat||(el.center&&el.center.lat),lon=el.lon||(el.center&&el.center.lon),area=tags["addr:suburb"]||tags["addr:neighbourhood"]||tags["addr:city"]||"Local area",kind=tags.cuisine||tags.amenity||tags.tourism||tags.shop||tags.leisure||tags.craft||"Place";return [name,area,String(kind).replace(/_/g," "), "OpenStreetMap place data",lat&&lon?"https://www.openstreetmap.org/?mlat="+lat+"&mlon="+lon+"&zoom=17":""]}).filter(Boolean);if(category==="Lunch"||category==="Dinner"){var other=category==="Lunch"?"Breakfast":"Lunch",prior=trip.liveGuidePlaces[slug((trip.destinations||[])[0]||trip.name||"")+"|v2|"+other]||liveGuideCache[slug((trip.destinations||[])[0]||trip.name||"")+"|v2|"+other]||[],priorNames={};prior.forEach(function(p){if(p&&p[0])priorNames[String(p[0]).toLowerCase()]=true});places=places.filter(function(p){return !priorNames[String(p[0]).toLowerCase()]});}places=places.slice(0,24);liveGuideCache[key]=places;if(places.length){trip.liveGuidePlaces=trip.liveGuidePlaces||{};trip.liveGuidePlaces[key]=places;save()}done(places);(liveGuideWaiters[key]||[]).forEach(function(cb){try{cb(places)}catch(e){}});liveGuideWaiters[key]=[]})
+.catch(function(){liveGuideCache[key]=[];done([]);(liveGuideWaiters[key]||[]).forEach(function(cb){try{cb([])}catch(e){}});liveGuideWaiters[key]=[]})
 .finally(function(){delete liveGuidePending[key]});
 }
 function destinationItems(category){
