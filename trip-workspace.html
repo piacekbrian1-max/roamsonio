@@ -2036,7 +2036,41 @@ Markets:[
 var cats=isN?categories:(isAtlanta?atlantaCategories:["Breakfast","Lunch","Dinner","Special Occasions","Bars","Breweries","Coffee & Bakeries","Music","Theater & Shows","Family","Neighborhoods","Museums","Markets"]);
 var active=trip.guideCategory||"Dinner",cuisine=trip.guideCuisine||"All cuisines",guidePages={};
 
+var liveGuideCache={};
+var liveGuidePending={};
+function discoverLiveGuidePlaces(category,done){
+var key=slug((trip.destinations||[])[0]||trip.name||"")+"|"+category;
+if(liveGuideCache[key]){done(liveGuideCache[key]);return}
+if(liveGuidePending[key])return;
+liveGuidePending[key]=true;
+var place=(trip.destinations||[])[0]||trip.name||"";
+var qcats={
+"Breakfast":'["amenity"~"cafe|restaurant|fast_food|food_court|bakery"]',
+"Lunch":'["amenity"~"restaurant|fast_food|food_court|marketplace"]',
+"Dinner":'["amenity"="restaurant"]',
+"Special Occasions":'["amenity"="restaurant"]',
+"Bars":'["amenity"~"bar|pub|nightclub"]',
+"Breweries":'["craft"="brewery"]',
+"Coffee & Bakeries":'["amenity"~"cafe|bakery"]',
+"Museums":'["tourism"="museum"]',
+"Markets":'["amenity"="marketplace"]',
+"Family":'["tourism"~"zoo|aquarium|theme_park"]',
+"Neighborhoods":'["place"~"suburb|quarter|neighbourhood"]',
+"Music":'["amenity"~"music_venue|nightclub"]',
+"Theater & Shows":'["amenity"="theatre"]'
+};
+var selector=qcats[category]||'["tourism"~"attraction|museum|gallery"]';
+fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q="+encodeURIComponent(place),{headers:{"Accept-Language":"en"}})
+.then(function(r){if(!r.ok)throw Error("geocode unavailable");return r.json()})
+.then(function(rows){if(!rows||!rows.length)throw Error("destination not found");var p=rows[0],lat=Number(p.lat),lon=Number(p.lon),query='[out:json][timeout:18];(node'+selector+'(around:9000,'+lat+','+lon+');way'+selector+'(around:9000,'+lat+','+lon+');relation'+selector+'(around:9000,'+lat+','+lon+'););out center tags 30;';
+return fetch("https://overpass-api.de/api/interpreter",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:"data="+encodeURIComponent(query)}).then(function(r){if(!r.ok)throw Error("places unavailable");return r.json()})})
+.then(function(data){var seen={},places=(data.elements||[]).map(function(el){var tags=el.tags||{},name=tags.name||tags["name:en"];if(!name||seen[name.toLowerCase()])return null;seen[name.toLowerCase()]=true;var lat=el.lat||(el.center&&el.center.lat),lon=el.lon||(el.center&&el.center.lon),area=tags["addr:suburb"]||tags["addr:neighbourhood"]||tags["addr:city"]||"Local area",kind=tags.cuisine||tags.amenity||tags.tourism||tags.shop||"Place";return [name,area,String(kind).replace(/_/g," "), "OpenStreetMap place data",lat&&lon?"https://www.openstreetmap.org/?mlat="+lat+"&mlon="+lon+"&zoom=17":""]}).filter(Boolean).slice(0,24);liveGuideCache[key]=places;done(places)})
+.catch(function(){liveGuideCache[key]=[];done([])})
+.finally(function(){delete liveGuidePending[key]});
+}
 function destinationItems(category){
+var liveKey=slug((trip.destinations||[])[0]||trip.name||"")+"|"+category;
+if(liveGuideCache[liveKey]&&liveGuideCache[liveKey].length)return liveGuideCache[liveKey];
 var items;
 if(isN)items=nolaGuide[category]||[];
 else if(isAtlanta)items=atlantaGuide[category]||[];
@@ -2206,6 +2240,9 @@ cuisineSel.onchange=function(){cuisine=this.value;trip.guideCuisine=cuisine;guid
 }else{cuisineRow.style.display="none";cuisineSel.innerHTML="";cuisine="All cuisines";trip.guideCuisine="All cuisines"}
 sel.onchange=function(){trip.guideCategory=this.value;trip.guideCuisine="All cuisines";guidePages={};save();renderGuide()};
 draw();
+if(!localGuide[city]&&!activityGuide[city]&&!isN&&!isAtlanta){
+discoverLiveGuidePlaces(active,function(found){if(found&&found.length){guidePages[active+"|"+cuisine]=0;draw()}});
+}
 }
 function renderEvents(){
 var e=document.getElementById("eventGrid");e.innerHTML="";
