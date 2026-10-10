@@ -1508,6 +1508,7 @@ filter.innerHTML="";sel.innerHTML="";
    Never fall back to another city's restaurants. */
 var destination=destinationKey,city=destination;
 if(destination.indexOf("new orleans")>=0||destination==="nola")city="neworleans";
+else if(destination.indexOf("kyoto")>=0)city="kyoto";
 else if(destination.indexOf("prague")>=0||destination.indexOf("praha")>=0)city="prague";
 else if(destination.indexOf("vienna")>=0||destination.indexOf("wien")>=0)city="vienna";
 else if(destination.indexOf("munich")>=0||destination.indexOf("münchen")>=0)city="munich";
