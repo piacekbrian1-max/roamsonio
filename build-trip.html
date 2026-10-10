@@ -154,9 +154,7 @@ body{padding-top:68px!important}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (async function(){
-var rsAuthClient=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy");
-// Allow Explore inspiration previews to render immediately, without waiting for an auth round-trip.
-// Authentication is checked when the user explicitly saves the sample in persistBuiltTrip().
+// Keep sample generation fully local. Supabase is initialized only if the user explicitly saves.
 
 var KEY="big-thanksgiving-trips-v1";
 var prefs=["Local food","History & culture","Neighborhoods","Seasonal events","Music & shows","Outdoors","Scenic drives","Museums","Easy walking","Family friendly","Nightlife","Coffee & bakeries","Photography","Markets"];
@@ -459,7 +457,7 @@ var t={id:"trip-"+Date.now(),name:tripName,frameworkVersion:"roamsonio-v2",plann
 if(qs.get("inspiration")){renderSuggestedPreview(t);return;}
 await persistBuiltTrip(t);
 }
-if(qs.get("inspiration")&&suggestedDestination){setTimeout(function(){buildLocalSuggestedPreview(suggestedDestination,days())},0)}
+if(qs.get("inspiration")&&suggestedDestination){setTimeout(function(){try{buildLocalSuggestedPreview(suggestedDestination,days())}catch(e){var st=document.getElementById("status");if(st)st.textContent="We couldn’t create the sample itinerary: "+(e&&e.message?e.message:"please try again.");console.error("Explore sample preview failed",e)}},0)}
 })();
 </script><style id="roamsonio-auth-nav">
 .rsLinks{gap:14px!important;flex-wrap:wrap!important}
