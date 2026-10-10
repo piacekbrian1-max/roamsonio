@@ -670,6 +670,14 @@
       "status": "TESTING",
       "rollbackEligible": false,
       "notes": "Adds status counts and destination search/filter controls in Master Account, plus a guarded one-click approval action for an existing complete Hero/Secondary/Mobile photo set. Each image must have URL, source URL, credit and alt text; approvals save sequentially through the existing protected photo RPC. Destination publishing remains separate. No trip pages, saved trips, auth/MFA, or editorial records were changed by this code update. Awaiting user live test, including filter visibility and all-three-role approval persistence."
+    },
+    {
+      "sha": "1127f7ecc9427844f648310c97be661c7f1e16ab",
+      "date": "2026-10-10",
+      "title": "Make editorial status filters direct and touch friendly",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Follow-up to user report that native status selector was not usable on iPad. Replaces it with explicit All, Drafts, Published, Archived touch-friendly buttons with visible active state and immediate list filtering. No database records, photo approvals, saved trips, auth/MFA, or Home page logic changed. Awaiting user iPad test."
     }
   ]
 }
