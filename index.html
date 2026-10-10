@@ -436,6 +436,8 @@ function currentTripModel(){return{id:"febaebf6-7369-4922-b069-c745eee8c16f",nam
 function buildSuggestions(editorialImages,editorialRows){
 if(!editorialImages){
   editorialImages={};
+  /* Render seasonal fallback immediately so a slow or stalled editorial API cannot leave Home Explore empty. */
+  buildSuggestions(editorialImages,[]);
   var editorialUrl="https://vqtqchxoecrahtrnoocy.supabase.co/rest/v1/roamsonio_editorial_destinations?status=eq.published&select=id,name,type,seasons,activities,build_destination,tagline,roamsonio_editorial_photos(url,role,sort_order,approved)&order=name.asc";
   fetch(editorialUrl,{headers:{apikey:"sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy",Authorization:"Bearer sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy"},cache:"no-store"}).then(function(res){if(!res.ok)throw new Error("Editorial library unavailable");return res.json();}).then(function(rows){
     (rows||[]).forEach(function(row){
@@ -445,7 +447,8 @@ if(!editorialImages){
       [row.name,row.build_destination].forEach(function(key){if(key)editorialImages[String(key).trim().toLowerCase()]=image;});
     });
     buildSuggestions(editorialImages,rows||[]);
-  }).catch(function(){buildSuggestions(editorialImages,[]);});
+  }).catch(function(){/* Keep the already-rendered seasonal fallback if the editorial request fails. */});
+  return;
 }
 var now=new Date(),month=now.getMonth()+1;
 var season=month<=2||month===12?"Winter":month<=5?"Spring":month<=8?"Summer":"Fall";
