@@ -169,6 +169,7 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
     <nav class="masterViewNav" aria-label="Master Control sections" role="tablist">
       <button type="button" class="masterViewTab active" data-master-view="overview" role="tab" aria-selected="true">Overview</button>
       <button type="button" class="masterViewTab" data-master-view="operations" role="tab" aria-selected="false">Operations</button>
+      <button type="button" class="masterViewTab" data-master-view="weekly" role="tab" aria-selected="false">Weekly Homepage</button>
       <button type="button" class="masterViewTab" data-master-view="editorial" role="tab" aria-selected="false">Suggestion Studio</button>
       <button type="button" class="masterViewTab" data-master-view="knowledge" role="tab" aria-selected="false">Knowledge Base</button>
       <button type="button" class="masterViewTab" data-master-view="activity" role="tab" aria-selected="false">Activity Log</button>
@@ -197,6 +198,15 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
       <div class="sectionHead"><div><h2>Master Knowledge Base</h2><p>How to manage RoamSonio functions safely</p></div></div>
       <div class="kbNotice"><strong>Operational rule:</strong> this knowledge base documents what each Master Account function does, how to use it, and the safety checks required before publishing changes. It will grow with the product.</div>
       <div class="kbGrid" style="margin-top:14px"><div class="kbList" id="kbList"><div class="row"><span>Loading documentation…</span></div></div><article class="kbDoc" id="kbDoc"><span class="kbBadge">Documentation</span><h3>Select a function</h3><p>Choose a topic to see its purpose, operating steps and safety rules.</p></article></div>
+    </section>
+
+    <section class="section" id="weeklyHomepageSection" hidden>
+      <div class="sectionHead"><div><h2>Weekly Homepage</h2><p>Preview the actual featured inspiration and Explore the World cards selected for the public homepage.</p></div><a class="transferBtn" href="index.html" target="_blank" rel="noopener">Open Public Homepage ↗</a></div>
+      <div class="notice" style="margin-bottom:14px">This preview uses published entries with approved HTTPS photography and respects each entry's homepage eligibility date. Drafts are never shown. This view does not publish or change any content.</div>
+      <div id="weeklyEditionStatus" class="editorialStatus" role="status">Loading the current homepage edition…</div>
+      <div id="weeklyFeaturePreview" style="margin:14px 0 24px"></div>
+      <div class="sectionHead"><div><h3 style="margin:0">Explore the World</h3><p>The current six-card rotation, in homepage order.</p></div></div>
+      <div id="weeklyExplorePreview" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px"></div>
     </section>
 
     <section class="section" id="editorialLibrarySection">
@@ -745,11 +755,41 @@ if(masterSignOutLink){
     });
     if(!list.children.length)list.innerHTML='<div class="row"><span>No destinations match this filter.</span></div>';
   }
+  async function renderWeeklyHomepage(){
+    const status=document.getElementById("weeklyEditionStatus"),feature=document.getElementById("weeklyFeaturePreview"),grid=document.getElementById("weeklyExplorePreview");
+    if(!status||!feature||!grid)return;
+    status.textContent="Loading published entries and approved photography…";feature.innerHTML="";grid.innerHTML="";
+    try{
+      const {data,error}=await client.rpc("roamsonio_admin_editorial_destinations");
+      if(error)throw error;
+      const easternParts=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
+      const get=t=>easternParts.find(p=>p.type===t)?.value;
+      const today=get("year")+"-"+get("month")+"-"+get("day");
+      const eligible=(data||[]).filter(x=>(x.status||"").toLowerCase()==="published"&&(!String((x.metadata||{}).homepage_eligible_from||"")||String(x.metadata.homepage_eligible_from)<=today)).sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+      const cards=(await Promise.all(eligible.map(async x=>{
+        const r=await client.rpc("roamsonio_admin_editorial_photos",{p_destination_id:x.id});
+        if(r.error)return null;
+        const photos=(r.data||[]).filter(p=>p&&p.approved===true&&p.url&&/^https:\/\//i.test(p.url)).sort((a,b)=>{const rank=p=>String(p.role||"").toLowerCase()==="hero"?0:String(p.role||"").toLowerCase()==="secondary"?1:2;return rank(a)-rank(b)||(Number(a.sort_order)||0)-(Number(b.sort_order)||0);});
+        if(!photos.length)return null;
+        const acts=Array.isArray(x.activities)?x.activities:String(x.activities||"").split(/[,;|]/).map(y=>y.trim()).filter(Boolean);
+        return {entry:x,image:photos[0].url,title:x.name,place:x.build_destination||x.name,tag:x.type||"Published destination",desc:x.tagline||"Explore this destination through the RoamSonio Edit.",activity:acts.slice(0,3).join(" + ")||"Explore the destination"};
+      }))).filter(Boolean);
+      if(!cards.length){status.textContent="No eligible published entries with approved photos are available for the homepage. Drafts remain private; no substitute content is shown.";feature.innerHTML="";grid.innerHTML="";return;}
+      const now=new Date(),anchor=new Date(2020,0,5),week=Math.floor(Math.floor((now-anchor)/86400000)/7),offset=(week*3)%cards.length,ordered=cards.slice(offset).concat(cards.slice(0,offset)).slice(0,6);
+      const weekStart=new Date(anchor.getTime()+week*7*86400000),weekEnd=new Date(weekStart.getTime()+6*86400000);
+      const fmt=d=>new Intl.DateTimeFormat("en-US",{month:"short",day:"numeric",timeZone:"America/New_York"}).format(d);
+      status.textContent="Current rotation · "+fmt(weekStart)+"–"+fmt(weekEnd)+" · "+ordered.length+" Explore the World cards · "+cards.length+" eligible published entries";
+      const first=ordered[0];
+      feature.innerHTML='<article style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(220px,.8fr);gap:18px;align-items:stretch;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fffdf9"><img src="'+esc(first.image)+'" alt="'+esc(first.title)+'" style="width:100%;height:280px;object-fit:cover" onerror="this.alt=\'Featured photo preview unavailable\';this.style.background=\'#e8e1d5\'"><div style="padding:22px 18px;align-self:center"><div class="ey">WEEKLY INSPIRATION · FEATURED</div><h3 style="font:600 30px/1.1 Playfair Display,serif;margin:8px 0">'+esc(first.title)+'</h3><p style="font-size:11px;line-height:1.7;color:var(--slate)">'+esc(first.place)+' · '+esc(first.desc)+'</p><p style="font-size:10px;color:var(--slate)">Type: '+esc(first.tag)+' · '+esc(first.activity)+'</p></div></article>';
+      grid.innerHTML=ordered.map((x,i)=>'<article style="border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fffdf9"><img src="'+esc(x.image)+'" alt="'+esc(x.title)+'" loading="lazy" style="display:block;width:100%;height:150px;object-fit:cover" onerror="this.alt=\'Photo preview unavailable\';this.style.background=\'#e8e1d5\'"><div style="padding:13px"><div class="ey">CARD '+String(i+1).padStart(2,"0")+' · '+esc(x.tag)+'</div><h4 style="font:600 19px/1.2 Playfair Display,serif;margin:7px 0">'+esc(x.title)+'</h4><p style="font-size:10px;line-height:1.6;color:var(--slate);margin:0">'+esc(x.place)+' · '+esc(x.desc)+'</p></div></article>').join("");
+    }catch(e){status.textContent="Weekly homepage preview could not load: "+(e.message||"Unknown error")+". Verify the Master Admin + MFA session and editorial permissions.";feature.innerHTML="";grid.innerHTML="";}
+  }
+
   async function edLoad(){
     try{
       const {data,error}=await client.rpc("roamsonio_admin_editorial_destinations");
       if(error)throw error;
-      editorialEntries=data||[];edRender();edSetStatus("Protected editorial database loaded. Changes require Master Admin + MFA.");
+      editorialEntries=data||[];edRender();edSetStatus("Protected editorial database loaded. Changes require Master Admin + MFA.");renderWeeklyHomepage();
     }catch(e){
       try{const r=await fetch(editorialFallback+"?v="+Date.now(),{cache:"no-store"});const data=await r.json();editorialEntries=data.entries||[];edRender();edSetStatus("Editorial catalog preview loaded from the documented library. Apply the Supabase editorial migrations to enable protected editing/publishing.");}
       catch(f){edSetStatus("Editorial library unavailable: "+(e.message||"Unknown error"));}
@@ -1042,7 +1082,7 @@ function suggestionSlug(value){
 
 <script id="master-view-navigation">
 (function(){
-  const views={overview:["masterOverviewStats"],operations:["administrationSection","accountTransferSection"],editorial:["editorialLibrarySection"],knowledge:["knowledgeBaseSection"],activity:["recentActivitySection"]};
+  const views={overview:["masterOverviewStats"],operations:["administrationSection","accountTransferSection"],weekly:["weeklyHomepageSection"],editorial:["editorialLibrarySection"],knowledge:["knowledgeBaseSection"],activity:["recentActivitySection"]};
   const tabs=Array.from(document.querySelectorAll("[data-master-view]"));
   function activate(name){
     Object.entries(views).forEach(([key,ids])=>ids.forEach(id=>{const el=document.getElementById(id);if(el)el.hidden=key!==name;}));
