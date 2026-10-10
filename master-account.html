@@ -427,6 +427,19 @@ if(masterSignOutLink){
     loadTransferUsers();
     loadAdminActivity();
     loadEditorialPendingCount();
+    // Load the Editorial Library only after the authenticated Master Admin + MFA check.
+    // This prevents an early unauthenticated RPC from falling back to stale JSON and showing mismatched drafts.
+    await client.auth.refreshSession();
+    await edLoad();
+    const requestedView = new URLSearchParams(location.search).get("view");
+    const requestedEntry = new URLSearchParams(location.search).get("entry");
+    if (requestedView === "editorial" && window.activateMasterView) {
+      window.activateMasterView("editorial");
+      if (requestedEntry) {
+        const match = editorialEntries.find(item => String(item.id) === requestedEntry);
+        if (match) { edFill(match); await photoLoad(); }
+      }
+    }
     return;
   }
 
@@ -995,7 +1008,7 @@ function suggestionSlug(value){
   const originalEdFill=edFill;
   edFill=function(x){ originalEdFill(x); photoLoad(); };
   // Initialize the Editorial Library after the protected Master Admin session is ready.
-  edLoad();
+  // edLoad() is invoked only after the Master Admin + MFA gate succeeds.
   </script>
 
 
@@ -1023,6 +1036,7 @@ function suggestionSlug(value){
     if(target&&name!=="overview")target.scrollIntoView({behavior:"auto",block:"start"});
   }
   tabs.forEach(tab=>tab.addEventListener("click",()=>activate(tab.dataset.masterView)));
+  window.activateMasterView=activate;
   activate("overview");
 })();
 </script>
