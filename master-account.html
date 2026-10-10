@@ -29,6 +29,13 @@ a{text-decoration:none;color:inherit}
 h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px}
 .intro{max-width:760px;color:var(--slate);font-size:13px;line-height:1.65;margin:0}
 .adminBadge{display:inline-flex;margin-top:14px;padding:7px 10px;border-radius:99px;background:#E9D9B7;font-size:8px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.masterViewNav{display:flex;gap:7px;flex-wrap:wrap;margin:18px 0 20px;padding:8px;background:#EEE8DC;border:1px solid var(--line);border-radius:12px;position:sticky;top:74px;z-index:50}
+.masterViewTab{appearance:none;border:1px solid transparent;border-radius:8px;padding:10px 13px;background:transparent;color:var(--navy);font:800 9px/1.2 "DM Sans",sans-serif;cursor:pointer;touch-action:manipulation}
+.masterViewTab:hover{background:#fff}
+.masterViewTab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.masterViewTab:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.masterViewTab[aria-selected="true"]{box-shadow:0 2px 5px #0B2D4A18}
+@media(max-width:700px){.masterViewNav{top:70px;display:grid;grid-template-columns:1fr 1fr}.masterViewTab{min-height:40px;padding:9px 7px}.masterViewTab[data-master-view="editorial"]{grid-column:1/-1}}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:26px}
 .card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:19px;min-height:132px}
 .card .num{font:600 31px/1 "Playfair Display";color:var(--navy)}
@@ -149,6 +156,13 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
     <h1>Master Account</h1>
     <p class="intro">A single control center for users, trips, families, support requests and communication. The protected Master Admin role and MFA level are verified by Supabase before this dashboard is shown.</p>
     <div class="adminBadge">Master Administrator</div><div class="errorBox" id="dataError"></div>
+    <nav class="masterViewNav" aria-label="Master Control sections" role="tablist">
+      <button type="button" class="masterViewTab active" data-master-view="overview" role="tab" aria-selected="true">Overview</button>
+      <button type="button" class="masterViewTab" data-master-view="editorial" role="tab" aria-selected="false">Suggestion Studio & Library</button>
+      <button type="button" class="masterViewTab" data-master-view="knowledge" role="tab" aria-selected="false">Knowledge Base</button>
+      <button type="button" class="masterViewTab" data-master-view="transfer" role="tab" aria-selected="false">Account Transfer</button>
+      <button type="button" class="masterViewTab" data-master-view="activity" role="tab" aria-selected="false">Recent Activity</button>
+    </nav>
 
     <section class="grid">
       <div class="card"><div class="num" id="userCount">—</div><small>Total Users</small></div>
@@ -157,7 +171,7 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
       <div class="card"><div class="num" id="supportCount">—</div><small>Open Support</small></div>
     </section>
 
-    <section class="section">
+    <section class="section" id="administrationSection">
       <div class="sectionHead"><div><h2>Administration</h2><p>Protected administration foundation</p></div></div>
       <div class="quick">
         <a class="primary" href="master-users.html">Users</a><a href="master-trips.html">Trips</a><a href="master-families.html">Families</a><a href="master-support.html">Support</a><a href="master-versioning.html" class="primary">Versioning & Rollback</a><a href="#">Messages</a><a href="#">Announcements</a><a href="#">Activity Log</a>
@@ -317,7 +331,7 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
         </div>
       </div>
     </section>
-    <section class="section">
+    <section class="section" id="recentActivitySection">
       <div class="sectionHead">
         <div><h2>Recent Activity</h2><p>Protected administrative history</p></div>
         <button type="button" class="secondaryBtn" id="refreshActivityBtn">Refresh</button>
@@ -961,5 +975,19 @@ if(masterSignOutLink){
   })();
   </script>
 
+<script id="master-view-navigation">
+(function(){
+  const views={overview:["administrationSection"],editorial:["editorialLibrarySection"],knowledge:["knowledgeBaseSection"],transfer:["accountTransferSection"],activity:["recentActivitySection"]};
+  const tabs=Array.from(document.querySelectorAll("[data-master-view]"));
+  function activate(name){
+    Object.entries(views).forEach(([key,ids])=>ids.forEach(id=>{const el=document.getElementById(id);if(el)el.hidden=key!==name;}));
+    tabs.forEach(tab=>{const active=tab.dataset.masterView===name;tab.classList.toggle("active",active);tab.setAttribute("aria-selected",String(active));tab.tabIndex=active?0:-1;});
+    const target=views[name]&&document.getElementById(views[name][0]);
+    if(target&&name!=="overview")target.scrollIntoView({behavior:"auto",block:"start"});
+  }
+  tabs.forEach(tab=>tab.addEventListener("click",()=>activate(tab.dataset.masterView)));
+  activate("overview");
+})();
+</script>
 </body>
 </html>
