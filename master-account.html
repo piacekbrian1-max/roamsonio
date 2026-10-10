@@ -214,7 +214,7 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
           <div class="photoManager" id="photoManager">
             <div class="photoManagerHead">
               <div><div class="ey">Editorial photography</div><h4>Photo approval</h4><p>Track approval by role. Approve a reviewed Hero + Secondary + Mobile set in one action.</p></div>
-              <div class="editorialActions" style="margin:0;flex-wrap:wrap"><button type="button" class="transferBtn" id="preparePhotoSetBtn">Prepare for Publishing</button><button type="button" class="secondaryBtn" id="approvePhotoSetBtn" disabled>Approve Complete Set</button><button type="button" class="secondaryBtn" id="newPhotoBtn">Add Photo Manually</button></div>
+              <div class="editorialActions" style="margin:0"><button type="button" class="secondaryBtn" id="approvePhotoSetBtn" disabled>Approve Complete Set</button><button type="button" class="transferBtn" id="newPhotoBtn">Add Photo</button></div>
             </div>
             <div class="photoGrid">
               <div class="photoList" id="photoList"><div class="row"><span>Select a destination to manage its photography.</span></div></div>
@@ -692,29 +692,23 @@ if(masterSignOutLink){
     box.innerHTML=raw;
     return (box.textContent||box.innerText||raw).replace(/\\s+/g," ").trim();
   }
-  async function fetchPhotoCandidates(query){
-    const url="https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch="+encodeURIComponent(query+" landscape architecture travel")+"&gsrnamespace=6&gsrlimit=30&prop=imageinfo&iiprop=url%7Cextmetadata%7Csize&iiurlwidth=1400&format=json&origin=*";
-    const res=await fetch(url,{cache:"no-store"});if(!res.ok)throw new Error("Wikimedia photo search failed");
-    const data=await res.json();
-    return Object.values((data.query&&data.query.pages)||{}).map(p=>{
-      const info=(p.imageinfo&&p.imageinfo[0])||{},meta=info.extmetadata||{};
-      const license=photoPlainMetadata(meta.LicenseShortName&&meta.LicenseShortName.value);
-      const licenseUrl=photoPlainMetadata(meta.LicenseUrl&&meta.LicenseUrl.value);
-      const artist=photoPlainMetadata(meta.Artist&&meta.Artist.value);
-      const credit=artist||photoPlainMetadata(meta.Credit&&meta.Credit.value);
-      return {title:p.title||"",url:info.thumburl||info.url||"",source_url:"https://commons.wikimedia.org/wiki/"+encodeURIComponent((p.title||"").replace(/ /g,"_")),credit:credit,alt_text:query+" travel photography",license:license,license_url:licenseUrl,width:info.width||0,height:info.height||0};
-    }).filter(x=>x.url&&x.source_url&&x.credit&&x.license&&x.license_url&&x.width>=1000&&x.height>=600);
-  }
   async function loadPhotoCandidates(){
     const box=document.getElementById("photoCandidates"),grid=document.getElementById("photoCandidatesGrid");
     if(!selectedEditorialId){box.hidden=true;return;}
     const entry=editorialEntries.find(x=>String(x.id)===String(selectedEditorialId));
     const query=(entry&&(entry.build_destination||entry.buildDestination||entry.name)||"").trim();
     if(!query){box.hidden=true;return;}
-    box.hidden=false;grid.innerHTML="<div class='row'><span>Finding photos with source and license metadata…</span></div>";
+    box.hidden=false; grid.innerHTML="<div class='row'><span>Finding approved-source candidates…</span></div>";
     try{
-      photoCandidates=await fetchPhotoCandidates(query);
-      grid.innerHTML=photoCandidates.length?photoCandidates.map((x,i)=>"<button type='button' class='photoCandidate' data-index='"+i+"'><img src='"+esc(x.url)+"' alt='"+esc(x.alt_text)+"'><small>"+esc(x.title.replace(/^File:/i,""))+" · "+esc(x.license)+"</small></button>").join(""):"<div class='row'><span>No candidates met the minimum image and license checks. Try again later or add a photo manually.</span></div>";
+      const url="https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch="+encodeURIComponent(query)+"&gsrnamespace=6&gsrlimit=9&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=700&format=json&origin=*";
+      const res=await fetch(url,{cache:"no-store"}); if(!res.ok)throw new Error("Wikimedia request failed");
+      const data=await res.json();
+      const pages=Object.values((data.query&&data.query.pages)||{});
+      photoCandidates=pages.map(p=>{
+        const info=(p.imageinfo&&p.imageinfo[0])||{},meta=info.extmetadata||{};
+        return {title:p.title||"",url:info.thumburl||info.url||"",source_url:"https://commons.wikimedia.org/wiki/"+encodeURIComponent((p.title||"").replace(/ /g,"_")),credit:photoPlainMetadata(meta.Artist&&meta.Artist.value)||"Wikimedia Commons",alt_text:query+" travel photography"};
+      }).filter(x=>x.url);
+      grid.innerHTML=photoCandidates.length?photoCandidates.map((x,i)=>"<button type='button' class='photoCandidate' data-index='"+i+"'><img src='"+esc(x.url)+"' alt='"+esc(x.alt_text)+"'><small>"+esc(x.title.replace(/^File:/i,""))+"</small></button>").join(""):"<div class='row'><span>No candidates found. Try Refresh or add a source URL manually.</span></div>";
       grid.querySelectorAll(".photoCandidate").forEach(b=>b.addEventListener("click",()=>photoUseCandidate(photoCandidates[Number(b.dataset.index)])));
     }catch(e){grid.innerHTML="<div class='row'><span>Candidate search unavailable. You can still enter a photo URL manually.</span></div>";}
   }
@@ -833,35 +827,6 @@ if(masterSignOutLink){
     loadPhotoCandidates();
   });
   document.getElementById("refreshPhotoCandidates").addEventListener("click",loadPhotoCandidates);
-  document.getElementById("preparePhotoSetBtn").addEventListener("click",async()=>{
-    if(!selectedEditorialId){photoSetStatus("Select a destination first.");return;}
-    const entry=editorialEntries.find(x=>String(x.id)===String(selectedEditorialId));
-    const query=(entry&&(entry.build_destination||entry.buildDestination||entry.name)||"").trim();
-    if(!query){photoSetStatus("Add a destination name before preparing photos.");return;}
-    const btn=document.getElementById("preparePhotoSetBtn");btn.disabled=true;btn.textContent="Preparing…";
-    try{
-      const candidates=await fetchPhotoCandidates(query);
-      const existingRoles=new Set(editorialPhotos.map(p=>String(p.role||"").toLowerCase()));
-      const needed=["hero","secondary","mobile"].filter(role=>!existingRoles.has(role));
-      if(!needed.length){photoSetStatus("All three roles already exist. Review the current set; existing photos were not replaced.");return;}
-      const chosen=[];
-      for(const role of needed){
-        const candidate=candidates.find(c=>!chosen.some(x=>x.url===c.url)&&!editorialPhotos.some(p=>p.url===c.url));
-        if(!candidate)throw new Error("Not enough distinct candidates with verifiable license metadata to fill all missing roles.");
-        chosen.push(candidate);
-      }
-      for(let i=0;i<needed.length;i++){
-        const p=chosen[i];
-        const {error}=await client.rpc("roamsonio_admin_upsert_editorial_photo",{p_photo_id:null,p_destination_id:selectedEditorialId,p_url:p.url,p_alt_text:p.alt_text+" (License: "+p.license+")",p_credit:p.credit+" ("+p.license+")",p_source_url:p.source_url+"?license="+encodeURIComponent(p.license_url),p_role:needed[i],p_sort_order:i,p_approved:false});
-        if(error)throw error;
-      }
-      await photoLoad();
-      photoSetStatus("Photo set prepared as unapproved drafts. Review image relevance and license details, then approve the complete set. Destination remains unpublished.");
-    }catch(e){
-      await photoLoad();
-      photoSetStatus("Automatic preparation needs attention: "+(e.message||"No suitable candidate set found")+". Existing approved photos were not replaced.");
-    }finally{btn.disabled=false;btn.textContent="Prepare for Publishing";}
-  });
   document.getElementById("approvePhotoSetBtn").addEventListener("click",async()=>{
     const roles=["hero","secondary","mobile"],set=roles.map(role=>editorialPhotos.find(p=>String(p.role||"").toLowerCase()===role));
     if(set.some(p=>!p||!p.url||!p.source_url||!p.credit||!p.alt_text)){photoSetStatus("Approval stopped: all three roles need an image, source URL, credit and alt text.");return;}
