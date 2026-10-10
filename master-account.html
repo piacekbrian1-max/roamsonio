@@ -429,7 +429,6 @@ if(masterSignOutLink){
     loadEditorialPendingCount();
     // Load the Editorial Library only after the authenticated Master Admin + MFA check.
     // This prevents an early unauthenticated RPC from falling back to stale JSON and showing mismatched drafts.
-    await client.auth.refreshSession();
     await edLoad();
     const requestedView = new URLSearchParams(location.search).get("view");
     const requestedEntry = new URLSearchParams(location.search).get("entry");
