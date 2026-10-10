@@ -62,6 +62,13 @@ footer{background:#0B2D4A;color:#4F6B8A;padding:38px 0}.foot{max-width:1440px;wi
 .editorialStart .ey{color:#dfc578}.editorialStart h2{font:600 clamp(46px,6vw,78px)/.95 "Playfair Display",serif;margin:10px 0 18px}.editorialStart p{max-width:560px;color:#cbd7d1;font-size:11px;line-height:1.7;margin:0}.editorialStartButton{margin-bottom:2px;min-width:300px}.editorialStatus{padding:46px 0 64px;display:grid;grid-template-columns:.8fr 1.2fr 1fr;gap:30px;align-items:center}.editorialStatus strong{font:600 25px "Playfair Display",serif}.editorialStatus span{font-size:10px;line-height:1.6;color:#66736e}
 @media(max-width:900px){.editorialFeatureIntro{grid-template-columns:1fr;gap:22px}.editorialFeatureImage{min-height:410px}.editorialSuggestGrid{grid-template-columns:1fr 1fr!important;grid-template-rows:360px 220px 220px!important}.editorialSuggestGrid .suggestCard:first-child{grid-row:1 / span 2}.editorialSuggestGrid .suggestCard:nth-child(2),.editorialSuggestGrid .suggestCard:nth-child(3),.editorialSuggestGrid .suggestCard:nth-child(4),.editorialSuggestGrid .suggestCard:nth-child(5){grid-column:auto}.editorialTripRows{grid-template-columns:1fr}.editorialArchiveGrid{grid-template-columns:1fr 1fr}.editorialStart{grid-template-columns:1fr;padding:52px 6%}.editorialStatus{grid-template-columns:1fr 1fr}.editorialStatus span{grid-column:1/-1}}
 @media(max-width:600px){.editorialFeatureIntro{padding:42px 0 24px}.editorialFeatureIntro h2{font-size:42px}.editorialFeature{padding-bottom:52px}.editorialFeatureImage{min-height:360px}.editorialFeatureCopy{left:7%;right:7%;bottom:28px}.editorialFeatureCopy h3{font-size:42px}.editorialSectionHead{display:block}.editorialSectionHead p{margin-top:12px}.editorialExplore{padding-bottom:58px}.editorialSuggestGrid{grid-template-columns:1fr!important;grid-template-rows:380px!important}.editorialSuggestGrid .suggestCard:first-child{grid-row:auto;min-height:380px}.editorialSuggestGrid .suggestCard:nth-child(n+2){display:block;min-height:250px}.editorialJourneys{padding:56px 0}.editorialTripRows .tripRowCard{grid-template-columns:1fr}.editorialTripRows .tripRowPhoto{min-height:190px}.editorialArchiveGrid{grid-template-columns:1fr}.editorialStart{min-height:460px;padding:48px 7%}.editorialStart h2{font-size:54px}.editorialStartButton{min-width:0;width:100%}.editorialStatus{grid-template-columns:1fr;padding:38px 0 52px}.editorialStatus span{grid-column:auto}}
+
+/* Rebuilt Explore layout: every card is an approved master destination; no featured-card layout can hide the rest. */
+.editorialSuggestGrid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(240px,auto))!important;gap:14px!important;align-items:stretch}
+.editorialSuggestGrid .suggestCard,.editorialSuggestGrid .suggestCard:first-child,.editorialSuggestGrid .suggestCard:nth-child(n+2){display:block;grid-column:auto!important;grid-row:auto!important;min-height:250px!important}
+.editorialSuggestGrid .exploreStatus{grid-column:1/-1;padding:24px;border:1px solid #d9e0e7;background:#fffdf9;color:#243b4a;line-height:1.6}
+@media(max-width:900px){.editorialSuggestGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:auto!important}.editorialSuggestGrid .suggestCard,.editorialSuggestGrid .suggestCard:first-child,.editorialSuggestGrid .suggestCard:nth-child(n+2){min-height:250px!important}}
+@media(max-width:600px){.editorialSuggestGrid{grid-template-columns:1fr!important;grid-template-rows:auto!important}.editorialSuggestGrid .suggestCard,.editorialSuggestGrid .suggestCard:first-child,.editorialSuggestGrid .suggestCard:nth-child(n+2){min-height:250px!important}}
 </style>
 <style id="roamsonio-home-cover">
 .rsHomeHero{width:100%;max-width:none;padding:24px 0 46px;background:var(--cream)}
@@ -426,65 +433,47 @@ function readiness(t){var checks=[
   {label:"Dates",ok:!!(t.start&&t.end)},
   {label:"Destination",ok:!!(t.destinations&&t.destinations.length)},
   {label:"Travelers",ok:Number(t.travelers)>0},
-  {label:"Stay",ok:!!(t.stay||t.stayLink||(t.stays&&t.stays.length))},
-  {label:"Travel",ok:!!(t.flights||t.flightLink||(t.flightsData&&t.flightsData.length)||t.transport)},
-  {label:"Itinerary",ok:!!(t.plan&&t.plan.length)}
-];var missing=checks.filter(function(x){return !x.ok}).map(function(x){return x.label});return{done:checks.length-missing.length,total:checks.length,missing:missing}}
-function countdownLabel(t){var d=daysUntil(t.start);if(d===null)return"Dates not set";if(d>1)return d+" days";if(d===1)return"Tomorrow";if(d===0)return"Today";var left=Math.abs(d);return left+" days ago"}
-function completedTripModel(){return{name:"European Thanksgiving Adventure 2026",start:"2026-11-26",end:"2026-12-04",destinations:["Trnava","Prague","Pilsen","Hluboká nad Vltavou","Vienna"],travelers:3,state:"Completed planning",ready:true,missing:[],image:"images/prague-christmas.jpg",href:"current-trip.html"}}
-function currentTripModel(){return{id:"febaebf6-7369-4922-b069-c745eee8c16f",name:"New Orleans · Jan 16–20, 2027",start:"2027-01-16",end:"2027-01-20",destinations:["New Orleans"],travelers:3,state:"In Progress",ready:false,missing:["Finish trip details"],image:images.neworleans,href:"trip-workspace.html?id=febaebf6-7369-4922-b069-c745eee8c16f&destination=New%20Orleans&v=nola-home-model"}}
-function buildSuggestions(){
-/* Home Explore rebuilt as an independent six-card editorial spread.
-   It renders its own safe fallback first; editorial data can enhance it but cannot blank it. */
+  {label:"Stay",ok:!!(t.stay||t.stayLink||(function buildSuggestions(){
+/* Editorial-only Explore: never substitute destinations that are not published in Master. */
 var box=document.getElementById("suggestGrid");
 if(!box)return;
 var seasonEl=document.getElementById("suggestSeason");
-var now=new Date(),month=now.getMonth()+1;
-var season=month<=2||month===12?"Winter":month<=5?"Spring":month<=8?"Summer":"Fall";
-if(seasonEl)seasonEl.textContent=season+" · new adventures every Sunday";
-var fallback=[
-{title:"Kyoto · Gardens + Trails",place:"Kyoto + surrounding hills · Japan",tag:"Culture + outdoors",desc:"Temple lanes, gardens and forested trails beyond the city.",activity:"Gardens + hiking",destination:"Kyoto",image:"https://images.unsplash.com/photo-1589908234698-8e38077ca1f0?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
-{title:"Lisbon · Coast + Cycling",place:"Lisbon + Atlantic coast · Portugal",tag:"Coast + cycling",desc:"Historic neighborhoods, Atlantic viewpoints and coastal rides.",activity:"Cycling + coast",destination:"Lisbon",image:"https://images.unsplash.com/photo-1598535301312-5b3f8abd2a88?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
-{title:"Santa Fe · Desert Trails",place:"Santa Fe + New Mexico · USA",tag:"Hiking + scenery",desc:"High-desert trails, adobe streets and big Southwestern skies.",activity:"Hiking + scenic drives",destination:"Santa Fe",image:"https://images.unsplash.com/photo-1777931407549-86d4771c9063?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
-{title:"Barcelona · Bike + Beach",place:"Barcelona + Catalonia · Spain",tag:"City + Mediterranean",desc:"Architecture, lively neighborhoods, waterfront rides and beaches.",activity:"Cycling + swimming",destination:"Barcelona",image:"https://images.unsplash.com/photo-1780305807326-5724054ae6c6?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
-{title:"Savannah · Squares + Coast",place:"Savannah + Georgia coast · USA",tag:"Southern escape",desc:"Oak-lined squares, historic streets and easy coastal days.",activity:"Walking + beach",destination:"Savannah",image:"https://images.unsplash.com/photo-1780348544952-42690c752e19?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
-{title:"Vienna · Danube + Culture",place:"Vienna + Danube · Austria",tag:"Culture + cycling",desc:"Grand cafés, historic streets and riverside paths to explore.",activity:"Cycling + walking",destination:"Vienna",image:"https://images.unsplash.com/photo-1641309043676-34128e15917e?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
-{title:"Montréal · Food + Outdoors",place:"Montréal + Québec · Canada",tag:"City + outdoors",desc:"A food-loving city with parks, waterfront paths and neighborhoods.",activity:"Cycling + food",destination:"Montreal",image:"https://images.unsplash.com/photo-1761920274681-18ba06a25d7c?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
-{title:"Charleston · Lowcountry",place:"Charleston + Lowcountry · USA",tag:"Food + coast",desc:"Historic lanes, tidal waterways, beaches and Lowcountry flavor.",activity:"Kayaking + beach",destination:"Charleston",image:"https://images.unsplash.com/photo-1643063708982-0556158f4775?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
-{title:"New York · Neighborhoods",place:"New York City · USA",tag:"City adventure",desc:"Museums, waterfront paths, parks, shows and neighborhood discoveries.",activity:"Walking + cycling",destination:"New York City",image:"https://images.unsplash.com/photo-1665399320309-e9757b31a5fe?auto=format&fit=crop&fm=jpg&q=82&w=1800"},
-{title:"Munich · Lakes + Alps",place:"Munich + Bavarian Alps · Germany",tag:"Mountains + lakes",desc:"Pair city culture with alpine lakes, mountain villages and trails.",activity:"Hiking + alpine escapes",destination:"Munich",image:"https://images.unsplash.com/photo-1783091478517-e6fb341b516e?auto=format&fit=crop&fm=jpg&q=82&w=1800"}
-];
-var anchor=new Date(2020,0,5),week=Math.floor(Math.floor((now-anchor)/86400000)/7),offset=(week*3)%fallback.length;
-var rotated=fallback.slice(offset).concat(fallback.slice(0,offset));
-var chosen=rotated.slice(0,6);
-function paint(cards){
-  try{
-    var safeCards=(cards||[]).filter(function(c){return c&&c.title&&c.destination;}).slice(0,6);
-    while(safeCards.length<6){var add=rotated.find(function(c){return !safeCards.some(function(x){return x.title===c.title;});});if(!add)break;safeCards.push(add);}
-    box.innerHTML=safeCards.map(function(c,i){
-      var href="build-trip.html?destination="+encodeURIComponent(c.destination)+"&inspiration="+encodeURIComponent(c.title);
-      return "<a class='suggestCard' data-explore-index='"+i+"' href='"+href+"' aria-label='Explore "+esc(c.title)+" as a trip'><div class='suggestContent'><div class='suggestTag'>"+esc(c.tag||"RoamSonio edit")+"</div><h3>"+esc(c.title)+"</h3><p>"+esc(c.place||c.destination)+" · "+esc(c.desc||"Find your next reason to roam.")+"</p><span class='suggestAction'>"+esc(c.activity||"Explore")+" · Explore this trip</span></div></a>";
-    }).join("");
-    Array.prototype.forEach.call(box.querySelectorAll(".suggestCard"),function(card,i){
-      var url=String(safeCards[i].image||"");
-      if(/^https:\/\//i.test(url))card.style.setProperty("--suggest-image","url("+JSON.stringify(url.replace(/[\\"]/g,""))+")");
-    });
-    var feature=document.querySelector(".editorialFeatureImage"),first=box.querySelector(".suggestCard");
-    if(feature&&first){
-      var bg=first.style.getPropertyValue("--suggest-image");
-      if(bg){feature.style.backgroundImage="linear-gradient(90deg,#071E33e8 0%,#071E3370 42%,#071E3310 78%),"+bg;var hero=document.getElementById("rsHeroPhoto");if(hero){hero.style.backgroundImage=bg;hero.href=first.getAttribute("href")||"#editorialFeatureWrap";}}
-      var title=first.querySelector("h3"),desc=first.querySelector("p"),fl=feature.querySelector(".editorialFeatureLink"),fh=feature.querySelector(".editorialFeatureCopy h3"),fp=feature.querySelector(".editorialFeatureCopy p");
-      if(fh&&title)fh.textContent=title.textContent;if(fp&&desc)fp.textContent=desc.textContent;if(fl){fl.textContent="Explore this edit →";fl.href=first.getAttribute("href")||"#suggestGrid";}
-    }
-  }catch(err){console.error("RoamSonio Explore render failed",err);}
-}
-/* Paint six complete cards before making any network request. */
-paint(chosen);
-/* Approved Editorial Library entries may replace fallback cards, but any API/data error leaves six visible cards. */
-var editorialUrl="https://vqtqchxoecrahtrnoocy.supabase.co/rest/v1/roamsonio_editorial_destinations?status=eq.published&select=id,name,type,seasons,activities,build_destination,tagline,roamsonio_editorial_photos(url,role,sort_order,approved)&order=name.asc";
-fetch(editorialUrl,{headers:{apikey:"sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_T_FWO5vsy",Authorization:"Bearer sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_T_FWO5vsy"},cache:"no-store"}).then(function(res){if(!res.ok)throw new Error("Editorial library unavailable");return res.json();}).then(function(rows){
-  var editorial=(rows||[]).map(function(row){
+if(seasonEl)seasonEl.textContent="Published destinations · approved photography only";
+box.innerHTML="<div class='exploreStatus' role='status'>Loading approved destinations from the RoamSonio master library…</div>";
+var editorialUrl="https://vqtqchxoecrahtrnoocy.supabase.co/rest/v1/roamsonio_editorial_destinations?status=eq.published&select=id,name,status,type,seasons,activities,build_destination,tagline,roamsonio_editorial_photos(url,role,sort_order,approved)&order=name.asc";
+fetch(editorialUrl,{headers:{apikey:"sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_T_FWO5vsy",Authorization:"Bearer sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_T_FWO5vsy"},cache:"no-store"}).then(function(res){if(!res.ok)throw new Error("Editorial library request failed ("+res.status+")");return res.json();}).then(function(rows){
+  var approved=(rows||[]).filter(function(row){return String(row.status||"").toLowerCase()==="published";}).map(function(row){
     var photos=(row.roamsonio_editorial_photos||[]).filter(function(p){return p&&p.approved===true&&p.url&&/^https:\/\//i.test(p.url);}).sort(function(a,b){var ar=a.role==="hero"?0:a.role==="secondary"?1:2,br=b.role==="hero"?0:b.role==="secondary"?1:2;return ar-br||(Number(a.sort_order)||0)-(Number(b.sort_order)||0);});
+    if(!row.name||!photos.length)return null;
+    var destination=String(row.build_destination||row.name).trim();
+    var acts=Array.isArray(row.activities)?row.activities:String(row.activities||"").split(/[,;|]/);
+    return {title:String(row.name).trim(),place:destination,tag:String(row.type||"Published destination"),desc:String(row.tagline||"Explore this destination through the RoamSonio Edit."),activity:acts.slice(0,3).join(" + ")||"Explore the destination",destination:destination,image:photos[0].url};
+  }).filter(Boolean);
+  if(!approved.length){
+    box.innerHTML="<div class='exploreStatus' role='status'>No published destinations with approved photos were returned by the master library. No substitute destinations have been added.</div>";
+    if(seasonEl)seasonEl.textContent="Master library · no approved destinations returned";
+    return;
+  }
+  var now=new Date(),anchor=new Date(2020,0,5),week=Math.floor(Math.floor((now-anchor)/86400000)/7),offset=(week*3)%approved.length;
+  var ordered=approved.slice(offset).concat(approved.slice(0,offset)).slice(0,6);
+  box.innerHTML=ordered.map(function(c,i){
+    var href="build-trip.html?destination="+encodeURIComponent(c.destination)+"&inspiration="+encodeURIComponent(c.title);
+    return "<a class='suggestCard' data-explore-index='"+i+"' href='"+href+"' aria-label='Explore "+esc(c.title)+" as a trip' style=\"--suggest-image:url('"+c.image.replace(/['\\\\()\s]/g,function(ch){return encodeURIComponent(ch);})+"')\"><div class='suggestContent'><div class='suggestTag'>"+esc(c.tag)+"</div><h3>"+esc(c.title)+"</h3><p>"+esc(c.place)+" · "+esc(c.desc)+"</p><span class='suggestAction'>"+esc(c.activity)+" · Explore this trip</span></div></a>";
+  }).join("");
+  if(seasonEl)seasonEl.textContent=ordered.length+" published destinations · approved photography";
+  var feature=document.querySelector(".editorialFeatureImage"),first=box.querySelector(".suggestCard");
+  if(feature&&first){
+    var bg=first.style.getPropertyValue("--suggest-image");
+    if(bg){feature.style.backgroundImage="linear-gradient(90deg,#071E33e8 0%,#071E3370 42%,#071E3310 78%),"+bg;var hero=document.getElementById("rsHeroPhoto");if(hero){hero.style.backgroundImage=bg;hero.href=first.getAttribute("href")||"#editorialFeatureWrap";}}
+    var title=first.querySelector("h3"),desc=first.querySelector("p"),fl=feature.querySelector(".editorialFeatureLink"),fh=feature.querySelector(".editorialFeatureCopy h3"),fp=feature.querySelector(".editorialFeatureCopy p");
+    if(fh&&title)fh.textContent=title.textContent;if(fp&&desc)fp.textContent=desc.textContent;if(fl){fl.textContent="Explore this edit →";fl.href=first.getAttribute("href")||"#suggestGrid";}
+  }
+}).catch(function(err){
+  console.error("RoamSonio approved Explore destinations failed to load",err);
+  box.innerHTML="<div class='exploreStatus' role='status'>We couldn’t load the approved destination library. Please try again shortly. No unapproved destinations are being shown.</div>";
+  if(seasonEl)seasonEl.textContent="Master library · connection issue";
+});
+}.roamsonio_editorial_photos||[]).filter(function(p){return p&&p.approved===true&&p.url&&/^https:\/\//i.test(p.url);}).sort(function(a,b){var ar=a.role==="hero"?0:a.role==="secondary"?1:2,br=b.role==="hero"?0:b.role==="secondary"?1:2;return ar-br||(Number(a.sort_order)||0)-(Number(b.sort_order)||0);});
     if(!row.name||!photos.length)return null;
     var destination=String(row.build_destination||row.name).trim();
     var acts=Array.isArray(row.activities)?row.activities:String(row.activities||"").split(/[,;|]/);
