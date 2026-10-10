@@ -161,7 +161,7 @@ if(!rsAuth.data.session){location.replace("login.html?return="+encodeURIComponen
 var KEY="big-thanksgiving-trips-v1";
 var prefs=["Local food","History & culture","Neighborhoods","Seasonal events","Music & shows","Outdoors","Scenic drives","Museums","Easy walking","Family friendly","Nightlife","Coffee & bakeries","Photography","Markets"];
 var qs=new URLSearchParams(location.search),suggestedDestination=qs.get("destination");
-if(suggestedDestination){document.getElementById("dest").value=suggestedDestination;document.getElementById("name").value=suggestedDestination+" Adventure";document.getElementById("status").textContent="RoamSonio started this trip from your discovery pick. Add dates and preferences, then build it.";}
+if(suggestedDestination){document.getElementById("dest").value=suggestedDestination;document.getElementById("name").value=suggestedDestination+" Adventure";document.getElementById("status").textContent=qs.get("inspiration")?"Preparing your editable sample trip…":"RoamSonio started this trip from your discovery pick. Add dates and preferences, then build it.";if(qs.get("inspiration")){var sampleStart=new Date();sampleStart.setDate(sampleStart.getDate()+30);var sampleEnd=new Date(sampleStart);sampleEnd.setDate(sampleEnd.getDate()+3);function dateValue(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}document.getElementById("start").value=dateValue(sampleStart);document.getElementById("end").value=dateValue(sampleEnd);}}
 var pbox=document.getElementById("prefs");
 for(var i=0;i<prefs.length;i++){var b=document.createElement("button");b.type="button";b.className="chip";b.textContent=prefs[i];b.onclick=function(){this.classList.toggle("active")};b.setAttribute("data-p",prefs[i]);pbox.appendChild(b)}
 function arr(v){return (v||"").split(/[,\n]/).map(function(x){return x.trim()}).filter(Boolean)}
@@ -370,6 +370,60 @@ for(var i=0;i<d;i++){
  if(family)note+=" "+(ages.length?"Use the kids' ages ("+ages.join(", ")+") to fine-tune attraction timing.":"Favor shorter activity blocks and easy breaks.");
  out.push({day:i+1,title:area+" · "+focus,morning:a,afternoon:b,lunch:c.food[(i*2)%c.food.length],dinner:c.food[(i*2+1)%c.food.length],evening:(c.local&&c.local.length?c.local[i%c.local.length]:"Flexible evening · explore the neighborhood"),area:area,note:note})
 }return out}
+
+async function persistBuiltTrip(t){
+  var status=document.getElementById("status"),a;
+  try{a=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){a=[]}
+  var same=a.find(function(x){
+    return String(x.name||"").trim().toLowerCase()===String(t.name||"").trim().toLowerCase() &&
+      String(x.start||"")===String(t.start||"") &&
+      String(x.end||"")===String(t.end||"") &&
+      JSON.stringify(x.destinations||[])===JSON.stringify(t.destinations||[]);
+  });
+  if(same){
+    sessionStorage.setItem("openTripId",same.id);
+    status.textContent="That trip is already saved. Opening the existing trip…";
+    setTimeout(function(){location.href="trip-workspace.html?id="+encodeURIComponent(same.id)+"&destination="+encodeURIComponent((same.destinations||[])[0]||"")+"&v=stable-"+Date.now()},250);
+    return;
+  }
+  status.textContent="Saving your RoamSonio trip…";
+  var sb=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy");
+  try{
+    var auth=await sb.auth.getSession();
+    if(!auth.data.session){status.textContent="Please sign in before creating a saved RoamSonio trip.";return}
+    var r=await sb.from("trips").insert({owner_id:auth.data.session.user.id,name:t.name,visibility:"private",surprise_mode:false}).select("id").single();
+    if(r.error){status.textContent="Your trip was not saved to your account: "+r.error.message;return}
+    t.supabaseId=r.data.id;
+    localStorage.setItem(KEY,JSON.stringify(a.concat([t])));
+    sessionStorage.setItem("openTripId",t.id);
+    status.textContent="Trip saved to your RoamSonio account. Opening your trip workspace…";
+    setTimeout(function(){location.href="trip-workspace.html?id="+encodeURIComponent(t.id)+"&destination="+encodeURIComponent((t.destinations||[])[0]||"")+"&v=stable-"+Date.now()},250);
+  }catch(e){status.textContent="Your trip was not saved. Account saving is temporarily unavailable."}
+}
+function renderSuggestedPreview(t){
+  var box=document.getElementById("preview");
+  if(!box)return;
+  box.style.display="block";
+  box.innerHTML="<div class='ey'>YOUR ROAMSONIO SAMPLE TRIP</div><h2 style='font:600 32px Georgia,serif;margin:8px 0'>A first draft for "+esc(t.destinations[0]||"your destination")+"</h2><p style='color:#4F6B8A;line-height:1.65'>This is an editable example, not a saved trip. Adjust the day plans below, then choose <b>MAKE THIS MY TRIP</b> when you want to keep it.</p><div class='field' style='margin:16px 0'><label>Trip name</label><input id='sampleTripName' value='"+esc(t.name)+"'></div><div id='sampleDays'></div><div class='actions'><button type='button' class='btn' id='refreshSample'>Refresh sample from my preferences</button><button type='button' class='btn primary' id='saveSample'>MAKE THIS MY TRIP</button></div><div class='status' id='sampleStatus'>Nothing has been saved yet.</div>";
+  var daysBox=box.querySelector("#sampleDays");
+  daysBox.innerHTML=(t.plan||[]).map(function(d,i){
+    var fields=[["title","Day "+d.day+" · theme"],["morning","Morning"],["lunch","Lunch"],["afternoon","Afternoon"],["dinner","Dinner"],["evening","Evening"],["note","Pacing notes"]];
+    return "<div class='day'><h3>Day "+esc(d.day)+"</h3>"+fields.map(function(f){return "<div class='field' style='margin:10px 0'><label>"+esc(f[1])+"</label><textarea data-day='"+i+"' data-field='"+f[0]+"'>"+esc(d[f[0]]||"")+"</textarea></div>"}).join("")+"</div>";
+  }).join("");
+  box.querySelector("#refreshSample").onclick=function(){window.buildTrip()};
+  box.querySelector("#saveSample").onclick=async function(){
+    var button=this;button.disabled=true;
+    try{
+      box.querySelectorAll("textarea[data-day][data-field]").forEach(function(el){var di=Number(el.getAttribute("data-day")),field=el.getAttribute("data-field");if(t.plan[di])t.plan[di][field]=el.value});
+      t.name=box.querySelector("#sampleTripName").value.trim()||((t.destinations||["My"])[0]+" Adventure");
+      t.updatedAt=new Date().toISOString();
+      await persistBuiltTrip(t);
+    }finally{button.disabled=false}
+  };
+  box.scrollIntoView({behavior:"smooth",block:"start"});
+  var status=document.getElementById("status");if(status)status.textContent="Sample ready. Review and edit the itinerary below; it has not been saved.";
+}
+
 window.buildTrip=async function(){
 var dest=document.getElementById("dest").value.trim(),d=days();
 if(!dest||!d){document.getElementById("status").textContent="Add a destination and start/end dates first.";return}
@@ -390,39 +444,10 @@ var group=document.getElementById("groupType").value,kids=document.getElementByI
 var plan=dayPlan(c,d,document.getElementById("pace").value,document.getElementById("mobility").value,ps,must,group,kids,evening,energy);
 var enteredName=document.getElementById("name").value.trim(),tripName=enteredName&&enteredName!=="My New Adventure"?enteredName:c.city+" Adventure";
 var t={id:"trip-"+Date.now(),name:tripName,frameworkVersion:"roamsonio-v2",planningMode:"guided",travelers:parseInt(document.getElementById("travelers").value,10)||2,start:document.getElementById("start").value,end:document.getElementById("end").value,destinations:[c.city],destinationIdentity:locationIdentity,destinationKnowledge:destinationKnowledge||null,mustSee:must,preferences:ps,days:d,status:"Built — editable",transport:document.getElementById("transport").value,pace:document.getElementById("pace").value,foodBudget:document.getElementById("foodbudget").value,stay:document.getElementById("stay").value,homeBase:document.getElementById("homeBase").value,stayLink:document.getElementById("stayLink").value,flights:document.getElementById("flights").value,flightLink:document.getElementById("flightLink").value,mobility:document.getElementById("mobility").value,groupType:group,kidsAges:kids,energy:energy,evening:evening,dietary:document.getElementById("dietary").value,avoid:avoid,occasion:document.getElementById("occasion").value,areas:c.areas,plan:plan,localFood:c.local,food:c.food,sights:c.sights,resources:c.resources,weatherQuery:c.weather,camsQuery:c.cams,eventQuery:c.events,created:new Date().toISOString(),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),revision:1};
-var a;try{a=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){a=[]}
-var same=a.find(function(x){
-  return String(x.name||"").trim().toLowerCase()===String(t.name||"").trim().toLowerCase() &&
-    String(x.start||"")===String(t.start||"") &&
-    String(x.end||"")===String(t.end||"") &&
-    JSON.stringify(x.destinations||[])===JSON.stringify(t.destinations||[]);
-});
-if(same){
-  sessionStorage.setItem("openTripId",same.id);
-  document.getElementById("status").textContent="That trip is already saved. Opening the existing trip…";
-  setTimeout(function(){location.href="trip-workspace.html?id="+encodeURIComponent(same.id)+"&destination="+encodeURIComponent((same.destinations||[])[0]||"")+"&v=stable-"+Date.now()},250);
-  return;
+if(qs.get("inspiration")){renderSuggestedPreview(t);return;}
+await persistBuiltTrip(t);
 }
-localStorage.setItem(KEY,JSON.stringify(a.concat([t])));
-sessionStorage.setItem("openTripId",t.id);
-(async function(){
-try{
-var sb=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy");
-var auth=await sb.auth.getSession();
-if(!auth.data.session){document.getElementById("status").textContent="Please sign in before creating a saved RoamSonio trip.";return}
-var r=await sb.from("trips").insert({owner_id:auth.data.session.user.id,name:t.name,visibility:"private",surprise_mode:false}).select("id").single();
-if(r.error){document.getElementById("status").textContent="Your trip was saved on this device, but the account trip could not be saved yet: "+r.error.message;return}
-t.supabaseId=r.data.id;
-var updated;
-try{updated=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){updated=[]}
-for(var i=0;i<updated.length;i++)if(updated[i].id===t.id)updated[i]=t;
-localStorage.setItem(KEY,JSON.stringify(updated));
-document.getElementById("status").textContent="Trip saved to your RoamSonio account. Opening your trip workspace…";
-setTimeout(function(){location.href="trip-workspace.html?id="+encodeURIComponent(t.id)+"&destination="+encodeURIComponent((t.destinations||[])[0]||"")+"&v=stable-"+Date.now()},250);
-}catch(e){document.getElementById("status").textContent="Your trip was saved on this device, but account saving is temporarily unavailable.";return}
-})();
-document.getElementById("status").textContent="Saving your RoamSonio trip…";
-}
+if(qs.get("inspiration")&&suggestedDestination){setTimeout(function(){window.buildTrip()},0)}
 })();
 </script><style id="roamsonio-auth-nav">
 .rsLinks{gap:14px!important;flex-wrap:wrap!important}
