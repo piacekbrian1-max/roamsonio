@@ -423,21 +423,37 @@ if(masterSignOutLink){
     }
     document.getElementById("denied").style.display="none";
     document.getElementById("dashboard").style.display="block";
-    loadMasterSummary();
+    // Finish the session refresh before protected editorial RPCs start.
+    await loadMasterSummary();
     loadTransferUsers();
     loadAdminActivity();
     loadEditorialPendingCount();
-    // Load the Editorial Library only after the authenticated Master Admin + MFA check.
-    // This prevents an early unauthenticated RPC from falling back to stale JSON and showing mismatched drafts.
-    await edLoad();
-    const requestedView = new URLSearchParams(location.search).get("view");
-    const requestedEntry = new URLSearchParams(location.search).get("entry");
-    if (requestedView === "editorial" && window.activateMasterView) {
-      window.activateMasterView("editorial");
-      if (requestedEntry) {
-        const match = editorialEntries.find(item => String(item.id) === requestedEntry);
-        if (match) { edFill(match); await photoLoad(); }
+
+    // This auth script appears before the Editorial Studio scripts in the HTML.
+    // Defer editorial initialization until the page's scripts have all loaded.
+    const openEditorialRoute = async () => {
+      try {
+        await edLoad();
+        const params = new URLSearchParams(location.search);
+        const requestedView = params.get("view");
+        const requestedEntry = params.get("entry");
+        if (requestedView === "editorial" && window.activateMasterView) {
+          window.activateMasterView("editorial");
+          if (requestedEntry) {
+            const match = editorialEntries.find(item => String(item.id) === requestedEntry);
+            if (match) { edFill(match); await photoLoad(); }
+          }
+        }
+      } catch (e) {
+        console.error("Editorial Studio initialization failed:", e);
+        const status = document.getElementById("editorialStatus");
+        if (status) status.textContent = "Editorial Studio could not initialize: " + (e.message || "Unknown error");
       }
+    };
+    if (document.readyState === "complete") {
+      await openEditorialRoute();
+    } else {
+      window.addEventListener("load", () => { openEditorialRoute(); }, { once: true });
     }
     return;
   }
