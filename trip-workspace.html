@@ -2072,7 +2072,7 @@ return fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/x-www-
 .then(function(r){if(!r.ok)throw Error("place provider unavailable");return r.json()})
 .then(function(data){if(!data||!Array.isArray(data.elements))throw Error("invalid place data");return data});
 });
-return Promise.any(requests).catch(function(){throw Error("all place providers unavailable")}))
+return Promise.any(requests).catch(function(){throw Error("all place providers unavailable")})})
 .then(function(data){var seen={},places=(data.elements||[]).map(function(el){var tags=el.tags||{},name=tags["name:en"]||tags["official_name:en"]||tags.int_name||tags.name;if(!name||seen[name.toLowerCase()])return null;seen[name.toLowerCase()]=true;var lat=el.lat||(el.center&&el.center.lat),lon=el.lon||(el.center&&el.center.lon),area=tags["addr:suburb"]||tags["addr:neighbourhood"]||tags["addr:city"]||"Local area",kind=tags.cuisine||tags.amenity||tags.tourism||tags.shop||tags.leisure||tags.craft||"Place";return [name,area,String(kind).replace(/_/g," "), "OpenStreetMap place data",lat&&lon?"https://www.openstreetmap.org/?mlat="+lat+"&mlon="+lon+"&zoom=17":""]}).filter(Boolean).slice(0,24);liveGuideCache[key]=places;if(places.length){trip.liveGuidePlaces=trip.liveGuidePlaces||{};trip.liveGuidePlaces[key]=places;save()}done(places)})
 .catch(function(){liveGuideCache[key]=[];done([])})
 .finally(function(){delete liveGuidePending[key]});
