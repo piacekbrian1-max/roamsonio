@@ -464,7 +464,7 @@ fetch(editorialUrl,{headers:{apikey:"sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5
   var now=new Date(),anchor=new Date(2020,0,5),week=Math.floor(Math.floor((now-anchor)/86400000)/7),offset=(week*3)%approved.length;
   var ordered=approved.slice(offset).concat(approved.slice(0,offset)).slice(0,6);
   box.innerHTML=ordered.map(function(c,i){
-    var href="sample-trip.html?v=20261010-settings-fix-1&destination="+encodeURIComponent(c.destination)+"&inspiration="+encodeURIComponent(c.title)+"&photo="+encodeURIComponent(c.image);
+    var href="sample-trip.html?v=20261010-photo-gallery-1&destination="+encodeURIComponent(c.destination)+"&inspiration="+encodeURIComponent(c.title)+"&photo="+encodeURIComponent(c.image);
     var image=c.image.replace(/['\\\\()\s]/g,function(ch){return encodeURIComponent(ch);});
     return "<a class='suggestCard' data-explore-index='"+i+"' href='"+href+"' aria-label='Explore "+esc(c.title)+" as a trip' style=\"--suggest-image:url('"+image+"')\"><div class='suggestContent'><div class='suggestTag'>"+esc(c.tag)+"</div><h3>"+esc(c.title)+"</h3><p>"+esc(c.place)+" · "+esc(c.desc)+"</p><span class='suggestAction'>"+esc(c.activity)+" · Explore this trip</span></div></a>";
   }).join("");
