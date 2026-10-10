@@ -1510,12 +1510,14 @@ var destination=destinationKey,city=destination;
 if(destination.indexOf("new orleans")>=0||destination==="nola")city="neworleans";
 else if(destination.indexOf("prague")>=0||destination.indexOf("praha")>=0)city="prague";
 else if(destination.indexOf("vienna")>=0||destination.indexOf("wien")>=0)city="vienna";
+else if(destination.indexOf("munich")>=0||destination.indexOf("münchen")>=0)city="munich";
 else if(destination.indexOf("pilsen")>=0||destination.indexOf("plzen")>=0)city="pilsen";
 else if(destination.indexOf("trnava")>=0)city="trnava";
 else if(destination.indexOf("hluboka")>=0)city="hluboka";
 else if(destination.indexOf("atlanta")>=0)city="atlanta";
 
 var destinationSources={
+munich:"https://www.munich.travel/en/topics/eat-drink",
 prague:"https://prague.eu/en/objevujte-kategorie/food-and-drink/",
 vienna:"https://www.wien.info/en/dine-drink",
 pilsen:"https://www.visitpilsen.eu/en/gastro/",
@@ -1526,6 +1528,32 @@ neworleans:"https://www.neworleans.com/"
 };
 
 var localGuide={
+munich:{
+Breakfast:[
+["Café Frischhut","Viktualienmarkt","Bakery / Schmalznudel café","Café / Bakery"],
+["Café Luitpold","Brienner Straße","Historic coffeehouse / pastry","Café / Bakery"],
+["Dallmayr Café-Bistro","Dienerstraße / Old Town","Coffeehouse / breakfast","Café / Bakery"],
+["Man Versus Machine","Glockenbachviertel","Specialty coffee","Café / Bakery"],
+["Rischart Café am Marienplatz","Marienplatz","Bakery / café","Café / Bakery"],
+["Cotidiano Gärtnerplatz","Gärtnerplatz","Brunch / café","International"]
+],
+Lunch:[
+["Viktualienmarkt","Old Town","Market stalls / Bavarian specialties","Food hall / International"],
+["Augustiner-Keller","Near Hauptbahnhof","Traditional Bavarian beer garden / meals","Restaurant"],
+["Wirtshaus in der Au","Au-Haidhausen","Bavarian cuisine / dumplings","Restaurant"],
+["Schneider Bräuhaus","Tal / Old Town","Traditional Bavarian food","Restaurant"],
+["Der Pschorr","Viktualienmarkt","Bavarian cuisine","Restaurant"],
+["Görreshof","Schwabing","Traditional Bavarian inn","Restaurant"]
+],
+Dinner:[
+["Tantris","Schwabing","Fine dining / modern cuisine","Restaurant"],
+["Wirtshaus in der Au","Au-Haidhausen","Bavarian classics","Restaurant"],
+["Augustiner am Platzl","Near Hofbräuhaus","Traditional Bavarian dining","Restaurant"],
+["Schneider Bräuhaus","Tal / Old Town","Bavarian food and wheat beer","Restaurant"],
+["Spatenhaus an der Oper","Near National Theatre","Bavarian cuisine","Restaurant"],
+["Servus Heidi","Schwanthalerhöhe","Modern Bavarian / Alpine","Restaurant"]
+]
+},
 prague:{
 Breakfast:[
 ["Café Savoy","Malá Strana","Czech café / breakfast","Czech"],
