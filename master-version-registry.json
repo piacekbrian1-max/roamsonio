@@ -646,6 +646,14 @@
       "status": "SUCCESS",
       "rollbackEligible": true,
       "notes": "User tested the revised Home feature image on iPad and confirmed the reduced footprint looks better. The image now has more breathing room and no longer dominates the page; the composition is expected to fill out naturally as more published editorial destinations and approved photography are added. Presentation-only change; no trip data, persistence, Editorial Library loading, weekly rotation, routing or trip pages changed."
+    },
+    {
+      "sha": "3dff172e52e777749757a3f49dadac8f61922521",
+      "date": "2026-10-10",
+      "title": "Simplify Editorial Library publishing instructions",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Documentation-only update to KB0001 and KB0002. Adds numbered, click-by-click steps for editing, adding and approving photos, publishing an editorial destination, and checking it on Home. No application code, trip data, Editorial Library records, routing or persistence changed. Awaiting user confirmation that the instructions are easy to follow."
     }
   ]
 }
