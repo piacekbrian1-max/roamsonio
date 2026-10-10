@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
       .select("id,name,type,build_destination,metadata,created_at").limit(2000);
     if (readError) throw readError;
 
-    const { data: response, error: openAiError } = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { "Authorization": "Bearer " + openAiKey, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -71,8 +71,9 @@ Deno.serve(async (req) => {
         ]
       })
     }).then(async r => ({ ok: r.ok, status: r.status, body: await r.json() }));
-    if (!response.ok) throw new Error("OpenAI candidate generation failed (" + response.status + "): " + JSON.stringify(response.body).slice(0, 400));
-    const raw = response.body.choices?.[0]?.message?.content;
+    const responseBody = await response.json();
+    if (!response.ok) throw new Error("OpenAI candidate generation failed (" + response.status + "): " + JSON.stringify(responseBody).slice(0, 400));
+    const raw = responseBody.choices?.[0]?.message?.content;
     const candidates = JSON.parse(raw || "{}").candidates;
     if (!Array.isArray(candidates)) throw new Error("AI response did not include a candidates array");
 
