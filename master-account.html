@@ -222,6 +222,7 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
             <button type="button" class="transferBtn" id="newEditorialBtn">New Entry</button>
             <button type="button" class="transferBtn" id="saveEditorialBtn">Save Entry</button>
             <button type="button" class="secondaryBtn" id="publishEditorialBtn">Publish</button>
+            <button type="button" class="transferBtn" id="approveEditorialPackageBtn">Approve Draft + 3 Photos + Publish</button>
           </div>
           <div class="editorialStatus" id="editorialStatus">The editorial database is protected by Master Admin + MFA. Photography management will use the same protected library.</div>
           <div class="photoManager" id="photoManager">
@@ -690,6 +691,44 @@ if(masterSignOutLink){
   document.getElementById("newEditorialBtn").addEventListener("click",()=>{selectedEditorialId="";edFill({type:"City",status:"draft",buildable:true});document.getElementById("editorialEditorTitle").textContent="New editorial entry";});
   document.getElementById("saveEditorialBtn").addEventListener("click",()=>edSave());
   document.getElementById("publishEditorialBtn").addEventListener("click",()=>edSave("published"));
+
+  document.getElementById("approveEditorialPackageBtn").addEventListener("click",async()=>{
+    const entry=edReadForm();
+    const btn=document.getElementById("approveEditorialPackageBtn");
+    if(!selectedEditorialId||String(entry.id)!==String(selectedEditorialId)){edSetStatus("Select and save a draft before approving its package.");return;}
+    if(!entry.id||!entry.name){edSetStatus("The draft needs an ID and name.");return;}
+    const current=editorialEntries.find(x=>String(x.id)===String(selectedEditorialId));
+    if(!current){edSetStatus("Save and reload this draft before approving it.");return;}
+    const roles=["hero","secondary","mobile"];
+    const set=roles.map(role=>editorialPhotos.find(p=>String(p.role||"").toLowerCase()===role));
+    if(set.some(p=>!p||!p.id||!p.url||!String(p.url).toLowerCase().startsWith("https://")||!p.source_url||!String(p.source_url).toLowerCase().startsWith("https://")||!p.credit||!p.alt_text)){
+      edSetStatus("Approval stopped: this draft needs all three HTTPS images, each with source URL, credit and alt text. No changes were published.");return;
+    }
+    if(!confirm("Approve the draft and its reviewed Hero, Secondary and Mobile images, then publish "+entry.name+" to Explore? This does not modify any saved trips."))return;
+    btn.disabled=true;btn.textContent="Approving package…";
+    try{
+      for(const p of set){
+        const {error}=await client.rpc("roamsonio_admin_upsert_editorial_photo",{
+          p_photo_id:p.id,p_destination_id:selectedEditorialId,p_url:p.url,p_alt_text:p.alt_text,
+          p_credit:p.credit,p_source_url:p.source_url,p_role:p.role,p_sort_order:p.sort_order||0,p_approved:true
+        });
+        if(error)throw error;
+      }
+      const {error}=await client.rpc("roamsonio_admin_upsert_editorial_destination",{
+        p_id:entry.id,p_name:entry.name,p_type:entry.type,p_category:entry.category,p_seasons:entry.seasons,
+        p_activities:entry.activities,p_buildable:entry.buildable,p_build_destination:entry.build_destination,
+        p_tagline:entry.tagline,p_status:"published",p_metadata:{}
+      });
+      if(error)throw error;
+      await Promise.all([edLoad(),photoLoad()]);
+      edSetStatus("Approved and published. The draft and all three photo roles are now approved; existing trips were not changed.");
+    }catch(e){
+      edSetStatus("Package approval did not finish: "+(e.message||"Unknown error")+". Refresh the entry and verify its photo approvals and publication status before retrying.");
+      await Promise.all([edLoad(),photoLoad()]);
+    }finally{
+      btn.disabled=false;btn.textContent="Approve Draft + 3 Photos + Publish";
+    }
+  });
   document.querySelectorAll(".editorialStatusTab").forEach(btn=>btn.addEventListener("click",()=>{
     document.querySelectorAll(".editorialStatusTab").forEach(tab=>{const active=tab===btn;tab.classList.toggle("active",active);tab.setAttribute("aria-pressed",String(active));});
     edRender();
