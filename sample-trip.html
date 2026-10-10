@@ -141,7 +141,7 @@ function normalizeDaySlots(d){
   for(var j=0;j<rules.length;j++)if(j!==i&&rules[j].test(text))wrong.push(j);
   if(wrong.length===1&&!rules[i].test(text)){
    var target=wrong[0],candidate=out[target];
-   if(!rules[target].test(String(candidate||""))){out[target]=text;out[i]=candidate}
+   if(rules[target].test(String(candidate||""))){out[target]=text;out[i]=candidate}
   }
  }
  return out;
