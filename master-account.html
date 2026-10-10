@@ -125,7 +125,7 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
       <span><strong><span class="rsRoam">Roam</span><span class="rsSonio">Sonio</span></strong><small>DREAM IT. PLAN IT. LIVE IT.</small></span>
     </a>
     <nav class="rsLinks" aria-label="Primary navigation">
-      <a href="index.html">My RoamSonio</a><a href="my-trips.html">My Trips</a><a href="build-trip.html">Build Your Trip</a><a href="travel-desk.html">Travel Desk</a><a href="about.html">About Us</a><a href="account.html" id="rsAccountLink">My Account</a><a href="login.html" id="rsAuthLink" class="rsAuthBtn">Sign In</a>
+      <a href="index.html">My RoamSonio</a><a href="my-trips.html">My Trips</a><a href="build-trip.html">Build Your Trip</a><a href="travel-desk.html">Travel Desk</a><a href="about.html">About Us</a><a href="account.html" id="rsAccountLink">My Account</a><a href="#" id="rsAuthLink" class="rsAuthBtn">Sign Out</a>
     </nav>
   </div>
 </header>
@@ -304,6 +304,26 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy",{auth:{storageKey:"roamsonio-master-auth",persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+
+// Keep the authenticated session until the user signs out or it expires.
+// Sign Out clears this browser's Master Admin session and returns to the login page.
+const masterSignOutLink=document.getElementById("rsAuthLink");
+if(masterSignOutLink){
+  masterSignOutLink.addEventListener("click",async(event)=>{
+    event.preventDefault();
+    masterSignOutLink.textContent="Signing Out…";
+    masterSignOutLink.setAttribute("aria-disabled","true");
+    const {error}=await client.auth.signOut({scope:"local"});
+    if(error){
+      masterSignOutLink.textContent="Sign Out";
+      masterSignOutLink.removeAttribute("aria-disabled");
+      alert("Sign out could not be completed. Please try again.");
+      console.error("Master Admin sign-out failed:",error);
+      return;
+    }
+    location.replace("master-admin-login.html");
+  });
+}
 
 (async()=>{
   const {data:{session},error:sessionError}=await client.auth.getSession();
