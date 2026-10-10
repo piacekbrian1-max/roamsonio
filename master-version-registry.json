@@ -9,6 +9,14 @@
   },
   "versions": [
     {
+      "sha": "5fc619aac5f220662cdd3199424efd6fe27a905e",
+      "date": "2026-10-10",
+      "title": "Isolate Home Explore rendering from dashboard errors",
+      "status": "TESTING",
+      "rollbackEligible": false,
+      "notes": "Home inspiration cards initialize before trip dashboard rendering, and dashboard/home-experience rendering errors are isolated so they cannot prevent Explore initialization. Presentation/script execution isolation only; no trip or database data changed. Await user iPad validation."
+    },
+    {
       "sha": "c0b820baf137f9a9976c90cbc009e68b9933df5",
       "date": "2026-10-04",
       "title": "Track European trip edit revision",
