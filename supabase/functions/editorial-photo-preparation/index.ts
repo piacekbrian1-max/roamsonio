@@ -31,6 +31,12 @@ function destinationAliases(destination: string, name: string) {
   if (label.includes("dolomites")) {
     return ["Tre Cime di Lavaredo", "Seceda Dolomites", "Alpe di Siusi", "Val di Funes"];
   }
+  if (label.includes("french alps")) {
+    return ["Chamonix Mont Blanc", "Annecy French Alps", "Mer de Glace", "Aiguille du Midi"];
+  }
+  if (label.includes("christmas market") || label.includes("christmas markets")) {
+    return ["Strasbourg Christmas Market", "Vienna Christmas Market", "Prague Christmas Market", "Nuremberg Christmas Market"];
+  }
   return [];
 }
 function relevance(item: any, destination: string, name: string) {
@@ -63,7 +69,8 @@ async function commonsSearch(query: string) {
   if (data?.error) throw new Error("Wikimedia search error: " + String(data.error.info || "unknown error"));
   const hits = (data?.query?.search || []) as any[];
   if (!hits.length) return [];
-  await wait(1200);
+  // Leave a generous gap between Wikimedia API requests to reduce rate limiting.
+  await wait(3500);
   const detailsUrl = new URL("https://commons.wikimedia.org/w/api.php");
   detailsUrl.search = new URLSearchParams({ action:"query", pageids:hits.map(h=>String(h.pageid)).join("|"), prop:"imageinfo", iiprop:"url|extmetadata", iiurlwidth:"1200", format:"json", origin:"*" }).toString();
   const detailsResponse = await fetch(detailsUrl, { headers: { "User-Agent": "RoamSonioPhotoPreparation/1.0 (destination-specific editorial review)" } });
@@ -71,7 +78,7 @@ async function commonsSearch(query: string) {
   if (!detailsResponse.ok) throw new Error("Wikimedia image details failed (" + detailsResponse.status + ")");
   const detailData = await detailsResponse.json();
   if (detailData?.error) throw new Error("Wikimedia image details error: " + String(detailData.error.info || "unknown error"));
-  return Object.values(detailData?.query?.pages || {}).map((p: any) => {
+  const candidates = Object.values(detailData?.query?.pages || {}).map((p: any) => {
     const info = p.imageinfo?.[0] || {};
     const meta = info.extmetadata || {};
     const plain = (x: any) => String(x?.value || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
@@ -90,6 +97,8 @@ async function commonsSearch(query: string) {
       description
     };
   }).filter((p: any) => p.url.startsWith("https://") && p.source_url.startsWith("https://") && p.credit && p.license_url && p.title && p.description);
+  await wait(3500);
+  return candidates;
 }
 
 Deno.serve(async (req) => {
@@ -111,7 +120,8 @@ Deno.serve(async (req) => {
     // Read and process a small batch per run to protect Wikimedia from rate limits.
     const candidates: any[] = [];
     for (const entry of drafts) {
-      if (candidates.length >= 2) break;
+      // One destination per run: keep each manual run small and avoid rate-limit bursts.
+      if (candidates.length >= 1) break;
       const { data: photoRows, error: photoError } = await supabase.rpc("roamsonio_worker_editorial_photos", { p_destination_id: entry.id });
       if (photoError) {
         failures.push(String(entry.name) + ": could not inspect existing photo roles");
@@ -137,12 +147,12 @@ Deno.serve(async (req) => {
         // Existing conservative relevance checks below still decide which candidates may attach.
         const searchTerms = destination.replace(/&/g, " ").trim();
         const aliases = destinationAliases(destination, name);
+        // At most two queries per destination per run. Prefer a known landmark for broad experiences.
         const queries = [
-          searchTerms + " landscape",
+          ...(aliases.length ? [aliases[0] + " landscape"] : []),
           name + " landmark",
-          searchTerms + " national park lake",
-          ...aliases.map((alias: string) => alias + " landscape")
-        ];
+          searchTerms + " landscape"
+        ].filter((query: string, index: number, all: string[]) => all.indexOf(query) === index).slice(0, 2);
         const results: any[] = [];
         for (const query of [...new Set(queries)]) {
           results.push(...await commonsSearch(query));
@@ -205,7 +215,7 @@ Deno.serve(async (req) => {
         needsAttention++;
       }
     }
-    const result = { startedAt, finishedAt:new Date().toISOString(), batchLimit:2, draftsReviewed:candidates.length, processed, photosAttached, readyForApproval, needsAttention, failures, published:0, tripRecordsChanged:0, status:failures.length ? "completed_with_warnings" : "completed" };
+    const result = { startedAt, finishedAt:new Date().toISOString(), batchLimit:1, draftsReviewed:candidates.length, processed, photosAttached, readyForApproval, needsAttention, failures, published:0, tripRecordsChanged:0, status:failures.length ? "completed_with_warnings" : "completed" };
     await supabase.from("roamsonio_admin_audit_log").insert({ action:"editorial_photo_preparation", details:result });
     return json(result);
   } catch (e) {
