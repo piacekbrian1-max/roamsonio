@@ -22,10 +22,10 @@ jobs:
             echo "::error::Add the EDITORIAL_JOB_SECRET repository Actions secret."
             exit 1
           fi
-          # Each function invocation now handles one draft with throttled/retried Commons requests.
+          # Each function invocation now handles one destination with throttled/retried Commons requests.
           # Repeat sequentially with a longer cooldown to avoid rate-limit bursts.
-          for batch in $(seq 1 10); do
-            echo "::group::Editorial photo batch $batch of 10"
+          for batch in $(seq 1 15); do
+            echo "::group::Editorial photo batch $batch of 15"
             response=$(curl --fail-with-body --silent --show-error \
               --request POST \
               --header "Authorization: Bearer $EDITORIAL_JOB_SECRET" \
