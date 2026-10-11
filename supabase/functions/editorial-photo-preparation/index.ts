@@ -95,22 +95,32 @@ function relevance(item: any, destination: string, name: string) {
   const score = queryHits.length * 3 + descQueryHits.length * 2 + placeHits.length * 3 + (iconicHit ? 12 : 0) + (visual ? 8 : 0);
   return { ok: destinationSpecific && queryMatches && visual, score };
 }
+async function commonsRequest(url: URL) {
+  const headers = { "User-Agent": "RoamSonioPhotoPreparation/1.0 (destination-specific editorial review)" };
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const response = await fetch(url, { headers });
+    if (response.status !== 429) return response;
+    const retryHeader = Number(response.headers.get("Retry-After") || 0);
+    const delay = Math.max(retryHeader * 1000, [15000, 30000, 60000, 60000][attempt]);
+    if (attempt === 3) throw new Error("Wikimedia rate limit (429) persisted after retries; this destination remains queued for a later run.");
+    await wait(delay);
+  }
+  throw new Error("Wikimedia request failed after retries.");
+}
 async function commonsSearch(query: string) {
   const url = new URL("https://commons.wikimedia.org/w/api.php");
-  url.search = new URLSearchParams({ action:"query", list:"search", srsearch:query, srnamespace:"6", srlimit:"12", format:"json", origin:"*" }).toString();
-  const response = await fetch(url, { headers: { "User-Agent": "RoamSonioPhotoPreparation/1.0 (destination-specific editorial review)" } });
-  if (response.status === 429) throw new Error("Wikimedia rate limit (429); this item will be retried on a later run.");
+  url.search = new URLSearchParams({ action:"query", list:"search", srsearch:query, srnamespace:"6", srlimit:"8", format:"json", origin:"*" }).toString();
+  const response = await commonsRequest(url);
   if (!response.ok) throw new Error("Wikimedia search failed (" + response.status + ")");
   const data = await response.json();
   if (data?.error) throw new Error("Wikimedia search error: " + String(data.error.info || "unknown error"));
   const hits = (data?.query?.search || []) as any[];
   if (!hits.length) return [];
-  // Leave a generous gap between Wikimedia API requests to reduce rate limiting.
-  await wait(3500);
+  // Commons is sensitive to bursts. Space requests even when a previous request succeeded.
+  await wait(10000);
   const detailsUrl = new URL("https://commons.wikimedia.org/w/api.php");
   detailsUrl.search = new URLSearchParams({ action:"query", pageids:hits.map(h=>String(h.pageid)).join("|"), prop:"imageinfo", iiprop:"url|extmetadata", iiurlwidth:"1200", format:"json", origin:"*" }).toString();
-  const detailsResponse = await fetch(detailsUrl, { headers: { "User-Agent": "RoamSonioPhotoPreparation/1.0 (destination-specific editorial review)" } });
-  if (detailsResponse.status === 429) throw new Error("Wikimedia rate limit (429) while reading image details; retry later.");
+  const detailsResponse = await commonsRequest(detailsUrl);
   if (!detailsResponse.ok) throw new Error("Wikimedia image details failed (" + detailsResponse.status + ")");
   const detailData = await detailsResponse.json();
   if (detailData?.error) throw new Error("Wikimedia image details error: " + String(detailData.error.info || "unknown error"));
@@ -164,7 +174,7 @@ Deno.serve(async (req) => {
     // so a difficult destination cannot block the rest of the queue indefinitely.
     const candidates: any[] = [];
     for (const entry of drafts) {
-      if (candidates.length >= 3) break;
+      if (candidates.length >= 1) break;
       const { data: photoRows, error: photoError } = await supabase.rpc("roamsonio_worker_editorial_photos", { p_destination_id: entry.id });
       if (photoError) {
         failures.push(String(entry.name) + ": could not inspect existing photo roles");
@@ -199,7 +209,7 @@ Deno.serve(async (req) => {
           name + " " + (activityText[0] || "landscape"),
           searchTerms + " scenic panorama",
           searchTerms + " famous landmark landscape"
-        ].filter((query: string, index: number, all: string[]) => query && all.indexOf(query) === index).slice(0, 4);
+        ].filter((query: string, index: number, all: string[]) => query && all.indexOf(query) === index).slice(0, 2);
         const results: any[] = [];
         for (const query of [...new Set(queries)]) {
           const found = await commonsSearch(query);
