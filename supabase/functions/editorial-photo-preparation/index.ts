@@ -193,6 +193,14 @@ Deno.serve(async (req) => {
           if (unique.length < 3) {
             failures.push(name + ": found only " + unique.length + " suitable replacement candidates; kept existing photos for manual review");
             needsAttention++;
+            await supabase.rpc("roamsonio_worker_update_draft_metadata", {
+              p_id: entry.id,
+              p_metadata: Object.assign({}, entry.metadata || {}, {
+                photo_preparation_status: "needs_attention",
+                photo_preparation_checked_at: new Date().toISOString(),
+                photo_preparation_error: "Insufficient distinct candidates to safely replace existing photos"
+              })
+            });
             continue;
           }
           const { error: replaceError } = await supabase.rpc("roamsonio_worker_delete_unapproved_commons_photos", { p_destination_id: entry.id });
