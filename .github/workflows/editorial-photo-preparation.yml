@@ -1,7 +1,10 @@
 name: RoamSonio Editorial Photo Preparation
 
 on:
-  # Manual only: one run processes a larger queue; keep scheduled runs paused until visual quality is verified.
+  # Process queued photo retries automatically in small, sequential batches.
+  # Manual trigger remains available for an immediate run.
+  schedule:
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 permissions:
