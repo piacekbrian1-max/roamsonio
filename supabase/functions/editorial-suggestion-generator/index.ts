@@ -137,34 +137,9 @@ Deno.serve(async (req) => {
         }
         seen.add(key); seen.add(destKey); created++;
 
-        // Search multiple destination-specific angles to build a richer candidate pool.
-        // Every photo remains unapproved; Master Admin must review fit, source, and license.
-        const activityList = Array.isArray(c.activities) ? c.activities.map((x: any) => String(x)).filter(Boolean) : [];
-        const activity = activityList[0] || type;
-        const photoQueries = [
-          destination + " " + name + " landscape",
-          destination + " " + name + " village architecture",
-          destination + " " + activity + " travel"
-        ];
-        const photoBatches = await Promise.all(photoQueries.map(async (query) => {
-          try { return await commonsCandidates(query); }
-          catch (e) { failures.push(name + " photo search: " + (e instanceof Error ? e.message : String(e))); return []; }
-        }));
-        const pool = photoBatches.flat();
-        const unique = pool.filter((p: any, i: number, a: any[]) =>
-          p.url && a.findIndex((q: any) => q.url === p.url) === i
-        ).slice(0, 3);
-        const roles = ["hero", "secondary", "mobile"];
-        for (let i = 0; i < unique.length; i++) {
-          const p = unique[i];
-          const { error: photoError } = await supabase.from("roamsonio_editorial_photos").insert({
-            destination_id: id, url: p.url, alt_text: p.alt_text, credit: p.credit,
-            source_url: p.source_url, role: roles[i], sort_order: i, approved: false
-          });
-          if (photoError) failures.push(name + " photo: " + photoError.message);
-          else photoCandidates++;
-        }
-        if (unique.length < 3) failures.push(name + ": only " + unique.length + " sourced photo candidates found; draft remains incomplete");
+        // Photo sourcing is intentionally handled separately in Suggestion Studio.
+        // Do not call Wikimedia from the scheduled generator: bulk searches trigger rate limits.
+        // Suggestions remain drafts; photos must be sourced and approved through the admin workflow.
       } catch (e) {
         failures.push(String(c?.name || "candidate") + ": " + (e instanceof Error ? e.message : String(e)));
       }
