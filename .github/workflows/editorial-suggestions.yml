@@ -38,3 +38,32 @@ jobs:
             --header "Content-Type: application/json" \
             --data '{}' \
             "https://vqtqchxoecrahtrnoocy.supabase.co/functions/v1/editorial-suggestion-generator"
+      - name: Prepare photos for the new and waiting drafts
+        if: steps.clock.outputs.run_now == 'true' || github.event_name == 'workflow_dispatch'
+        env:
+          EDITORIAL_JOB_SECRET: ${{ secrets.EDITORIAL_JOB_SECRET }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Reuse the same protected worker and conservative quality checks.
+          # Each call handles up to three drafts; process a modest sequential batch
+          # after generation so new suggestions do not remain photo-empty.
+          for batch in $(seq 1 10); do
+            echo "::group::Photo preparation batch $batch of 10"
+            response=$(curl --fail-with-body --silent --show-error \
+              --request POST \
+              --header "Authorization: Bearer $EDITORIAL_JOB_SECRET" \
+              --header "Content-Type: application/json" \
+              --data '{}' \
+              "https://vqtqchxoecrahtrnoocy.supabase.co/functions/v1/editorial-photo-preparation")
+            echo "$response"
+            reviewed=$(printf '%s' "$response" | jq -r '.draftsReviewed // 0')
+            status=$(printf '%s' "$response" | jq -r '.status // "unknown"')
+            echo "Photo batch $batch status: $status; drafts reviewed: $reviewed"
+            echo "::endgroup::"
+            if [ "$reviewed" -eq 0 ]; then
+              echo "No more eligible drafts in the queue."
+              break
+            fi
+            sleep 8
+          done
