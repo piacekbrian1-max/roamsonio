@@ -23,6 +23,9 @@ function destinationAliases(destination: string, name: string) {
   if (label.includes("hawaii")) {
     return ["Na Pali Coast Kauai Hawaii", "Hawaii Volcanoes National Park lava landscape", "Waimea Canyon Kauai Hawaii", "Hana Maui coastline waterfall", "Hawaii tropical beach turquoise water"];
   }
+  if (label.includes("patagonia")) {
+    return ["Mount Fitz Roy El Chalten Patagonia panorama", "Torres del Paine National Park Patagonia mountains", "Perito Moreno Glacier Patagonia landscape", "Cerro Torre Patagonia mountain lake"];
+  }
   if (label.includes("colorado") && (label.includes("ski") || label.includes("country"))) {
     return ["Vail Colorado", "Aspen Colorado", "Telluride Colorado", "Breckenridge Colorado", "Rocky Mountains Colorado"];
   }
