@@ -266,7 +266,7 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
           <div class="photoManager" id="photoManager">
             <div class="photoManagerHead">
               <div><div class="ey">Editorial photography</div><h4>Photo approval</h4><p>Track approval by role. Approve a reviewed Hero + Secondary + Mobile set in one action.</p></div>
-              <div class="editorialActions" style="margin:0"><button type="button" class="secondaryBtn" id="approvePhotoSetBtn" disabled>Approve Complete Set</button><button type="button" class="dangerBtn" id="clearUnapprovedPhotosBtn">Remove Unapproved Photos</button><button type="button" class="transferBtn" id="newPhotoBtn">Add Photo</button></div>
+              <div class="editorialActions" style="margin:0"><button type="button" class="secondaryBtn" id="approvePhotoSetBtn" disabled>Approve Complete Set</button><button type="button" class="dangerBtn" id="clearUnapprovedPhotosBtn">Clear Draft Photo Set</button><button type="button" class="transferBtn" id="newPhotoBtn">Add Photo</button></div>
             </div>
             <div class="photoGrid">
               <div class="photoList" id="photoList"><div class="row"><span>Select a destination to manage its photography.</span></div></div>
@@ -926,7 +926,7 @@ function suggestionSlug(value){
     // Use a few destination-specific searches, not a large batch of broad queries.
     // Broad Commons queries return unrelated scans, geology close-ups and generic travel files.
     const photoSearchMap=[
-      [/hawaii|kauai|maui/i,["Na Pali Coast Kauai Hawaii landscape","Hawaii Volcanoes National Park scenic landscape","Waimea Canyon Kauai panorama"]],
+      [/hawaii|kauai|maui/i,["Na Pali Coast Kauai panorama","Waimea Canyon Kauai panorama","Haleakala National Park Maui summit landscape"]],
       [/colorado.*aspens|colorado rockies/i,["Maroon Bells Colorado landscape","Colorado aspen grove mountain landscape","Rocky Mountain National Park Colorado panorama"]],
       [/canadian rockies/i,["Moraine Lake Canadian Rockies landscape","Lake Louise Banff mountain panorama","Icefields Parkway Canadian Rockies scenery"]],
       [/banff|lake louise/i,["Moraine Lake Banff landscape","Lake Louise Canadian Rockies panorama","Banff National Park mountain lake"]],
@@ -945,7 +945,9 @@ function suggestionSlug(value){
       [/santorini/i,["Santorini Oia blue domes caldera","Santorini cliffside village panorama","Santorini coastline landscape"]]
     ];
     const mapped=photoSearchMap.find(([re])=>re.test(destination+" "+entry.name));
-    const queries=[...new Set([...(mapped?mapped[1]:[]),destination+" landscape",destination+" scenic view"].map(q=>q.trim()).filter(Boolean))].slice(0,3);
+    // If a destination has a landmark map, do not dilute it with broad region-only searches.
+    // This reduces plausible-looking but unrelated images appearing in the candidate gallery.
+    const queries=[...new Set((mapped?mapped[1]:[destination+" landscape",destination+" scenic view"]).map(q=>q.trim()).filter(Boolean))].slice(0,3);
     grid.textContent="Finding a wider range of photo choices for "+destination+"…";
     photoSetStatus("Searching multiple image queries. If results are limited, manual Photo URL entry remains available.");
     try{
@@ -995,6 +997,7 @@ function suggestionSlug(value){
               source_url:info.descriptionurl||("https://commons.wikimedia.org/wiki/"+encodeURIComponent(title.replace(/ /g,"_"))),
               credit:(artist||"Creator credit: see source page")+" · License: "+license,
               alt_text:description||title.replace(/^File:/i,"")+" — "+destination,
+              _description:description,
               license,license_url:plain(meta.LicenseUrl),_query:queries[qi]
             });
           }
@@ -1029,16 +1032,17 @@ function suggestionSlug(value){
       photoCandidates=found.filter(x=>{
         const raw=x.title+" "+x.alt_text;
         if(rejectVisual.test(raw)||!preferVisual.test(raw))return false;
-        const text=normPhotoText(raw);
-        // Broad destinations must match a recognizable landmark; the word "Hawaii" alone is not proof.
-        if(special)return special[1].some(landmark=>text.includes(normPhotoText(landmark)));
-        // For other destinations require a meaningful place-name hit in the image's own title/description.
-        return placeTerms.length>0&&placeTerms.some(term=>text.includes(term));
+        const titleText=normPhotoText(x.title);
+        const descriptionText=normPhotoText(x._description||x.alt_text);
+        const evidence=titleText+" "+descriptionText;
+        // Broad destinations must match a named landmark in the file title/real description.
+        // Do not use generated alt text or the search query itself as proof of relevance.
+        if(special)return special[1].some(landmark=>evidence.includes(normPhotoText(landmark)));
+        return placeTerms.length>0&&placeTerms.some(term=>evidence.includes(term));
       }).map((x,i)=>{
-        const text=normPhotoText(x.title+" "+x.alt_text);
-        const match=placeTerms.some(term=>text.includes(term));
-        const queryMatch=normPhotoText(x._query).includes(normPhotoText(destination));
-        return {...x,_score:(preferVisual.test(x.title+" "+x.alt_text)?5:0)+(match?4:0)+(queryMatch?1:0)-i*.001};
+        const evidence=normPhotoText(x.title+" "+(x._description||""));
+        const match=placeTerms.some(term=>evidence.includes(term));
+        return {...x,_score:(preferVisual.test(x.title+" "+(x._description||""))?5:0)+(match?4:0)-i*.001};
       }).sort((a,b)=>b._score-a._score).slice(0,30);
       if(!photoCandidates.length){
         grid.innerHTML="<div class='editorialStatus'>No licensed images passed the checks for these searches. Enter a Photo URL below or try Refresh later. Existing photos were not changed.</div>";
@@ -1166,25 +1170,32 @@ function suggestionSlug(value){
   }
   document.getElementById("clearUnapprovedPhotosBtn").addEventListener("click",async()=>{
     if(!selectedEditorialId){photoSetStatus("Select a destination first.");return;}
-    const removable=editorialPhotos.filter(p=>String(p.destination_id)===String(selectedEditorialId)&&p.approved!==true);
-    if(!removable.length){photoSetStatus("There are no unapproved saved photos to remove for this destination. Approved photos were left untouched.");return;}
-    const label=(editorialEntries.find(x=>String(x.id)===String(selectedEditorialId))||{}).name||"this destination";
-    if(!confirm("Remove "+removable.length+" unapproved photo(s) from "+label+"? Approved photos, other destinations, and all saved trips will be left untouched."))return;
+    const entry=editorialEntries.find(x=>String(x.id)===String(selectedEditorialId));
+    const label=(entry||{}).name||"this destination";
+    const isDraft=String((entry||{}).status||"").toLowerCase()==="draft";
+    // photoLoad() already scopes this list to selectedEditorialId. For drafts, clear the whole set
+    // (including mistakenly approved photos) so it can be rebuilt. Published destinations only
+    // allow removal of unapproved candidates.
+    const removable=editorialPhotos.filter(p=>isDraft||p.approved!==true);
+    if(!removable.length){photoSetStatus(isDraft?"No saved photos are attached to this draft.":"There are no unapproved photos to remove from this published destination. Approved photos were left untouched.");return;}
+    const scope=isDraft?"all "+removable.length+" photo(s), including any mistakenly approved, from this unpublished draft":"the "+removable.length+" unapproved photo(s)";
+    if(!confirm("Remove "+scope+" from "+label+"? Other destinations and all saved trips/snapshots will be left untouched."))return;
     const btn=document.getElementById("clearUnapprovedPhotosBtn");
     btn.disabled=true;btn.textContent="Removing…";
-    const failures=[];
+    let deleted=0,firstError="";
     try{
       for(const p of removable){
         const {error}=await client.rpc("roamsonio_admin_delete_editorial_photo",{p_photo_id:p.id});
-        if(error){failures.push("Photo "+p.id+": "+(error.message||"delete failed"));break;}
+        if(error){firstError=error.message||JSON.stringify(error)||"delete failed";break;}
+        deleted++;
       }
       selectedPhotoId=null;
       document.getElementById("photoEditor").hidden=true;
       await photoLoad();
-      if(failures.length)photoSetStatus("Some photos could not be removed: "+failures[0]+". Confirm Master Admin MFA is active, then retry. Successfully removed photos remain removed.");
-      else photoSetStatus("Removed "+removable.length+" unapproved photo(s) from "+label+". You can now add or choose replacements. Approved photos and saved trips were not changed.");
-    }catch(e){photoSetStatus("Could not remove unapproved photos: "+(e.message||"Unknown error")+". Approved photos and saved trips were not changed.");}
-    finally{btn.disabled=false;btn.textContent="Remove Unapproved Photos";}
+      if(firstError)photoSetStatus("Removed "+deleted+" of "+removable.length+" photo(s). The next delete failed: "+firstError+". If it says Master Admin MFA verification required, re-authenticate through Master Admin Security and retry. The list has been refreshed.");
+      else photoSetStatus("Successfully removed all "+deleted+" photo(s) from "+label+". You can now rebuild the set. Other destinations and saved trips/snapshots were not changed.");
+    }catch(e){photoSetStatus("Removed "+deleted+" of "+removable.length+" photo(s), then stopped: "+(e.message||"Unknown error")+". The list has been refreshed.");await photoLoad();}
+    finally{btn.disabled=false;btn.textContent="Clear Draft Photo Set";}
   });
   document.getElementById("newPhotoBtn").addEventListener("click",()=>{
     if(!selectedEditorialId){photoSetStatus("Select an editorial destination first.");return;}

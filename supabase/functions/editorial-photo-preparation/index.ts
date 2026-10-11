@@ -57,11 +57,11 @@ function relevance(item: any, destination: string, name: string) {
   const placeHits = placeTerms.filter(t => title.includes(t) || desc.includes(t));
   const scenicWords = ["landscape","coast","coastal","beach","waterfall","volcano","crater","lava","ocean","sea","island","mountain","cliff","valley","forest","tropical","lagoon","reef","sunset","sunrise","panorama","scenic","national park","bay","shore","canyon","ridge","viewpoint","castle","cathedral","church","bridge","old town","historic center","plaza","square","palace","temple","pagoda","monastery","harbor","harbour","lake","waterfront","ski resort","alpine","market square","christmas market","lighthouse","dunes","desert","glacier","fjord"];
   const visual = scenicWords.some(t => combined.includes(norm(t)));
-  const blockedWords = ["plaque","inscription","memorial marker","commemorative tablet","information board","museum label","document","manuscript","book page","stamp","postcard","painting","drawing","illustration","logo","coat of arms","fossil","mineral specimen","rock specimen","geological sample","hotel room","office tower","construction site","parking lot","license plate"];
+  const blockedWords = ["plaque","inscription","memorial marker","commemorative tablet","information board","museum label","document","manuscript","book page","stamp","postcard","painting","drawing","illustration","logo","coat of arms","fossil","mineral specimen","rock specimen","geological sample","geology close up","geology close-up","close up rock","close-up rock","microscope","thin section","core sample","hotel room","office tower","construction site","parking lot","license plate"];
   if (blockedWords.some(t => combined.includes(norm(t))) || !visual) return { ok: false, score: 0 };
   const label = norm(destination + " " + name);
   const iconic: Record<string, string[]> = {
-    hawaii: ["na pali coast","waimea canyon","haleakala","road to hana","hawaii volcanoes national park","diamond head","kauai coastline","maui coastline"],
+    hawaii: ["na pali coast","waimea canyon","haleakala","road to hana","hawaii volcanoes national park","diamond head"],
     "canadian rockies": ["moraine lake","lake louise","jasper national park","icefields parkway","peyto lake","banff national park"],
     banff: ["moraine lake","lake louise","bow lake","banff national park","icefields parkway","peyto lake"],
     santorini: ["oia","fira","blue dome","caldera","santorini sunset","imerovigli"],
