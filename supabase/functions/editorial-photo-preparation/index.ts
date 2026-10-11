@@ -10,7 +10,8 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const norm = (v: unknown) => String(v || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 const stop = new Set(["the","and","for","with","from","into","near","best","season","adventure","journey","trail","route","weekend","experience","explore","exploring","visit","trip","travel","scenic","seasonal","region","area","town","city","coast","island","mountain","mountains","village","villages","outdoor","culture","food","history","hiking","ski","skiing","snowboard","snowboarding","road","parkway"]);
 const peopleTerms = /\b(portrait|selfie|headshot|person|people|man|woman|child|children|boy|girl|family|tourist|tourists|model|fashion|wedding|group photo|close up face|close-up face)\b/i;
-const genericTerms = /\b(stock photo|illustration|logo|map of|flag of|poster|collage|clipart|rendering|artist impression)\b/i;
+const genericTerms = /\b(stock photo|illustration|logo|map of|flag of|poster|collage|clipart|rendering|artist impression|plaque|inscription|memorial marker|commemorative tablet|building under construction|construction site|high rise building|office tower|hotel facade|parking garage|sculpture base|tombstone|grave marker)\b/i;
+const scenicTerms = /\b(landscape|coast|coastal|beach|waterfall|volcano|crater|lava|ocean|sea|island|mountain|mountains|cliff|valley|forest|rainforest|tropical|lagoon|reef|sunset|sunrise|panorama|scenic|national park|bay|shore|shoreline|canyon|ridge|viewpoint)\b/i;
 
 function geographyTerms(destination: string, name: string) {
   const raw = (destination + " " + name).split(/[;,|]/).map(s => norm(s)).join(" ");
@@ -19,6 +20,9 @@ function geographyTerms(destination: string, name: string) {
 }
 function destinationAliases(destination: string, name: string) {
   const label = norm(destination + " " + name);
+  if (label.includes("hawaii")) {
+    return ["Na Pali Coast Kauai Hawaii", "Hawaii Volcanoes National Park lava landscape", "Waimea Canyon Kauai Hawaii", "Hana Maui coastline waterfall", "Hawaii tropical beach turquoise water"];
+  }
   if (label.includes("colorado") && (label.includes("ski") || label.includes("country"))) {
     return ["Vail Colorado", "Aspen Colorado", "Telluride Colorado", "Breckenridge Colorado", "Rocky Mountains Colorado"];
   }
@@ -44,6 +48,10 @@ function relevance(item: any, destination: string, name: string) {
   const desc = norm(item.description);
   const combined = title + " " + desc;
   if (!title || peopleTerms.test(String(item.title || "")) || peopleTerms.test(String(item.description || "")) || genericTerms.test(String(item.title || ""))) return { ok: false, score: 0 };
+  const label = norm(destination + " " + name);
+  // For Hawaii, require recognizable outdoor scenery rather than plaques, hotel towers,
+  // construction, or random urban structures.
+  if (label.includes("hawaii") && !scenicTerms.test(String(item.title || "") + " " + String(item.description || ""))) return { ok: false, score: 0 };
   const aliases = destinationAliases(destination, name);
   const aliasTerms = aliases.flatMap((alias: string) => norm(alias).split(" ").filter((t: string) => t.length >= 4 && !stop.has(t)));
   const terms = [...new Set([...geographyTerms(destination, name), ...aliasTerms])];
@@ -55,7 +63,8 @@ function relevance(item: any, destination: string, name: string) {
   const specific = terms.filter(t => !["united","states","america","canada","italy","france","japan","portugal","norway","slovakia","switzerland","spain","morocco","mexico","jordan","georgia","virginia","carolina","oregon","maine","kentucky","colorado","new","south","north","western","central","eastern","southern","alberta","massachusetts","country"].includes(t));
   const titleHasSpecific = titleHits.some(t => specific.includes(t));
   const descHasSpecific = terms.some(t => desc.includes(t) && specific.includes(t));
-  const score = titleHits.length * 3 + allHits.length + (titleHasSpecific ? 4 : 0) + (descHasSpecific ? 2 : 0);
+  const scenicBoost = scenicTerms.test(String(item.title || "") + " " + String(item.description || "")) ? 8 : 0;
+  const score = titleHits.length * 3 + allHits.length + (titleHasSpecific ? 4 : 0) + (descHasSpecific ? 2 : 0) + scenicBoost;
   const requiredHits = terms.length > 2 ? 2 : 1;
   return { ok: (titleHasSpecific || descHasSpecific) && allHits.length >= requiredHits, score };
 }
@@ -153,11 +162,16 @@ Deno.serve(async (req) => {
         const searchTerms = destination.replace(/&/g, " ").trim();
         const aliases = destinationAliases(destination, name);
         // At most two queries per destination per run. Prefer a known landmark for broad experiences.
-        const queries = [
+        const isHawaii = /hawaii/i.test(destination + " " + name);
+        const queries = (isHawaii ? [
+          "Na Pali Coast Kauai Hawaii scenic landscape",
+          "Hawaii Volcanoes National Park coastline waterfall",
+          "Waimea Canyon Kauai panorama"
+        ] : [
           ...(aliases.length ? [aliases[0] + " landscape"] : []),
           name + " landmark",
           searchTerms + " landscape"
-        ].filter((query: string, index: number, all: string[]) => all.indexOf(query) === index).slice(0, 2);
+        ]).filter((query: string, index: number, all: string[]) => all.indexOf(query) === index).slice(0, 2);
         const results: any[] = [];
         for (const query of [...new Set(queries)]) {
           results.push(...await commonsSearch(query));
