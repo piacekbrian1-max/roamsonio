@@ -152,14 +152,7 @@ Deno.serve(async (req) => {
     if (entriesError) throw entriesError;
     const drafts = (allEntries || []).filter((x: any) => (x.status || "draft") === "draft")
       .sort((a: any, b: any) => {
-        const priority = (x: any) => {
-          const label = String(x.build_destination || "") + " " + String(x.name || "");
-          if (/hawaii/i.test(label)) return 0;
-          if (String(x.metadata?.photo_preparation_source || "") === "Wikimedia Commons") return 1;
-          return 2;
-        };
-        const priorityDifference = priority(a) - priority(b);
-        if (priorityDifference !== 0) return priorityDifference;
+        // Fair queue: never permanently prioritize one destination. Recheck the oldest entries first.
         const at = Date.parse(String(a.metadata?.photo_preparation_checked_at || "")) || 0;
         const bt = Date.parse(String(b.metadata?.photo_preparation_checked_at || "")) || 0;
         return at - bt;
@@ -195,27 +188,15 @@ Deno.serve(async (req) => {
         // Existing conservative relevance checks below still decide which candidates may attach.
         const searchTerms = destination.replace(/&/g, " ").trim();
         const aliases = destinationAliases(destination, name);
-        // At most two queries per destination per run. Prefer a known landmark for broad experiences.
-        const isHawaii = /hawaii/i.test(destination + " " + name);
-        const isCanadianRockies = /canadian rockies/i.test(destination + " " + name);
-        const isBanff = /banff|lake louise/i.test(destination + " " + name);
-        const queries = (isHawaii ? [
-          "Na Pali Coast Kauai Hawaii scenic landscape",
-          "Hawaii Volcanoes National Park coastline waterfall",
-          "Waimea Canyon Kauai panorama"
-        ] : isCanadianRockies ? [
-          "Jasper National Park Canadian Rockies mountain lake landscape",
-          "Moraine Lake Canadian Rockies panorama",
-          "Icefields Parkway Canadian Rockies scenic landscape"
-        ] : isBanff ? [
-          "Lake Louise Banff National Park turquoise lake landscape",
-          "Banff National Park Moraine Lake mountain landscape",
-          "Bow Lake Icefields Parkway Banff scenic landscape"
-        ] : [
-          ...(aliases.length ? [aliases[0] + " landscape"] : []),
-          name + " landmark",
-          searchTerms + " landscape"
-        ]).filter((query: string, index: number, all: string[]) => all.indexOf(query) === index).slice(0, (isHawaii || isCanadianRockies || isBanff) ? 3 : 2);
+        // Apply one multi-query strategy to every destination. Known aliases add landmark coverage;
+        // all destinations also receive general scenic and activity-aware searches.
+        const activityText = String(entry.activities || entry.type || "").split(/[;,|]/).map((x: string) => x.trim()).filter(Boolean);
+        const queries = [
+          ...(aliases.length ? aliases.map((x: string) => x + " landscape") : []),
+          name + " " + (activityText[0] || "landscape"),
+          searchTerms + " scenic panorama",
+          searchTerms + " famous landmark landscape"
+        ].filter((query: string, index: number, all: string[]) => query && all.indexOf(query) === index).slice(0, 4);
         const results: any[] = [];
         for (const query of [...new Set(queries)]) {
           const found = await commonsSearch(query);
