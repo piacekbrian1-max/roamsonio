@@ -855,7 +855,7 @@ if(masterSignOutLink){
   document.getElementById("editorialSearch").addEventListener("input",edRender);
   function editorialNextSundayKey(){const parts=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());const get=t=>parts.find(p=>p.type===t)?.value;const date=new Date(Number(get("year")),Number(get("month"))-1,Number(get("day")));date.setDate(date.getDate()+((7-date.getDay())||7));return date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0");}
 function suggestionSlug(value){
-    return String(value||"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,72);
+    return String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,72);
   }
   function suggestionSetStatus(message){
     const el=document.getElementById("suggestionStatus");if(el)el.textContent=message;
@@ -970,8 +970,8 @@ function suggestionSlug(value){
       const detailParams=new URLSearchParams({action:"query",pageids:uniquePages.map(p=>String(p.pageid)).join("|"),prop:"imageinfo",iiprop:"url|extmetadata",iiurlwidth:"900",format:"json",origin:"*"});
       const detail=await commonsJson("https://commons.wikimedia.org/w/api.php?"+detailParams.toString());
       const byId=new Map(uniquePages.map(p=>[String(p.pageid),p]));
-      const rejectVisual=/\\.(pdf|djvu|tif|tiff)\\b|\\b(scan|book cover|book page|postcard|poster|map of|map showing|brochure|document|manuscript|painting|drawing|illustration|logo|coat of arms|fossil|concretion|mineral specimen|rock specimen|geological sample|museum specimen|stereograph|glass negative|lantern slide|portrait|headshot|selfie|group of people)\\b/i;
-      const preferVisual=/\\b(landscape|scenic|mountain|mountains|valley|waterfall|lake|forest|ridge|summit|panorama|national park|trail|river|coast|sunrise|sunset|overlook|viewpoint|meadow|alpine|nature|wilderness|beach|island|waterfront|castle|cathedral|bridge|old town|historic|plaza|square|palace|temple|pagoda|harbor|harbour|market|lighthouse|dunes|desert|glacier|fjord|village|skyline|architecture)\\b/i;
+      const rejectVisual=/\.(pdf|djvu|tif|tiff)\b|\b(scan|book cover|book page|postcard|poster|map of|map showing|brochure|document|manuscript|painting|drawing|illustration|logo|coat of arms|fossil|concretion|mineral specimen|rock specimen|geological sample|museum specimen|stereograph|glass negative|lantern slide|portrait|headshot|selfie|group of people)\b/i;
+      const preferVisual=/\b(landscape|scenic|mountain|mountains|valley|waterfall|lake|forest|ridge|summit|panorama|national park|trail|river|coast|sunrise|sunset|overlook|viewpoint|meadow|alpine|nature|wilderness|beach|island|waterfront|castle|cathedral|bridge|old town|historic|plaza|square|palace|temple|pagoda|harbor|harbour|market|lighthouse|dunes|desert|glacier|fjord|village|skyline|architecture)\b/i;
       const plain=v=>photoPlainMetadata(v&&v.value);
       const seen=new Set();
       photoCandidates=Object.values((detail.query&&detail.query.pages)||{}).map(p=>{
@@ -984,7 +984,7 @@ function suggestionSlug(value){
         const key=x.url.toLowerCase(),text=x.title+" "+x.alt_text;
         if(!x.url.startsWith("https://")||!x.source_url||!x.credit||!x.license||seen.has(key)||rejectVisual.test(text))return false;
         seen.add(key);return true;
-      }).map((x,i)=>({...x,_score:(preferVisual.test(x.title+" "+x.alt_text)?4:0)+(normPhotoText(x.title).includes(normPhotoText(destination))?5:0)+(new RegExp(destination.replace(/[.*+?^${}()|[\\]\\\\]/g,"\\\\$&"),"i").test(x.title)?3:0)+(preferVisual.test(x.alt_text)?1:0)-i*0.01}))
+      }).map((x,i)=>({...x,_score:(preferVisual.test(x.title+" "+x.alt_text)?4:0)+(normPhotoText(x.title).includes(normPhotoText(destination))?5:0)+(preferVisual.test(x.alt_text)?1:0)-i*0.01}))
         .sort((a,b)=>b._score-a._score).slice(0,30);
       if(!photoCandidates.length){
         grid.innerHTML="<div class='editorialStatus'>The provider returned no usable licensed image choices for this search. Enter a Photo URL below or use Refresh to try again. Existing photos were not changed.</div>";
@@ -1003,7 +1003,7 @@ function suggestionSlug(value){
       photoSetStatus("Photo suggestions failed: "+(e.message||"Unknown error")+". Manual entry is still available.");
     }
   }
-  function normPhotoText(value){return String(value||"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();}
+  function normPhotoText(value){return String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();}
   function photoUseCandidate(x){
     if(!x)return;
     document.getElementById("photoUrl").value=x.url;
