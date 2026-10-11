@@ -142,8 +142,23 @@ Deno.serve(async (req) => {
         failures.push(String(entry.name) + ": could not inspect existing photo roles");
         continue;
       }
-      const rows = photoRows || [];
+      let rows = photoRows || [];
       const roles = ["hero","secondary","mobile"];
+      // Replace only prior unapproved Commons auto-candidates for Hawaii; never touch approved photos.
+      if (/hawaii/i.test(String(entry.build_destination || "") + " " + String(entry.name || "")) &&
+          String(entry.metadata?.photo_preparation_source || "") === "Wikimedia Commons") {
+        const { error: replaceError } = await supabase.rpc("roamsonio_worker_delete_unapproved_commons_photos", { p_destination_id: entry.id });
+        if (replaceError) {
+          failures.push(String(entry.name) + ": could not safely replace prior unapproved photo candidates; apply the photo-worker SQL migration first");
+          continue;
+        }
+        const { data: freshRows, error: freshError } = await supabase.rpc("roamsonio_worker_editorial_photos", { p_destination_id: entry.id });
+        if (freshError) {
+          failures.push(String(entry.name) + ": could not reload photo roles after candidate replacement");
+          continue;
+        }
+        rows = freshRows || [];
+      }
       if (roles.every(role => rows.some((p: any) => String(p.role || "").toLowerCase() === role && p.url && p.source_url && p.credit && p.alt_text))) {
         readyForApproval++;
         continue;
