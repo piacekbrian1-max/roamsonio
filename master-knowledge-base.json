@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "title": "RoamSonio Master Knowledge Base",
   "description": "Operational documentation for Master Account functions and future pilot operations.",
-  "lastReviewed": "2026-10-10",
+  "lastReviewed": "2026-10-11",
   "sections": [
     {
       "id": "editorial-library",
@@ -133,6 +133,35 @@
       "kbNumber": "KB0006",
       "version": "v1",
       "lastUpdated": "2026-10-04"
+    },
+    {
+      "id": "suggestion-inbox-photo-retries",
+      "title": "ADD, REFRESH & APPROVE SUGGESTIONS",
+      "status": "active",
+      "purpose": "Operate the Suggestion Inbox and Suggestion Studio, retry missing editorial photography safely, and publish only after a human review.",
+      "howTo": [
+        "1. Sign in as Master Admin and complete MFA. Open Master Control → Editorial Library → Suggestion Inbox. Use Suggestion Studio for editing the destination details and individual photo records.",
+        "2. To add a new idea, open Suggestion Studio and create a New Entry only if the destination, region or activity does not already exist. Give it a clear name, type/category, build destination, tagline, seasons and activities. Save it as Draft while work remains. Edit the existing entry rather than making a duplicate.",
+        "3. In Suggestion Inbox, use Drafts and the search field to find the entry. Batch Photo Review shows Hero, Secondary and Mobile coverage. Select Open details to inspect the roles, or Review photos/Open Suggestion Studio to search for candidates, manually replace a picture, and save the selected image.",
+        "4. For each photo, visually confirm that it depicts the intended place or experience. Confirm the role is correct (Hero, Secondary or Mobile), the image URL and source URL use HTTPS, and credit and descriptive alt text are present. Save the photo, then reload the status or reopen the entry to verify it persisted.",
+        "5. If photo roles are missing, use Retry photos on that destination. To queue multiple incomplete drafts, use Queue missing photos and confirm. These actions only queue photo preparation; they do not approve images or publish suggestions.",
+        "6. After triggering a retry, the button displays a countdown and remains locked for 30 minutes for that destination to prevent repeated pushes. Queue missing photos skips destinations already queued or in cooldown. Do not repeatedly click Retry photos. The scheduled photo-preparation workflow checks queued work automatically; allow time for the next cycle and for Wikimedia rate limits.",
+        "7. Use Reload status after the automatic cycle to refresh the Inbox display. Check the role count and preparation status again. A candidate being attached or a draft being marked ready is not proof the image is correct; open Suggestion Studio and inspect it. If no good match is found, use manual search/replacement or leave it in Draft for later review.",
+        "8. Publish only when the destination details are complete and all three required photo roles are present, visually reviewed, and have source URL, credit and alt text. In the Inbox, use Approve photos + publish and confirm the prompt. This approves the three photo records and publishes the editorial entry to the permanent Editorial Library.",
+        "9. After publication, return to Master Control and refresh the Editorial Library/Home preview. Confirm the entry is published and its images look correct. Homepage eligibility follows the next-Sunday Eastern boundary shown by the workflow; publication does not guarantee the entry appears in the current edition immediately."
+      ],
+      "safety": [
+        "Drafts remain private; no photo retry, queue action, image attachment, or refresh automatically approves or publishes anything.",
+        "Always visually review the actual images. Automated matching uses metadata/search relevance and can still choose a wrong or weak image.",
+        "Do not repeatedly trigger retries during the 30-minute cooldown. The timer is per destination; a refresh should not clear it because its expiry is stored in destination metadata.",
+        "If the status is Needs attention or no suitable photo is found, do not force approval. Manually search/replace or leave the draft pending.",
+        "Do not change permanent destination IDs, edit existing saved trips, or modify trip snapshots during editorial work.",
+        "Approval and publication require the Master Admin + MFA session. Photo approval and destination publication are distinct from merely saving a candidate.",
+        "If the site does not reflect a confirmed publication, reload the status and check the destination record before making unrelated changes."
+      ],
+      "kbNumber": "KB0007",
+      "version": "v1",
+      "lastUpdated": "2026-10-11"
     }
   ]
 }
