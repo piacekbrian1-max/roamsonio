@@ -921,41 +921,20 @@ function suggestionSlug(value){
     if(!destination){box.hidden=false;grid.textContent="Add a destination name before searching for photos.";return;}
     document.getElementById("photoEditor").hidden=false;box.hidden=false;
     const activities=Array.isArray(entry.activities)?entry.activities.join(" "):String(entry.activities||"");
-    const base=[destination,String(entry.name||""),String(entry.category||""),activities].filter(Boolean).join(" ").trim();
     const activity=(activities.split(/[,;|]/)[0]||entry.type||"travel").trim();
-    const seasonalContext=[String(entry.name||""),String(entry.category||""),activities,String(entry.type||"")].join(" ").toLowerCase();
-    const isCapeCod=/cape\s*cod/i.test(destination+" "+seasonalContext);
-    const isSeasonal=/season|summer|fall|autumn|spring|winter|christmas|holiday|ski|snow|leaf|foliage|beach|coast/i.test(seasonalContext);
-    const isSantorini=/santorini/i.test(destination+" "+seasonalContext);
-    const queries=isCapeCod ? [
-      "Cape Cod National Seashore beach dunes",
-      "Cape Cod lighthouse ocean scenic",
-      "Cape Cod Chatham harbor boats",
-      "Cape Cod Provincetown waterfront",
-      "Cape Cod salt marsh coastal landscape",
-      "Cape Cod beach sunset panorama"
-    ] : isSantorini ? [
-      "Santorini Oia blue domes caldera",
-      "Santorini Oia village white blue domes",
-      "Santorini famous blue dome church sea",
-      "Santorini caldera sunset Oia panorama",
-      "Santorini Fira cliffside whitewashed buildings",
-      "Santorini iconic Greece island landscape"
-    ] : [
-      destination+" famous landmark scenic",
-      destination+" iconic viewpoint panorama",
-      destination+" "+activity+" scenic landscape",
-      destination+" best known sights photography",
-      destination+" coastline village skyline",
-      destination+" nature panorama"
+    const context=(destination+" "+String(entry.name||"")+" "+String(entry.category||"")+" "+activities+" "+String(entry.type||"")).trim();
+    const queries=[
+      destination+" scenic landscape",
+      destination+" famous landmark",
+      destination+" "+activity+" photography"
     ];
-    grid.textContent="Searching Wikimedia Commons for scenic, destination-specific photos of "+destination+"…";
+    grid.textContent="Finding photo choices for "+destination+"…";
+    photoSetStatus("Searching licensed image choices. You can also enter an image URL manually below.");
     try{
-      const results=[],searchWarnings=[];
-      const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+      const results=[],warnings=[];
       async function commonsJson(url){
         let lastError="Wikimedia request failed";
-        for(let attempt=0;attempt<4;attempt++){
+        for(let attempt=0;attempt<3;attempt++){
           const response=await fetch(url,{cache:"no-store",headers:{"Api-User-Agent":"RoamSonio/1.0 (editorial photo candidate browser search)"}});
           if(response.ok){
             const data=await response.json();
@@ -966,56 +945,65 @@ function suggestionSlug(value){
             lastError="Wikimedia returned HTTP "+response.status;
             if(response.status!==429&&response.status!==503)throw new Error(lastError);
           }
-          const retryHeader=response.headers.get("Retry-After");
-          const retrySeconds=retryHeader&&/^\d+$/.test(retryHeader)?Number(retryHeader):Math.min(30,5*Math.pow(2,attempt));
-          await pause(Math.max(5,retrySeconds)*1000);
+          const header=response.headers.get("Retry-After");
+          const seconds=header&&/^\\d+$/.test(header)?Number(header):Math.min(12,3*Math.pow(2,attempt));
+          await new Promise(resolve=>setTimeout(resolve,Math.max(2,Math.min(seconds,15))*1000));
         }
         throw new Error(lastError+" after retries");
       }
-      for(const query of [...new Set(queries)].slice(0,6)){
+      // A few targeted searches, followed by ONE batched metadata request. This avoids
+      // the previous six-query / many-request pattern that routinely hit rate limits.
+      for(const query of queries){
         try{
-          const params=new URLSearchParams({action:"query",list:"search",srsearch:query,srnamespace:"6",srlimit:"30",format:"json",origin:"*"});
+          const params=new URLSearchParams({action:"query",list:"search",srsearch:query,srnamespace:"6",srlimit:"18",format:"json",origin:"*"});
           const data=await commonsJson("https://commons.wikimedia.org/w/api.php?"+params.toString());
-          const pages=(data.query&&data.query.search)||[];
-          if(pages.length){
-            const ids=pages.map(p=>p.pageid).filter(Boolean).join("|");
-            const detailParams=new URLSearchParams({action:"query",pageids:ids,prop:"imageinfo",iiprop:"url|extmetadata",iiurlwidth:"900",format:"json",origin:"*"});
-            await pause(5000);
-            const detail=await commonsJson("https://commons.wikimedia.org/w/api.php?"+detailParams.toString());
-            results.push(...Object.values((detail.query&&detail.query.pages)||{}).map(p=>{
-              const info=(p.imageinfo&&p.imageinfo[0])||{},meta=info.extmetadata||{};
-              const plain=v=>photoPlainMetadata(v&&v.value);
-              const license=plain(meta.LicenseShortName),artist=plain(meta.Artist);
-              return {title:p.title||"",url:info.thumburl||info.url||"",source_url:"https://commons.wikimedia.org/wiki/"+encodeURIComponent((p.title||"").replace(/ /g,"_")),credit:[artist,license?"License: "+license:""].filter(Boolean).join(" · "),alt_text:plain(meta.ImageDescription)||base+" travel photography",license:license,license_url:plain(meta.LicenseUrl)};
-            }).filter(x=>x.url&&/^https:\/\//i.test(x.url)&&x.source_url&&x.credit&&x.license));
-          }
-        }catch(queryError){searchWarnings.push(query+": "+(queryError.message||"request failed"));}
-        await pause(5000);
+          results.push(...((data.query&&data.query.search)||[]).map(p=>({pageid:p.pageid,title:p.title,searchQuery:query})));
+          if(results.length>=18)break;
+        }catch(err){warnings.push(query+": "+(err.message||"request failed"));}
       }
-      const rejectVisual=/\.(pdf|djvu|tif|tiff)\b|\b(scan|book cover|book page|postcard|poster|map of|map showing|brochure|document|manuscript|painting|drawing|illustration|logo|coat of arms|fossil|concretion|mineral specimen|rock specimen|geological sample|museum specimen|historic photograph|historical photograph|stereograph|glass negative|lantern slide|portrait|headshot|selfie|people standing|group of people)\b/i;
-      const preferVisual=/\b(landscape|scenic|mountain|mountains|valley|waterfall|lake|forest|ridge|summit|panorama|national park|trail|river|coast|sunrise|sunset|overlook|viewpoint|meadow|alpine|nature|wilderness)\b/i;
+      const uniquePages=[...new Map(results.filter(p=>p.pageid).map(p=>[String(p.pageid),p])).values()].slice(0,45);
+      if(!uniquePages.length){
+        grid.innerHTML="<div class='editorialStatus'>Suggested pictures are temporarily unavailable from the image provider. Your manual Photo URL, Source URL, Credit and Alt Text fields still work below. Use Refresh to try again later.</div>";
+        photoSetStatus("No suggested images could be loaded"+(warnings.length?": "+warnings[0]:"")+". Manual photo entry remains available; no existing photo was changed.");
+        return;
+      }
+      const detailParams=new URLSearchParams({action:"query",pageids:uniquePages.map(p=>String(p.pageid)).join("|"),prop:"imageinfo",iiprop:"url|extmetadata",iiurlwidth:"900",format:"json",origin:"*"});
+      const detail=await commonsJson("https://commons.wikimedia.org/w/api.php?"+detailParams.toString());
+      const byId=new Map(uniquePages.map(p=>[String(p.pageid),p]));
+      const rejectVisual=/\\.(pdf|djvu|tif|tiff)\\b|\\b(scan|book cover|book page|postcard|poster|map of|map showing|brochure|document|manuscript|painting|drawing|illustration|logo|coat of arms|fossil|concretion|mineral specimen|rock specimen|geological sample|museum specimen|stereograph|glass negative|lantern slide|portrait|headshot|selfie|group of people)\\b/i;
+      const preferVisual=/\\b(landscape|scenic|mountain|mountains|valley|waterfall|lake|forest|ridge|summit|panorama|national park|trail|river|coast|sunrise|sunset|overlook|viewpoint|meadow|alpine|nature|wilderness|beach|island|waterfront|castle|cathedral|bridge|old town|historic|plaza|square|palace|temple|pagoda|harbor|harbour|market|lighthouse|dunes|desert|glacier|fjord|village|skyline|architecture)\\b/i;
+      const plain=v=>photoPlainMetadata(v&&v.value);
       const seen=new Set();
-      photoCandidates=results.filter(x=>{
-        const key=x.url.toLowerCase();
-        const searchable=(x.title+" "+x.alt_text).replace(/^File:/i,"");
-        if(seen.has(key)||rejectVisual.test(searchable))return false;
-        seen.add(key);
-        return true;
-      }).map((x,index)=>({...x,_score:(preferVisual.test(x.title)?3:0)+(preferVisual.test(x.alt_text)?1:0)+(x.title.toLowerCase().includes(destination.toLowerCase())?3:0)+(isSantorini&&/oia|blue dome|blue-domed|caldera|fira|whitewashed|church|sunset/i.test(x.title+" "+x.alt_text)?10:0)+(isCapeCod&&/cape cod|chatham|provincetown|national seashore|lighthouse|dune|harbor|beach|salt marsh/i.test(x.title+" "+x.alt_text)?8:0)-(/road|highway|parking lot|utility pole|bare rock|rock formation|geological|quarry/i.test(x.title+" "+x.alt_text)?5:0)-index*0.01}))
-       .sort((a,b)=>b._score-a._score).slice(0,36);
-      if(!photoCandidates.length){const detail=searchWarnings.length?" Some Wikimedia searches were rate-limited or failed; try Refresh after a short wait.":" Try a more specific landmark or activity.";grid.textContent="No scenic, licensed candidates passed the quality filter."+detail+" No photos were changed.";photoSetStatus("No candidates returned. "+(searchWarnings.length?"Wikimedia request issues occurred; "+searchWarnings.length+" search attempts failed.":"No suitable licensed results were found."));return;}
+      photoCandidates=Object.values((detail.query&&detail.query.pages)||{}).map(p=>{
+        const info=(p.imageinfo&&p.imageinfo[0])||{},meta=info.extmetadata||{},search=byId.get(String(p.pageid))||{};
+        const license=plain(meta.LicenseShortName),artist=plain(meta.Artist);
+        const description=plain(meta.ImageDescription);
+        const title=p.title||search.title||"";
+        return {title,url:info.thumburl||info.url||"",source_url:"https://commons.wikimedia.org/wiki/"+encodeURIComponent(title.replace(/ /g,"_")),credit:[artist,license?"License: "+license:""].filter(Boolean).join(" · "),alt_text:description||title.replace(/^File:/i,"")+" — "+destination,license,license_url:plain(meta.LicenseUrl),_query:search.searchQuery||""};
+      }).filter(x=>{
+        const key=x.url.toLowerCase(),text=x.title+" "+x.alt_text;
+        if(!x.url.startsWith("https://")||!x.source_url||!x.credit||!x.license||seen.has(key)||rejectVisual.test(text))return false;
+        seen.add(key);return true;
+      }).map((x,i)=>({...x,_score:(preferVisual.test(x.title+" "+x.alt_text)?4:0)+(normPhotoText(x.title).includes(normPhotoText(destination))?5:0)+(new RegExp(destination.replace(/[.*+?^${}()|[\\]\\\\]/g,"\\\\$&"),"i").test(x.title)?3:0)+(preferVisual.test(x.alt_text)?1:0)-i*0.01}))
+        .sort((a,b)=>b._score-a._score).slice(0,30);
+      if(!photoCandidates.length){
+        grid.innerHTML="<div class='editorialStatus'>The provider returned no usable licensed image choices for this search. Enter a Photo URL below or use Refresh to try again. Existing photos were not changed.</div>";
+        photoSetStatus("No licensed candidates passed basic checks. Manual photo entry remains available.");
+        return;
+      }
       grid.innerHTML=photoCandidates.map((x,i)=>"<button type='button' class='photoCandidate' data-index='"+i+"'><img src='"+esc(x.url)+"' alt='"+esc(x.alt_text)+"' loading='lazy'><small>"+esc(x.title.replace(/^File:/i,""))+"<br>"+esc(x.license)+"</small></button>").join("");
       grid.querySelectorAll(".photoCandidate").forEach(b=>{
         const img=b.querySelector("img");
-        img.addEventListener("error",()=>{img.alt="Image unavailable — refresh candidates";img.style.background="#eef1f4";img.style.minHeight="110px";});
+        img.addEventListener("error",()=>{img.alt="Image unavailable — choose another candidate";img.style.background="#eef1f4";});
         b.addEventListener("click",()=>photoUseCandidate(photoCandidates[Number(b.dataset.index)]));
       });
-      photoSetStatus("Found "+photoCandidates.length+" scenic candidates with license metadata."+(searchWarnings.length?" "+searchWarnings.length+" search attempt(s) were skipped; refresh later for more results.":"")+" Review each image before saving; nothing is approved automatically.");
+      photoSetStatus("Loaded "+photoCandidates.length+" suggested licensed images for "+destination+". Select one to preview, then save; suggestions are never auto-approved."+(warnings.length?" Some searches failed; showing the usable results found.":""));
     }catch(e){
-      grid.textContent="Photo search failed: "+(e.message||"Unknown error")+". No photos were changed.";
-      photoSetStatus("Photo search failed: "+(e.message||"Unknown error"));
+      grid.innerHTML="<div class='editorialStatus'>Suggested pictures could not be loaded right now. Manual Photo URL, Source URL, Credit and Alt Text fields remain available below. No existing photo was changed.</div>";
+      photoSetStatus("Photo suggestions failed: "+(e.message||"Unknown error")+". Manual entry is still available.");
     }
   }
+  function normPhotoText(value){return String(value||"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();}
   function photoUseCandidate(x){
     if(!x)return;
     document.getElementById("photoUrl").value=x.url;
