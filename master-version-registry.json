@@ -9,6 +9,14 @@
   },
   "versions": [
     {
+      "sha": "40dfe7cf047ec53c2c2e90750b28d7f7cce933a6",
+      "date": "2026-10-11",
+      "title": "Known-good homepage photo fix",
+      "status": "SUCCESS",
+      "rollbackEligible": true,
+      "notes": "User confirmed the deployed homepage photo fix worked. The active dashboard photo resolver now prefers trip-specific photos and no longer defaults unknown destinations to Prague. No saved trip records or snapshots were changed. Confirmed rollback checkpoint for the homepage photo issue."
+    },
+    {
       "sha": "175cdac452e47d62fde284148092bbe7e1dc7a06",
       "date": "2026-10-10",
       "title": "Render Home Explore fallback before editorial fetch",
