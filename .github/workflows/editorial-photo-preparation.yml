@@ -1,0 +1,28 @@
+name: RoamSonio Editorial Photo Preparation
+
+on:
+  # Keep scheduled runs paused until manual end-to-end testing confirms matching quality.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prepare-editorial-photos:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare a small batch of destination-specific photo candidates
+        env:
+          EDITORIAL_JOB_SECRET: ${{ secrets.EDITORIAL_JOB_SECRET }}
+        shell: bash
+        run: |
+          if [ -z "$EDITORIAL_JOB_SECRET" ]; then
+            echo "::error::Add the EDITORIAL_JOB_SECRET repository Actions secret."
+            exit 1
+          fi
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Authorization: Bearer $EDITORIAL_JOB_SECRET" \
+            --header "Content-Type: application/json" \
+            --data '{}' \
+            "https://vqtqchxoecrahtrnoocy.supabase.co/functions/v1/editorial-photo-preparation"
