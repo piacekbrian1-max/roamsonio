@@ -187,7 +187,7 @@ Deno.serve(async (req) => {
     await supabase.from("roamsonio_admin_audit_log").insert({ action:"editorial_photo_preparation", details:result });
     return json(result);
   } catch (e) {
-    const result = { startedAt, finishedAt:new Date().toISOString(), status:"failed", error:e instanceof Error ? e.message : String(e), processed, failures, published:0, tripRecordsChanged:0 };
+    const result = { startedAt, finishedAt:new Date().toISOString(), status:"failed", error: e instanceof Error ? e.message : (typeof e === "object" && e !== null ? JSON.stringify(e, Object.getOwnPropertyNames(e)) : String(e)), processed, failures, published:0, tripRecordsChanged:0 };
     try { await supabase.from("roamsonio_admin_audit_log").insert({ action:"editorial_photo_preparation_failed", details:result }); } catch (_) {}
     return json(result, 500);
   }
