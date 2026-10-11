@@ -58,23 +58,31 @@
     },
     {
       "id": "weekly-edit",
-      "title": "The RoamSonio Edit",
-      "status": "planned",
-      "purpose": "Rotate curated inspiration weekly while keeping the edition stable throughout the week.",
+      "title": "WEEKLY SUGGESTIONS & HOMEPAGE ROTATION",
+      "status": "active",
+      "purpose": "Explain how weekly private suggestion generation, human approval into the permanent Editorial Library, and stable Sunday homepage rotation work together.",
       "howTo": [
-        "Editorial content is selected from published library entries.",
-        "The weekly edition changes on Sunday.",
-        "Refreshing the Home page during the same edition must not randomly change the destinations.",
-        "Only approved/published entries should be eligible."
+        "1. Every Sunday, the Weekly RoamSonio Editorial Suggestions workflow is scheduled for 9:00 AM Eastern. It checks the curated idea pool against existing Editorial Library entries and selects up to three unused ideas for this week's private Master Inbox.",
+        "2. The generator creates draft records only. It does not approve photos, publish destinations, edit existing destination records, or modify saved trips. If all curated ideas already exist, the workflow can report zero new drafts; expand the curated idea pool when that happens.",
+        "3. The weekly workflow then prepares photos in small sequential batches. Photo preparation is also scheduled separately, so queued work can continue in later cycles. Candidates remain unapproved and require visual review.",
+        "4. Open Master Account → Suggestion Inbox to review the new drafts. Check for duplicates, verify destination/activity details, review the Hero, Secondary and Mobile photos, and use the retry controls only when needed. The retry cooldown is 30 minutes per destination.",
+        "5. To add a suggestion permanently to Master, finish its details and photography, then explicitly approve the required photo set and publish the destination. Publishing moves the entry into the permanent Editorial Library; merely generating a draft does not.",
+        "6. The public Home page reads published Editorial Library entries with approved HTTPS photography. It rotates its displayed selection by the week, anchored to the Eastern calendar date, and does not randomly change the selection on every page refresh.",
+        "7. A newly published entry may be eligible for the next weekly rotation rather than appearing in the current edition. After publication, refresh Master status and Home/Weekly Homepage preview and confirm the entry and photo display correctly.",
+        "8. If the weekly workflow does not run, open GitHub Actions → Weekly RoamSonio Editorial Suggestions and inspect the latest run and logs. Use Run workflow only for a deliberate manual test; do not repeatedly dispatch it to force new drafts."
       ],
       "safety": [
-        "Do not hard-code individual weekly destinations into index.html.",
-        "Do not fetch random photography on each page load.",
-        "Changes to rotation logic require a separate test point."
+        "Weekly generation creates drafts only. Human Master Admin review is required before a suggestion joins the permanent Editorial Library.",
+        "Weekly homepage rotation and weekly draft generation are separate workflows: one adds review candidates, the other selects from published, approved library entries.",
+        "Do not hard-code weekly destinations in index.html or show unapproved drafts on the public Home page.",
+        "Do not create duplicates or change permanent IDs to make an entry appear new.",
+        "Do not edit existing saved trip records, trip IDs, or snapshots as part of editorial generation, approval, or rotation.",
+        "Keep photo approval separate from destination publication; always inspect actual images, credits, source URLs, and alt text.",
+        "If the curated idea pool is exhausted, add researched new ideas to the generator pool and check duplicates before relying on the next weekly run."
       ],
       "kbNumber": "KB0003",
-      "version": "v1",
-      "lastUpdated": "2026-10-04"
+      "version": "v2",
+      "lastUpdated": "2026-10-11"
     },
     {
       "id": "trip-builder-handoff",
