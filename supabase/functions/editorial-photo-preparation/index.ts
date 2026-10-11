@@ -90,8 +90,12 @@ function relevance(item: any, destination: string, name: string) {
   // A matching search phrase is not proof of relevance: Commons may return neighboring or loosely tagged files.
   // Require a recognizable destination landmark for broad/ambiguous destinations; otherwise require two meaningful
   // destination words in the file's own title/description. If metadata cannot prove relevance, reject the image.
-  const destinationSpecific = specialDestination ? iconicHit : placeHits.filter((t: string) => t.length >= 4 && !["united","states","america","canada","italy","france","japan","portugal","norway","slovakia","switzerland","spain","morocco","mexico","jordan","georgia","virginia","carolina","oregon","maine","kentucky","colorado","new","south","north","western","central","eastern","southern","alberta","massachusetts","country","coast","island","region","city","town","mountain","mountains","national","park"].includes(t)).length >= 2;
-  const queryMatches = queryHits.length > 0 || descQueryHits.length >= 2;
+  const meaningfulPlaceHits = placeHits.filter((t: string) => t.length >= 4 && !["united","states","america","canada","italy","france","japan","portugal","norway","slovakia","switzerland","spain","morocco","mexico","jordan","georgia","virginia","carolina","oregon","maine","kentucky","colorado","new","south","north","western","central","eastern","southern","alberta","massachusetts","country","coast","island","region","city","town","mountain","mountains","national","park"].includes(t));
+  // Named iconic destinations need a recognizable landmark. For other destinations, one meaningful
+  // place match plus scenic evidence is sufficient; requiring two place words discarded too many
+  // valid Commons photos whose captions are short or use a local spelling.
+  const destinationSpecific = specialDestination ? iconicHit : meaningfulPlaceHits.length >= 1;
+  const queryMatches = queryHits.length > 0 || descQueryHits.length >= 1 || meaningfulPlaceHits.length >= 1;
   const score = queryHits.length * 3 + descQueryHits.length * 2 + placeHits.length * 3 + (iconicHit ? 12 : 0) + (visual ? 8 : 0);
   return { ok: destinationSpecific && queryMatches && visual, score };
 }
@@ -204,12 +208,13 @@ Deno.serve(async (req) => {
         // Apply one multi-query strategy to every destination. Known aliases add landmark coverage;
         // all destinations also receive general scenic and activity-aware searches.
         const activityText = String(entry.activities || entry.type || "").split(/[;,|]/).map((x: string) => x.trim()).filter(Boolean);
+        const basePlace = String(entry.build_destination || destination || name).replace(/&/g, " ").trim();
         const queries = [
-          ...(aliases.length ? aliases.map((x: string) => x + " landscape") : []),
-          name + " " + (activityText[0] || "landscape"),
-          searchTerms + " scenic panorama",
-          searchTerms + " famous landmark landscape"
-        ].filter((query: string, index: number, all: string[]) => query && all.indexOf(query) === index).slice(0, 2);
+          ...(aliases.length ? [aliases[0] + " landscape"] : []),
+          basePlace + " landscape",
+          basePlace + " scenic panorama",
+          name + " " + (activityText[0] || "scenery")
+        ].filter((query: string, index: number, all: string[]) => query && all.indexOf(query) === index).slice(0, 3);
         const results: any[] = [];
         for (const query of [...new Set(queries)]) {
           const found = await commonsSearch(query);
