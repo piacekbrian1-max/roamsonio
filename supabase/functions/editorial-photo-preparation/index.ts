@@ -116,12 +116,17 @@ Deno.serve(async (req) => {
   try {
     const { data: allEntries, error: entriesError } = await supabase.rpc("roamsonio_worker_editorial_drafts");
     if (entriesError) throw entriesError;
-    const drafts = (allEntries || []).filter((x: any) => (x.status || "draft") === "draft");
-    // Read and process a small batch per run to protect Wikimedia from rate limits.
+    const drafts = (allEntries || []).filter((x: any) => (x.status || "draft") === "draft")
+      .sort((a: any, b: any) => {
+        const at = Date.parse(String(a.metadata?.photo_preparation_checked_at || "")) || 0;
+        const bt = Date.parse(String(b.metadata?.photo_preparation_checked_at || "")) || 0;
+        return at - bt;
+      });
+    // Process a small sequential batch per run. Oldest/never-checked drafts go first,
+    // so a difficult destination cannot block the rest of the queue indefinitely.
     const candidates: any[] = [];
     for (const entry of drafts) {
-      // One destination per run: keep each manual run small and avoid rate-limit bursts.
-      if (candidates.length >= 1) break;
+      if (candidates.length >= 3) break;
       const { data: photoRows, error: photoError } = await supabase.rpc("roamsonio_worker_editorial_photos", { p_destination_id: entry.id });
       if (photoError) {
         failures.push(String(entry.name) + ": could not inspect existing photo roles");
@@ -215,7 +220,7 @@ Deno.serve(async (req) => {
         needsAttention++;
       }
     }
-    const result = { startedAt, finishedAt:new Date().toISOString(), batchLimit:1, draftsReviewed:candidates.length, processed, photosAttached, readyForApproval, needsAttention, failures, published:0, tripRecordsChanged:0, status:failures.length ? "completed_with_warnings" : "completed" };
+    const result = { startedAt, finishedAt:new Date().toISOString(), batchLimit:3, draftsReviewed:candidates.length, processed, photosAttached, readyForApproval, needsAttention, failures, published:0, tripRecordsChanged:0, status:failures.length ? "completed_with_warnings" : "completed" };
     await supabase.from("roamsonio_admin_audit_log").insert({ action:"editorial_photo_preparation", details:result });
     return json(result);
   } catch (e) {
