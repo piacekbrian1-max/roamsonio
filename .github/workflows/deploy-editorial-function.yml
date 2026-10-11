@@ -18,7 +18,7 @@ jobs:
         with:
           version: latest
 
-      - name: Deploy editorial suggestion generator
+      - name: Deploy editorial functions
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
@@ -27,3 +27,4 @@ jobs:
             exit 1
           fi
           supabase functions deploy editorial-suggestion-generator --project-ref vqtqchxoecrahtrnoocy --no-verify-jwt
+          supabase functions deploy editorial-photo-preparation --project-ref vqtqchxoecrahtrnoocy --no-verify-jwt
