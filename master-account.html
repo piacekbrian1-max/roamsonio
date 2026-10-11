@@ -266,7 +266,7 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
           <div class="photoManager" id="photoManager">
             <div class="photoManagerHead">
               <div><div class="ey">Editorial photography</div><h4>Photo approval</h4><p>Track approval by role. Approve a reviewed Hero + Secondary + Mobile set in one action.</p></div>
-              <div class="editorialActions" style="margin:0"><button type="button" class="secondaryBtn" id="approvePhotoSetBtn" disabled>Approve Complete Set</button><button type="button" class="transferBtn" id="newPhotoBtn">Add Photo</button></div>
+              <div class="editorialActions" style="margin:0"><button type="button" class="secondaryBtn" id="approvePhotoSetBtn" disabled>Approve Complete Set</button><button type="button" class="dangerBtn" id="clearUnapprovedPhotosBtn">Remove Unapproved Photos</button><button type="button" class="transferBtn" id="newPhotoBtn">Add Photo</button></div>
             </div>
             <div class="photoGrid">
               <div class="photoList" id="photoList"><div class="row"><span>Select a destination to manage its photography.</span></div></div>
@@ -1124,6 +1124,28 @@ function suggestionSlug(value){
       photoSetStatus("Photo deleted from the protected editorial library."); await photoLoad();
     }catch(e){photoSetStatus("Photo delete unavailable: "+(e.message||"Unknown error"));}
   }
+  document.getElementById("clearUnapprovedPhotosBtn").addEventListener("click",async()=>{
+    if(!selectedEditorialId){photoSetStatus("Select a destination first.");return;}
+    const removable=editorialPhotos.filter(p=>String(p.destination_id)===String(selectedEditorialId)&&p.approved!==true);
+    if(!removable.length){photoSetStatus("There are no unapproved saved photos to remove for this destination. Approved photos were left untouched.");return;}
+    const label=(editorialEntries.find(x=>String(x.id)===String(selectedEditorialId))||{}).name||"this destination";
+    if(!confirm("Remove "+removable.length+" unapproved photo(s) from "+label+"? Approved photos, other destinations, and all saved trips will be left untouched."))return;
+    const btn=document.getElementById("clearUnapprovedPhotosBtn");
+    btn.disabled=true;btn.textContent="Removing…";
+    const failures=[];
+    try{
+      for(const p of removable){
+        const {error}=await client.rpc("roamsonio_admin_delete_editorial_photo",{p_photo_id:p.id});
+        if(error){failures.push("Photo "+p.id+": "+(error.message||"delete failed"));break;}
+      }
+      selectedPhotoId=null;
+      document.getElementById("photoEditor").hidden=true;
+      await photoLoad();
+      if(failures.length)photoSetStatus("Some photos could not be removed: "+failures[0]+". Confirm Master Admin MFA is active, then retry. Successfully removed photos remain removed.");
+      else photoSetStatus("Removed "+removable.length+" unapproved photo(s) from "+label+". You can now add or choose replacements. Approved photos and saved trips were not changed.");
+    }catch(e){photoSetStatus("Could not remove unapproved photos: "+(e.message||"Unknown error")+". Approved photos and saved trips were not changed.");}
+    finally{btn.disabled=false;btn.textContent="Remove Unapproved Photos";}
+  });
   document.getElementById("newPhotoBtn").addEventListener("click",()=>{
     if(!selectedEditorialId){photoSetStatus("Select an editorial destination first.");return;}
     selectedPhotoId=null; document.getElementById("photoEditor").hidden=false;
