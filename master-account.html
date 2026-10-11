@@ -934,7 +934,7 @@ function suggestionSlug(value){
       [/french alps|chamonix/i,["Chamonix Mont Blanc panorama","Aiguille du Midi French Alps landscape","Annecy French Alps lake mountain"]],
       [/christmas markets?/i,["Strasbourg Christmas market square","Vienna Christmas market Rathausplatz","Nuremberg Christmas market old town"]],
       [/kyoto/i,["Kyoto temple garden landscape","Kyoto Kiyomizu dera scenery","Kyoto Arashiyama bamboo grove"]],
-      [/patagonia/i,["Patagonia Fitz Roy mountain landscape","Torres del Paine Patagonia panorama","Patagonia lake mountain scenery"]],
+      [/patagonia/i,["Mount Fitz Roy El Chalten Patagonia panorama","Torres del Paine National Park Patagonia mountains","Perito Moreno Glacier Patagonia landscape","Cerro Torre Patagonia mountain lake"]],
       [/raja ampat/i,["Raja Ampat island lagoon aerial landscape","Raja Ampat karst islands panorama","Raja Ampat turquoise sea islands"]],
       [/costa rica|monteverde/i,["Monteverde Costa Rica cloud forest landscape","Costa Rica Arenal volcano panorama","Costa Rica rainforest waterfall landscape"]],
       [/new orleans/i,["New Orleans French Quarter architecture","New Orleans Jackson Square panorama","New Orleans Garden District historic houses"]],
@@ -947,7 +947,8 @@ function suggestionSlug(value){
     const mapped=photoSearchMap.find(([re])=>re.test(destination+" "+entry.name));
     // If a destination has a landmark map, do not dilute it with broad region-only searches.
     // This reduces plausible-looking but unrelated images appearing in the candidate gallery.
-    const queries=[...new Set((mapped?mapped[1]:[destination+" landscape",destination+" scenic view"]).map(q=>q.trim()).filter(Boolean))].slice(0,3);
+    const queryLimit=/patagonia/i.test(destination+" "+entry.name)?4:3;
+    const queries=[...new Set((mapped?mapped[1]:[destination+" landscape",destination+" scenic view"]).map(q=>q.trim()).filter(Boolean))].slice(0,queryLimit);
     grid.textContent="Finding a wider range of photo choices for "+destination+"…";
     photoSetStatus("Searching multiple image queries. If results are limited, manual Photo URL entry remains available.");
     try{
@@ -1017,7 +1018,7 @@ function suggestionSlug(value){
         [/french alps|chamonix/i,["chamonix","mont blanc","aiguille du midi","mer de glace","annecy"]],
         [/christmas markets?/i,["strasbourg christmas market","vienna christmas market","prague christmas market","nuremberg christmas market","colmar christmas market"]],
         [/kyoto/i,["kiyomizu dera","arashiyama","fushimi inari","kyoto temple","kyoto garden"]],
-        [/patagonia/i,["fitz roy","torres del paine","patagonia lake","patagonia mountain"]],
+        [/patagonia/i,["fitz roy","torres del paine","perito moreno glacier","cerro torre","los glaciares national park","laguna de los tres","grey glacier","el chalten"]],
         [/raja ampat/i,["raja ampat","wayag","piaynemo"]],
         [/costa rica|monteverde/i,["monteverde","arenal volcano","costa rica rainforest"]],
         [/new orleans/i,["french quarter","jackson square","garden district","new orleans riverfront"]],
