@@ -1211,7 +1211,19 @@ function suggestionSlug(value){
     document.getElementById("photoApproved").checked=false; document.getElementById("deletePhotoBtn").hidden=true; photoPreview("");
     loadPhotoCandidates();
   });
-  document.getElementById("refreshPhotoCandidates").addEventListener("click",loadPhotoCandidates);
+  document.getElementById("refreshPhotoCandidates").addEventListener("click",async()=>{
+    const btn=document.getElementById("refreshPhotoCandidates");
+    if(!selectedEditorialId){photoSetStatus("Select a destination first, then refresh its photo candidates.");return;}
+    btn.disabled=true;btn.textContent="Searching…";
+    try{
+      photoSetStatus("Refreshing photo candidates for the selected destination…");
+      await loadPhotoCandidates();
+    }catch(e){
+      photoSetStatus("Could not refresh photo candidates: "+(e.message||"Unknown error"));
+    }finally{
+      btn.disabled=false;btn.textContent="Refresh";
+    }
+  });
   document.getElementById("attachPhotoCandidatesBtn").addEventListener("click",async()=>{
     if(!selectedEditorialId){photoSetStatus("Select a destination first.");return;}
     if(!photoCandidates.length){photoSetStatus("No candidates are loaded yet. Refresh the gallery first.");return;}
