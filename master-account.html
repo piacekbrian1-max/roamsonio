@@ -266,7 +266,7 @@ h1{font:600 clamp(38px,5vw,58px)/1.02 "Playfair Display",serif;margin:8px 0 10px
           <div class="photoManager" id="photoManager">
             <div class="photoManagerHead">
               <div><div class="ey">Editorial photography</div><h4>Photo approval</h4><p>Track approval by role. Approve a reviewed Hero + Secondary + Mobile set in one action.</p></div>
-              <div class="editorialActions" style="margin:0"><button type="button" class="secondaryBtn" id="approvePhotoSetBtn" disabled>Approve Complete Set</button><button type="button" class="dangerBtn" id="clearUnapprovedPhotosBtn">Clear Draft Photo Set</button><button type="button" class="transferBtn" id="newPhotoBtn">Add Photo</button></div>
+              <div class="editorialActions" style="margin:0"><button type="button" class="secondaryBtn" id="approvePhotoSetBtn" disabled>Approve Complete Set</button><button type="button" class="dangerBtn" id="clearUnapprovedPhotosBtn">Clear Photo Set</button><button type="button" class="transferBtn" id="newPhotoBtn">Add Photo</button></div>
             </div>
             <div class="photoGrid">
               <div class="photoList" id="photoList"><div class="row"><span>Select a destination to manage its photography.</span></div></div>
@@ -1179,14 +1179,9 @@ function suggestionSlug(value){
     if(!selectedEditorialId){photoSetStatus("Select a destination first.");return;}
     const entry=editorialEntries.find(x=>String(x.id)===String(selectedEditorialId));
     const label=(entry||{}).name||"this destination";
-    const isDraft=String((entry||{}).status||"").toLowerCase()==="draft";
-    // photoLoad() already scopes this list to selectedEditorialId. For drafts, clear the whole set
-    // (including mistakenly approved photos) so it can be rebuilt. Published destinations only
-    // allow removal of unapproved candidates.
-    const removable=editorialPhotos.filter(p=>isDraft||p.approved!==true);
-    if(!removable.length){photoSetStatus(isDraft?"No saved photos are attached to this draft.":"There are no unapproved photos to remove from this published destination. Approved photos were left untouched.");return;}
-    const scope=isDraft?"all "+removable.length+" photo(s), including any mistakenly approved, from this unpublished draft":"the "+removable.length+" unapproved photo(s)";
-    if(!confirm("Remove "+scope+" from "+label+"? Other destinations and all saved trips/snapshots will be left untouched."))return;
+    const removable=[...editorialPhotos];
+    if(!removable.length){photoSetStatus("No saved photos are attached to "+label+".");return;}
+    if(!confirm("Remove all "+removable.length+" photo(s) from "+label+", including approved images? This affects only this destination's editorial photo set. It does not change other destinations or saved trips/snapshots."))return;
     const btn=document.getElementById("clearUnapprovedPhotosBtn");
     btn.disabled=true;btn.textContent="Removing…";
     let deleted=0,firstError="";
@@ -1199,10 +1194,14 @@ function suggestionSlug(value){
       selectedPhotoId=null;
       document.getElementById("photoEditor").hidden=true;
       await photoLoad();
-      if(firstError)photoSetStatus("Removed "+deleted+" of "+removable.length+" photo(s). The next delete failed: "+firstError+". If it says Master Admin MFA verification required, re-authenticate through Master Admin Security and retry. The list has been refreshed.");
-      else photoSetStatus("Successfully removed all "+deleted+" photo(s) from "+label+". You can now rebuild the set. Other destinations and saved trips/snapshots were not changed.");
-    }catch(e){photoSetStatus("Removed "+deleted+" of "+removable.length+" photo(s), then stopped: "+(e.message||"Unknown error")+". The list has been refreshed.");await photoLoad();}
-    finally{btn.disabled=false;btn.textContent="Clear Draft Photo Set";}
+      if(firstError)photoSetStatus("Removed "+deleted+" of "+removable.length+" photo(s). Delete stopped with: "+firstError+". If this mentions MFA, re-authenticate through Master Admin Security and retry.");
+      else photoSetStatus("Removed all "+deleted+" photo(s) from "+label+". Add replacement images when ready. Other destinations and saved trips/snapshots were not changed.");
+    }catch(e){
+      photoSetStatus("Removed "+deleted+" of "+removable.length+" photo(s), then stopped: "+(e.message||"Unknown error")+". Refreshing the photo list.");
+      await photoLoad();
+    }finally{
+      btn.disabled=false;btn.textContent="Clear Photo Set";
+    }
   });
   document.getElementById("newPhotoBtn").addEventListener("click",()=>{
     if(!selectedEditorialId){photoSetStatus("Select an editorial destination first.");return;}
