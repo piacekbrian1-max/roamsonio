@@ -115,8 +115,18 @@ Deno.serve(async (req) => {
       const existingRows = item.rows || [];
       const alreadyFilled = new Set(existingRows.filter((p: any) => p.url && p.source_url && p.credit && p.alt_text).map((p: any) => String(p.role || "").toLowerCase()));
       try {
-        const query = '"' + destination + '" landmark landscape';
-        const results = await commonsSearch(query);
+        // Search several destination-specific phrases instead of one exact quoted phrase.
+        // Existing conservative relevance checks below still decide which candidates may attach.
+        const searchTerms = destination.replace(/&/g, " ").trim();
+        const queries = [
+          searchTerms + " landscape",
+          name + " landmark",
+          searchTerms + " national park lake"
+        ];
+        const results: any[] = [];
+        for (const query of [...new Set(queries)]) {
+          results.push(...await commonsSearch(query));
+        }
         const ranked = results.map((p: any) => ({ ...p, match: relevance(p, destination, name) }))
           .filter((p: any) => p.match.ok)
           .sort((a: any,b: any) => b.match.score-a.match.score);
