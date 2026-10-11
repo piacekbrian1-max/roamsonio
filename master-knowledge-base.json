@@ -64,12 +64,12 @@
       "howTo": [
         "1. Every Sunday, the Weekly RoamSonio Editorial Suggestions workflow is scheduled for 9:00 AM Eastern. It checks the curated idea pool against existing Editorial Library entries and selects up to three unused ideas for this week's private Master Inbox.",
         "2. The generator creates draft records only. It does not approve photos, publish destinations, edit existing destination records, or modify saved trips. If all curated ideas already exist, the workflow can report zero new drafts; expand the curated idea pool when that happens.",
-        "3. The weekly workflow then prepares photos in small sequential batches. Photo preparation is also scheduled separately, so queued work can continue in later cycles. Candidates remain unapproved and require visual review.",
+        "3. The photo-preparation workflow runs every 30 minutes, with overlapping runs prevented, so new and waiting drafts can receive photo candidates over time. Candidates remain unapproved and require visual review.",
         "4. Open Master Account → Suggestion Inbox to review the new drafts. Check for duplicates, verify destination/activity details, review the Hero, Secondary and Mobile photos, and use the retry controls only when needed. The retry cooldown is 30 minutes per destination.",
         "5. To add a suggestion permanently to Master, finish its details and photography, then explicitly approve the required photo set and publish the destination. Publishing moves the entry into the permanent Editorial Library; merely generating a draft does not.",
         "6. The public Home page reads published Editorial Library entries with approved HTTPS photography. It rotates its displayed selection by the week, anchored to the Eastern calendar date, and does not randomly change the selection on every page refresh.",
         "7. A newly published entry may be eligible for the next weekly rotation rather than appearing in the current edition. After publication, refresh Master status and Home/Weekly Homepage preview and confirm the entry and photo display correctly.",
-        "8. If the weekly workflow does not run, open GitHub Actions → Weekly RoamSonio Editorial Suggestions and inspect the latest run and logs. Use Run workflow only for a deliberate manual test; do not repeatedly dispatch it to force new drafts."
+        "8. If the weekly workflow does not run, open GitHub Actions → Weekly RoamSonio Editorial Suggestions and inspect the latest run and logs. Photo preparation runs every 30 minutes without overlapping runs. Use Run workflow only for a deliberate manual test; do not repeatedly dispatch it to force new drafts."
       ],
       "safety": [
         "Weekly generation creates drafts only. Human Master Admin review is required before a suggestion joins the permanent Editorial Library.",
