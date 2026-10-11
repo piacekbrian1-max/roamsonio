@@ -170,6 +170,32 @@
       "kbNumber": "KB0007",
       "version": "v1",
       "lastUpdated": "2026-10-11"
+    },
+    {
+      "id": "universal-destination-photo-rule",
+      "title": "UNIVERSAL TRIP PHOTOGRAPHY RULE",
+      "status": "active",
+      "purpose": "Ensure every trip card and workspace uses imagery for its actual destination, regardless of where the trip was created.",
+      "howTo": [
+        "1. For any saved trip, first use that trip's own HTTPS hero/image/photo/coverPhoto or its stored destinationKnowledge photos when present.",
+        "2. In the trip workspace, prefer the trip's stored heroPhotos and destinationKnowledge photos before any destination mapping.",
+        "3. If a stored photo is unavailable, use a verified destination-specific image mapping only when it matches the actual location or activity.",
+        "4. Never use Prague, Vienna, or any other place as a generic fallback for an unrelated or unknown destination.",
+        "5. If no matching photo is available, leave the image unset/neutral and queue destination-specific photo preparation; do not show a misleading photo.",
+        "6. Apply this rule consistently to homepage trip cards, My Trips, upcoming/dashboard cards, trip workspace hero and destination gallery, and future trip-creation flows.",
+        "7. Before releasing photo-related changes, test at least one known destination, one previously affected destination, a multi-stop trip, and an unknown/new destination. Confirm that no unrelated destination inherits another place's image.",
+        "8. Do not rewrite existing trip records or snapshots merely to change photo rendering. Only update stored photos through the approved photo-review workflow."
+      ],
+      "safety": [
+        "This rule applies to every new trip, every destination and activity location, and every display surface; it is not a one-off list of named destinations.",
+        "Never hard-code one destination photo as a universal fallback.",
+        "Do not delete, recreate, or alter trip IDs, owners, itinerary data, or snapshots as part of photo fixes.",
+        "Photo candidates remain unapproved until a human reviews them. Only approved, relevant HTTPS photos should be stored as destination photography.",
+        "If no relevant photo can be confirmed, prefer no photo over a false/misleading location image."
+      ],
+      "kbNumber": "KB0008",
+      "version": "v1",
+      "lastUpdated": "2026-10-11"
     }
   ]
 }
