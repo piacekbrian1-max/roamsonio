@@ -121,6 +121,7 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession:false, autoRefreshToken:false } });
   const startedAt = new Date().toISOString();
   const processed: any[] = [];
+  const usedAcrossBatch = new Set<string>();
   const failures: string[] = [];
   let photosAttached = 0, readyForApproval = 0, needsAttention = 0;
   try {
@@ -130,7 +131,9 @@ Deno.serve(async (req) => {
       .sort((a: any, b: any) => {
         const priority = (x: any) => {
           const label = String(x.build_destination || "") + " " + String(x.name || "");
-          return String(x.metadata?.photo_preparation_source || "") === "Wikimedia Commons" ? 0 : 1;
+          if (/hawaii/i.test(label)) return 0;
+          if (String(x.metadata?.photo_preparation_source || "") === "Wikimedia Commons") return 1;
+          return 2;
         };
         const priorityDifference = priority(a) - priority(b);
         if (priorityDifference !== 0) return priorityDifference;
@@ -171,15 +174,25 @@ Deno.serve(async (req) => {
         const aliases = destinationAliases(destination, name);
         // At most two queries per destination per run. Prefer a known landmark for broad experiences.
         const isHawaii = /hawaii/i.test(destination + " " + name);
+        const isCanadianRockies = /canadian rockies/i.test(destination + " " + name);
+        const isBanff = /banff|lake louise/i.test(destination + " " + name);
         const queries = (isHawaii ? [
           "Na Pali Coast Kauai Hawaii scenic landscape",
           "Hawaii Volcanoes National Park coastline waterfall",
           "Waimea Canyon Kauai panorama"
+        ] : isCanadianRockies ? [
+          "Jasper National Park Canadian Rockies mountain lake landscape",
+          "Moraine Lake Canadian Rockies panorama",
+          "Icefields Parkway Canadian Rockies scenic landscape"
+        ] : isBanff ? [
+          "Lake Louise Banff National Park turquoise lake landscape",
+          "Banff National Park Moraine Lake mountain landscape",
+          "Bow Lake Icefields Parkway Banff scenic landscape"
         ] : [
           ...(aliases.length ? [aliases[0] + " landscape"] : []),
           name + " landmark",
           searchTerms + " landscape"
-        ]).filter((query: string, index: number, all: string[]) => all.indexOf(query) === index).slice(0, isHawaii ? 3 : 2);
+        ]).filter((query: string, index: number, all: string[]) => all.indexOf(query) === index).slice(0, (isHawaii || isCanadianRockies || isBanff) ? 3 : 2);
         const results: any[] = [];
         for (const query of [...new Set(queries)]) {
           results.push(...await commonsSearch(query));
@@ -187,7 +200,8 @@ Deno.serve(async (req) => {
         const ranked = results.map((p: any) => ({ ...p, match: relevance(p, destination, name) }))
           .filter((p: any) => p.match.ok)
           .sort((a: any,b: any) => b.match.score-a.match.score);
-        const unique = ranked.filter((p: any, i: number, arr: any[]) => arr.findIndex((q: any) => q.pageid === p.pageid) === i);
+        // Avoid assigning the same Commons image to multiple destinations in one batch.
+        const unique = ranked.filter((p: any, i: number, arr: any[]) => arr.findIndex((q: any) => q.pageid === p.pageid) === i && !usedAcrossBatch.has(String(p.url || "")));
         if (item.replaceExisting) {
           // Keep the existing set unless three distinct replacement candidates are available.
           if (unique.length < 3) {
@@ -228,6 +242,7 @@ Deno.serve(async (req) => {
           });
           if (saveError) throw saveError;
           usedUrls.add(candidate.url);
+          usedAcrossBatch.add(String(candidate.url || ""));
           attachedForEntry++;
           photosAttached++;
         }
