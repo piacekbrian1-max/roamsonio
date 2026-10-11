@@ -73,9 +73,13 @@ function relevance(item: any, destination: string, name: string) {
   };
   let iconicHit = false;
   for (const [key, values] of Object.entries(iconic)) if (label.includes(key) && values.some(t => combined.includes(norm(t)))) iconicHit = true;
-  const destinationSpecific = placeHits.length > 0 || iconicHit;
+  const specialDestination = /hawaii|colorado.*aspens|canadian rockies|banff|lake louise|dolomites|french alps|chamonix|christmas markets?|kyoto|patagonia|raja ampat|costa rica|monteverde|new orleans|savannah|oaxaca|cappadocia|madeira|santorini/i.test(destination + " " + name);
+  // A matching search phrase is not proof of relevance: Commons may return neighboring or loosely tagged files.
+  // Require a recognizable destination landmark for broad/ambiguous destinations; otherwise require two meaningful
+  // destination words in the file's own title/description. If metadata cannot prove relevance, reject the image.
+  const destinationSpecific = specialDestination ? iconicHit : placeHits.filter((t: string) => t.length >= 4 && !["united","states","america","canada","italy","france","japan","portugal","norway","slovakia","switzerland","spain","morocco","mexico","jordan","georgia","virginia","carolina","oregon","maine","kentucky","colorado","new","south","north","western","central","eastern","southern","alberta","massachusetts","country","coast","island","region","city","town","mountain","mountains","national","park"].includes(t)).length >= 2;
   const queryMatches = queryHits.length > 0 || descQueryHits.length >= 2;
-  const score = queryHits.length * 5 + descQueryHits.length * 2 + placeHits.length * 3 + (iconicHit ? 12 : 0) + (visual ? 8 : 0);
+  const score = queryHits.length * 3 + descQueryHits.length * 2 + placeHits.length * 3 + (iconicHit ? 12 : 0) + (visual ? 8 : 0);
   return { ok: destinationSpecific && queryMatches && visual, score };
 }
 async function commonsSearch(query: string) {
@@ -265,7 +269,7 @@ Deno.serve(async (req) => {
           photo_preparation_status: isReady ? "ready_for_approval" : (attachedForEntry ? "preparing" : "needs_attention"),
           photo_preparation_checked_at: new Date().toISOString(),
           photo_preparation_source: "Wikimedia Commons",
-          photo_preparation_policy: "destination-specific conservative matching; all photos unapproved"
+          photo_preparation_policy: "strict destination/landmark match; rejects uncertain files; all photos unapproved"
         });
         const { error: updateError } = await supabase.rpc("roamsonio_worker_update_draft_metadata", {
           p_id: entry.id, p_metadata: metadata
