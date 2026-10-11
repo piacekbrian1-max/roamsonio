@@ -1,6 +1,6 @@
 -- Atomic Master Admin clear for one editorial destination.
 -- Deletes only editorial photo rows attached to the requested destination; never touches trips/snapshots.
-create or replace function public.roamsonio_admin_clear_editorial_photo_set(p_destination_id bigint)
+create or replace function public.roamsonio_admin_clear_editorial_photo_set(p_destination_id text)
 returns integer
 language plpgsql
 security definer
