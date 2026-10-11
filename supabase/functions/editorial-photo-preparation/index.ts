@@ -87,14 +87,14 @@ Deno.serve(async (req) => {
   const failures: string[] = [];
   let photosAttached = 0, readyForApproval = 0, needsAttention = 0;
   try {
-    const { data: allEntries, error: entriesError } = await supabase.rpc("roamsonio_admin_editorial_destinations");
+    const { data: allEntries, error: entriesError } = await supabase.rpc("roamsonio_worker_editorial_drafts");
     if (entriesError) throw entriesError;
     const drafts = (allEntries || []).filter((x: any) => (x.status || "draft") === "draft");
     // Read and process a small batch per run to protect Wikimedia from rate limits.
     const candidates: any[] = [];
     for (const entry of drafts) {
       if (candidates.length >= 2) break;
-      const { data: photoRows, error: photoError } = await supabase.rpc("roamsonio_admin_editorial_photos", { p_destination_id: entry.id });
+      const { data: photoRows, error: photoError } = await supabase.rpc("roamsonio_worker_editorial_photos", { p_destination_id: entry.id });
       if (photoError) {
         failures.push(String(entry.name) + ": could not inspect existing photo roles");
         continue;
@@ -128,16 +128,14 @@ Deno.serve(async (req) => {
           const candidate = unique.find((p: any) => !usedUrls.has(p.url));
           if (!candidate) continue;
           const alt = "Photograph of " + destination + (candidate.description ? ": " + candidate.description.slice(0, 150) : "");
-          const { error: saveError } = await supabase.rpc("roamsonio_admin_upsert_editorial_photo", {
-            p_photo_id: null,
+          const { error: saveError } = await supabase.rpc("roamsonio_worker_insert_editorial_photo", {
             p_destination_id: entry.id,
             p_url: candidate.url,
             p_alt_text: alt,
             p_credit: candidate.credit + " · Wikimedia Commons",
             p_source_url: candidate.source_url,
             p_role: role,
-            p_sort_order: role === "hero" ? 0 : role === "secondary" ? 1 : 2,
-            p_approved: false
+            p_sort_order: role === "hero" ? 0 : role === "secondary" ? 1 : 2
           });
           if (saveError) throw saveError;
           usedUrls.add(candidate.url);
@@ -145,7 +143,7 @@ Deno.serve(async (req) => {
           photosAttached++;
         }
         await wait(1800);
-        const { data: refreshed, error: refreshError } = await supabase.rpc("roamsonio_admin_editorial_photos", { p_destination_id: entry.id });
+        const { data: refreshed, error: refreshError } = await supabase.rpc("roamsonio_worker_editorial_photos", { p_destination_id: entry.id });
         if (refreshError) throw refreshError;
         const refreshedRows = refreshed || [];
         const isReady = ["hero","secondary","mobile"].every(role => refreshedRows.some((p: any) => String(p.role || "").toLowerCase() === role && p.url && p.source_url && p.credit && p.alt_text));
@@ -155,11 +153,8 @@ Deno.serve(async (req) => {
           photo_preparation_source: "Wikimedia Commons",
           photo_preparation_policy: "destination-specific conservative matching; all photos unapproved"
         });
-        const { error: updateError } = await supabase.rpc("roamsonio_admin_upsert_editorial_destination", {
-          p_id: entry.id, p_name: entry.name, p_type: entry.type, p_category: entry.category,
-          p_seasons: entry.seasons || [], p_activities: entry.activities || [], p_buildable: entry.buildable !== false,
-          p_build_destination: entry.build_destination || entry.name, p_tagline: entry.tagline || "",
-          p_status: "draft", p_metadata: metadata
+        const { error: updateError } = await supabase.rpc("roamsonio_worker_update_draft_metadata", {
+          p_id: entry.id, p_metadata: metadata
         });
         if (updateError) throw updateError;
         if (isReady) readyForApproval++; else needsAttention++;
@@ -173,7 +168,7 @@ Deno.serve(async (req) => {
           photo_preparation_error: message.slice(0, 300)
         });
         try {
-          await supabase.rpc("roamsonio_admin_upsert_editorial_destination", {
+          await supabase.rpc("roamsonio_worker_update_draft_metadata", {
             p_id: entry.id, p_name: entry.name, p_type: entry.type, p_category: entry.category,
             p_seasons: entry.seasons || [], p_activities: entry.activities || [], p_buildable: entry.buildable !== false,
             p_build_destination: entry.build_destination || entry.name, p_tagline: entry.tagline || "",
