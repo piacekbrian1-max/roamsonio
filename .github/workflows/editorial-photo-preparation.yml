@@ -1,7 +1,7 @@
 name: RoamSonio Editorial Photo Preparation
 
 on:
-  # Keep scheduled runs paused until manual end-to-end testing confirms matching quality.
+  # Manual only: one run processes a larger queue; keep scheduled runs paused until visual quality is verified.
   workflow_dispatch:
 
 permissions:
@@ -10,19 +10,37 @@ permissions:
 jobs:
   prepare-editorial-photos:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - name: Prepare a small batch of destination-specific photo candidates
+      - name: Prepare a library-wide batch of destination-specific photo candidates
         env:
           EDITORIAL_JOB_SECRET: ${{ secrets.EDITORIAL_JOB_SECRET }}
         shell: bash
         run: |
+          set -euo pipefail
           if [ -z "$EDITORIAL_JOB_SECRET" ]; then
             echo "::error::Add the EDITORIAL_JOB_SECRET repository Actions secret."
             exit 1
           fi
-          curl --fail-with-body --silent --show-error \
-            --request POST \
-            --header "Authorization: Bearer $EDITORIAL_JOB_SECRET" \
-            --header "Content-Type: application/json" \
-            --data '{}' \
-            "https://vqtqchxoecrahtrnoocy.supabase.co/functions/v1/editorial-photo-preparation"
+          # Each function invocation handles up to three drafts. Repeat sequentially so one
+          # manual click can work through up to 30 drafts without parallel Wikimedia traffic.
+          for batch in $(seq 1 10); do
+            echo "::group::Editorial photo batch $batch of 10"
+            response=$(curl --fail-with-body --silent --show-error \
+              --request POST \
+              --header "Authorization: Bearer $EDITORIAL_JOB_SECRET" \
+              --header "Content-Type: application/json" \
+              --data '{}' \
+              "https://vqtqchxoecrahtrnoocy.supabase.co/functions/v1/editorial-photo-preparation")
+            echo "$response"
+            reviewed=$(printf '%s' "$response" | jq -r '.draftsReviewed // 0')
+            status=$(printf '%s' "$response" | jq -r '.status // "unknown"')
+            echo "Batch $batch status: $status; drafts reviewed: $reviewed"
+            echo "::endgroup::"
+            if [ "$reviewed" -eq 0 ]; then
+              echo "No more eligible drafts in the queue."
+              break
+            fi
+            # Respect Wikimedia's request limits between function invocations.
+            sleep 8
+          done
