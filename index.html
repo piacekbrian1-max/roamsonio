@@ -270,7 +270,9 @@ trnava:"images/trnava-advent.jpg",
 prague:"images/prague-christmas.jpg",
 pilsen:"images/pilsen-christmas.jpg",
 hluboka:"images/hluboka-winter.jpg",
-vienna:"images/prague-christmas.jpg",
+vienna:"https://commons.wikimedia.org/wiki/Special:FilePath/Vienna%20skyline%20at%20night.jpg?width=1600",
+kyoto:"https://commons.wikimedia.org/wiki/Special:FilePath/Kiyomizu-dera_in_Kyoto.jpg?width=1600",
+oktoberfest:"https://commons.wikimedia.org/wiki/Special:FilePath/Oktoberfest%20Munich.jpg?width=1600",
 neworleans:"https://res.cloudinary.com/simpleview/image/upload/v1503612209/clients/neworleans/NOTMC_46619_dfd8fba4-531f-4e0b-81dc-40d770236b88.jpg",
 atlanta:"https://commons.wikimedia.org/wiki/Special:FilePath/Atlanta%20Skyline%20from%20Piedmont%20Park%20-%20October%202024.png?width=1800",
 gatlinburg:"https://commons.wikimedia.org/wiki/Special:FilePath/Downtown%20Gatlinburg%2C%20Tennessee.JPG?width=1800"
@@ -398,33 +400,13 @@ function tripHref(t){
   return "trip-workspace.html?id="+encodeURIComponent(id);
 }
 function photo(t){
-var ds=(t.destinations||[]);for(var i=0;i<ds.length;i++){var k=ds[i].toLowerCase();if(k.indexOf("trnava")>=0)return images.trnava;if(k.indexOf("prague")>=0)return images.prague;if(k.indexOf("pilsen")>=0)return images.pilsen;if(k.indexOf("hlub")>=0)return images.hluboka;if(k.indexOf("vienna")>=0)return images.vienna;if(k.indexOf("atlanta")>=0)return images.atlanta;if(k.indexOf("gatlinburg")>=0||k.indexOf("smoky mountains")>=0)return images.gatlinburg;if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return images.neworleans}return images.prague
-}
-function openTrip(id){
-  var a=[];try{a=JSON.parse(localStorage.getItem("big-thanksgiving-trips-v1")||"[]")}catch(e){}
-  var t=a.find(function(x){return x.id===id})||{};
-  var nolaId="febaebf6-7369-4922-b069-c745eee8c16f";
-  var dests=Array.isArray(t.destinations)?t.destinations:[];
-  var isNola=String(id||"").trim()===nolaId ||
-    String(t.name||"").trim()==="New Orleans · Jan 16–20, 2027" ||
-    dests.some(function(d){return String(d||"").trim().toLowerCase()==="new orleans"});
-  if(isNola){
-    sessionStorage.setItem("openTripId",id);
-    location.href="trip-workspace.html?id="+encodeURIComponent(id)+"&supabaseId="+encodeURIComponent(String(t.supabaseId||""))+"&destination=New%20Orleans&v=nola-home-"+Date.now();
-    return;
-  }
-  var atlantaId="16f08031-885a-45d6-a79e-480fb1d39c67";
-  var isAtlantaOpen=String(id||"").trim()===atlantaId ||
-    String(t.name||"").trim()==="Atlanta Test" ||
-    dests.some(function(d){return String(d||"").trim().toLowerCase()==="atlanta"});
-  if(isAtlantaOpen){
-    sessionStorage.setItem("openTripId",id);
-    location.href="trip-workspace.html?id="+encodeURIComponent(id)+"&supabaseId="+encodeURIComponent(String(t.supabaseId||"")||atlantaId)+"&destination=Atlanta&v=atlanta-home-"+Date.now();
-    return;
-  }
-  var d=(t.destinations||[])[0]||"";
-  sessionStorage.setItem("openTripId",id);
-  location.href="trip-workspace.html?id="+encodeURIComponent(id)+"&destination="+encodeURIComponent(d);
+t=t||{};
+var direct=[t.heroPhoto,t.image,t.photo,t.coverPhoto];
+if(t.destinationKnowledge&&Array.isArray(t.destinationKnowledge.photos)&&t.destinationKnowledge.photos.length){var first=t.destinationKnowledge.photos[0];direct.push(typeof first==="string"?first:first&&first.url);}
+for(var q=0;q<direct.length;q++)if(typeof direct[q]==="string"&&direct[q].indexOf("https://")===0)return direct[q];
+var ds=Array.isArray(t.destinations)?t.destinations:[];
+for(var i=0;i<ds.length;i++){var k=String(ds[i]||"").toLowerCase();if(k.indexOf("trnava")>=0)return images.trnava;if(k.indexOf("prague")>=0)return images.prague;if(k.indexOf("pilsen")>=0)return images.pilsen;if(k.indexOf("hlub")>=0)return images.hluboka;if(k.indexOf("vienna")>=0)return images.vienna;if(k.indexOf("kyoto")>=0)return images.kyoto;if(k.indexOf("oktoberfest")>=0||k.indexOf("munich")>=0)return images.oktoberfest;if(k.indexOf("atlanta")>=0)return images.atlanta;if(k.indexOf("gatlinburg")>=0||k.indexOf("smoky mountains")>=0)return images.gatlinburg;if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return images.neworleans;}
+return "";
 }
 function parseDate(s){return s?new Date(s+"T00:00:00"):null}
 function daysUntil(s){var d=parseDate(s),n=new Date();n.setHours(0,0,0,0);return d?Math.ceil((d-n)/86400000):null}
