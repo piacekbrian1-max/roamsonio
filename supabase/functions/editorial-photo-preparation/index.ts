@@ -128,6 +128,13 @@ Deno.serve(async (req) => {
     if (entriesError) throw entriesError;
     const drafts = (allEntries || []).filter((x: any) => (x.status || "draft") === "draft")
       .sort((a: any, b: any) => {
+        const priority = (x: any) => {
+          const label = String(x.build_destination || "") + " " + String(x.name || "");
+          return /hawaii/i.test(label) &&
+            String(x.metadata?.photo_preparation_source || "") === "Wikimedia Commons" ? 0 : 1;
+        };
+        const priorityDifference = priority(a) - priority(b);
+        if (priorityDifference !== 0) return priorityDifference;
         const at = Date.parse(String(a.metadata?.photo_preparation_checked_at || "")) || 0;
         const bt = Date.parse(String(b.metadata?.photo_preparation_checked_at || "")) || 0;
         return at - bt;
