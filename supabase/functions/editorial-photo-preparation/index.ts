@@ -169,10 +169,7 @@ Deno.serve(async (req) => {
         });
         try {
           await supabase.rpc("roamsonio_worker_update_draft_metadata", {
-            p_id: entry.id, p_name: entry.name, p_type: entry.type, p_category: entry.category,
-            p_seasons: entry.seasons || [], p_activities: entry.activities || [], p_buildable: entry.buildable !== false,
-            p_build_destination: entry.build_destination || entry.name, p_tagline: entry.tagline || "",
-            p_status: "draft", p_metadata: metadata
+            p_id: entry.id, p_metadata: metadata
           });
         } catch (_) {}
         needsAttention++;
