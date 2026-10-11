@@ -10,7 +10,7 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const norm = (v: unknown) => String(v || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 const stop = new Set(["the","and","for","with","from","into","near","best","season","adventure","journey","trail","route","weekend","experience","explore","exploring","visit","trip","travel","scenic","seasonal","region","area","town","city","coast","island","mountain","mountains","village","villages","outdoor","culture","food","history","hiking","ski","skiing","snowboard","snowboarding","road","parkway"]);
 const peopleTerms = /\b(portrait|selfie|headshot|person|people|man|woman|child|children|boy|girl|family|tourist|tourists|model|fashion|wedding|group photo|close up face|close-up face)\b/i;
-const genericTerms = /\b(stock photo|illustration|logo|map of|flag of|poster|collage|clipart|rendering|artist impression|plaque|inscription|memorial marker|commemorative tablet|building under construction|construction site|high rise building|office tower|hotel facade|parking garage|sculpture base|tombstone|grave marker)\b/i;
+const genericTerms = /\b(stock photo|illustration|logo|map of|flag of|poster|collage|clipart|rendering|artist impression|plaque|inscription|memorial marker|commemorative tablet|building under construction|construction site|high rise building|office tower|hotel facade|parking garage|sculpture base|tombstone|grave marker|apartment building|condominium|commercial building|business district|downtown skyline)\b/i;
 const scenicTerms = /\b(landscape|coast|coastal|beach|waterfall|volcano|crater|lava|ocean|sea|island|mountain|mountains|cliff|valley|forest|rainforest|tropical|lagoon|reef|sunset|sunrise|panorama|scenic|national park|bay|shore|shoreline|canyon|ridge|viewpoint)\b/i;
 
 function geographyTerms(destination: string, name: string) {
@@ -52,6 +52,7 @@ function relevance(item: any, destination: string, name: string) {
   // For Hawaii, require recognizable outdoor scenery rather than plaques, hotel towers,
   // construction, or random urban structures.
   if (label.includes("hawaii") && !scenicTerms.test(String(item.title || "") + " " + String(item.description || ""))) return { ok: false, score: 0 };
+  if (label.includes("hawaii") && genericTerms.test(String(item.title || "") + " " + String(item.description || ""))) return { ok: false, score: 0 };
   const aliases = destinationAliases(destination, name);
   const aliasTerms = aliases.flatMap((alias: string) => norm(alias).split(" ").filter((t: string) => t.length >= 4 && !stop.has(t)));
   const terms = [...new Set([...geographyTerms(destination, name), ...aliasTerms])];
@@ -171,7 +172,7 @@ Deno.serve(async (req) => {
           ...(aliases.length ? [aliases[0] + " landscape"] : []),
           name + " landmark",
           searchTerms + " landscape"
-        ]).filter((query: string, index: number, all: string[]) => all.indexOf(query) === index).slice(0, 2);
+        ]).filter((query: string, index: number, all: string[]) => all.indexOf(query) === index).slice(0, isHawaii ? 3 : 2);
         const results: any[] = [];
         for (const query of [...new Set(queries)]) {
           results.push(...await commonsSearch(query));
