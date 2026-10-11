@@ -945,10 +945,16 @@ function suggestionSlug(value){
       [/santorini/i,["Santorini Oia blue domes caldera","Santorini cliffside village panorama","Santorini coastline landscape"]]
     ];
     const mapped=photoSearchMap.find(([re])=>re.test(destination+" "+entry.name));
-    // If a destination has a landmark map, do not dilute it with broad region-only searches.
-    // This reduces plausible-looking but unrelated images appearing in the candidate gallery.
-    const queryLimit=/patagonia/i.test(destination+" "+entry.name)?4:3;
-    const queries=[...new Set((mapped?mapped[1]:[destination+" landscape",destination+" scenic view"]).map(q=>q.trim()).filter(Boolean))].slice(0,queryLimit);
+    // Apply the same multi-query strategy to every destination. Use curated landmark phrases
+    // where available, then destination-specific variants so unmapped places get equal coverage.
+    const activityTerms=String(entry.activities||entry.type||"").split(/[,;|]/).map(x=>x.trim()).filter(Boolean);
+    const generatedQueries=[
+      ...(mapped?mapped[1]:[]),
+      destination+" "+(activityTerms[0]||"landscape"),
+      destination+" scenic panorama",
+      (entry.name&&entry.name!==destination?entry.name+" "+destination+" landscape":destination+" famous landmark scenery")
+    ];
+    const queries=[...new Set(generatedQueries.map(q=>q.trim()).filter(Boolean))].slice(0,4);
     grid.textContent="Finding a wider range of photo choices for "+destination+"…";
     photoSetStatus("Searching multiple image queries. If results are limited, manual Photo URL entry remains available.");
     try{
