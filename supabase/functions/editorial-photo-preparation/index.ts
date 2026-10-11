@@ -38,7 +38,9 @@ function relevance(item: any, destination: string, name: string) {
   const desc = norm(item.description);
   const combined = title + " " + desc;
   if (!title || peopleTerms.test(String(item.title || "")) || peopleTerms.test(String(item.description || "")) || genericTerms.test(String(item.title || ""))) return { ok: false, score: 0 };
-  const terms = geographyTerms(destination, name);
+  const aliases = destinationAliases(destination, name);
+  const aliasTerms = aliases.flatMap((alias: string) => norm(alias).split(" ").filter((t: string) => t.length >= 4 && !stop.has(t)));
+  const terms = [...new Set([...geographyTerms(destination, name), ...aliasTerms])];
   const titleHits = terms.filter(t => title.includes(t));
   const allHits = terms.filter(t => combined.includes(t));
   // Conservative rule: the file title or its own description must name at least one
