@@ -1,15 +1,24 @@
 name: Weekly RoamSonio Editorial Suggestions
 
 on:
-  # Scheduled runs intentionally paused until the expanded generator is tested.
+  # GitHub cron uses UTC. Run at both possible 09:00 Eastern UTC slots;
+  # the clock guard below permits only the slot that is 09:00 in New York.
+  schedule:
+    - cron: "0 13 * * 0"
+    - cron: "0 14 * * 0"
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: weekly-roamsonio-editorial-suggestions
+  cancel-in-progress: false
+
 jobs:
   generate-editorial-drafts:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Keep the weekly run at 9 AM Eastern
         id: clock
@@ -22,48 +31,25 @@ jobs:
           else
             echo "run_now=true" >> "$GITHUB_OUTPUT"
           fi
-      - name: Generate protected editorial drafts
-        if: steps.clock.outputs.run_now == 'true' || github.event_name == 'workflow_dispatch'
-        env:
-          EDITORIAL_JOB_SECRET: ${{ secrets.EDITORIAL_JOB_SECRET }}
-        shell: bash
-        run: |
-          if [ -z "$EDITORIAL_JOB_SECRET" ]; then
-            echo "::error::Add the EDITORIAL_JOB_SECRET repository Actions secret after deploying the Supabase Edge Function."
-            exit 1
-          fi
-          curl --fail-with-body --silent --show-error \
-            --request POST \
-            --header "Authorization: Bearer $EDITORIAL_JOB_SECRET" \
-            --header "Content-Type: application/json" \
-            --data '{}' \
-            "https://vqtqchxoecrahtrnoocy.supabase.co/functions/v1/editorial-suggestion-generator"
-      - name: Prepare photos for the new and waiting drafts
+      - name: Generate up to three protected editorial drafts
         if: steps.clock.outputs.run_now == 'true' || github.event_name == 'workflow_dispatch'
         env:
           EDITORIAL_JOB_SECRET: ${{ secrets.EDITORIAL_JOB_SECRET }}
         shell: bash
         run: |
           set -euo pipefail
-          # Reuse the same protected worker and conservative quality checks.
-          # Each call handles up to three drafts; process a modest sequential batch
-          # after generation so new suggestions do not remain photo-empty.
-          for batch in $(seq 1 10); do
-            echo "::group::Photo preparation batch $batch of 10"
-            response=$(curl --fail-with-body --silent --show-error \
-              --request POST \
-              --header "Authorization: Bearer $EDITORIAL_JOB_SECRET" \
-              --header "Content-Type: application/json" \
-              --data '{}' \
-              "https://vqtqchxoecrahtrnoocy.supabase.co/functions/v1/editorial-photo-preparation")
-            echo "$response"
-            reviewed=$(printf '%s' "$response" | jq -r '.draftsReviewed // 0')
-            status=$(printf '%s' "$response" | jq -r '.status // "unknown"')
-            echo "Photo batch $batch status: $status; drafts reviewed: $reviewed"
-            echo "::endgroup::"
-            if [ "$reviewed" -eq 0 ]; then
-              echo "No more eligible drafts in the queue."
-              break
-            fi
-            sleep 8
-          done
+          if [ -z "$EDITORIAL_JOB_SECRET" ]; then
+            echo "::error::Add the EDITORIAL_JOB_SECRET repository Actions secret."
+            exit 1
+          fi
+          response=$(curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Authorization: Bearer $EDITORIAL_JOB_SECRET" \
+            --header "Content-Type: application/json" \
+            --data '{}' \
+            "https://vqtqchxoecrahtrnoocy.supabase.co/functions/v1/editorial-suggestion-generator")
+          echo "$response"
+          created=$(printf '%s' "$response" | jq -r '.created // 0')
+          status=$(printf '%s' "$response" | jq -r '.status // "unknown"')
+          echo "Weekly suggestion generation status: $status; private drafts created: $created"
+          echo "Photo preparation runs independently on its scheduled workflow. Nothing is approved or published by this job."
