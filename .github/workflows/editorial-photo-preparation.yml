@@ -22,8 +22,8 @@ jobs:
             echo "::error::Add the EDITORIAL_JOB_SECRET repository Actions secret."
             exit 1
           fi
-          # Each function invocation handles up to three drafts. Repeat sequentially so one
-          # manual click can work through up to 30 drafts without parallel Wikimedia traffic.
+          # Each function invocation now handles one draft with throttled/retried Commons requests.
+          # Repeat sequentially with a longer cooldown to avoid rate-limit bursts.
           for batch in $(seq 1 10); do
             echo "::group::Editorial photo batch $batch of 10"
             response=$(curl --fail-with-body --silent --show-error \
@@ -42,5 +42,5 @@ jobs:
               break
             fi
             # Respect Wikimedia's request limits between function invocations.
-            sleep 8
+            sleep 20
           done
