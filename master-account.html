@@ -432,9 +432,13 @@ if(masterSignOutLink){
       location.href="master-admin-security.html";
       return;
     }
+    // Refresh token after MFA so protected RPCs receive the aal2 claim.
+    const {error:sessionRefreshError}=await client.auth.refreshSession();
+    if(sessionRefreshError){const box=document.getElementById("authError");box.textContent="Master Admin session refresh failed. Please sign in again.";box.style.display="block";return;}
+    const {data:aalAfterRefresh,error:aalAfterRefreshError}=await client.auth.mfa.getAuthenticatorAssuranceLevel();
+    if(aalAfterRefreshError||aalAfterRefresh.currentLevel!=="aal2"){const box=document.getElementById("authError");box.textContent="Master Admin MFA could not be confirmed for protected changes. Complete the security check again.";box.style.display="block";return;}
     document.getElementById("denied").style.display="none";
     document.getElementById("dashboard").style.display="block";
-    // Finish the session refresh before protected editorial RPCs start.
     await loadMasterSummary();
     loadTransferUsers();
     loadAdminActivity();
@@ -1147,7 +1151,7 @@ function suggestionSlug(value){
       photoSetStatus("Protected photography database loaded. Approval is controlled by Master Admin + MFA.");
     }catch(e){
       editorialPhotos=[];photoRender();
-      photoSetStatus("Photography management is unavailable until the protected photography migration is applied.");
+      photoSetStatus("Could not load saved photos: "+(e.message||"Unknown error"));
     }
   }
   async function photoSave(){
