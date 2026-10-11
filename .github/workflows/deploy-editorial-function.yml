@@ -2,6 +2,12 @@ name: Deploy RoamSonio Editorial Function
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "supabase/functions/editorial-photo-preparation/**"
+      - ".github/workflows/deploy-editorial-function.yml"
 
 permissions:
   contents: read
