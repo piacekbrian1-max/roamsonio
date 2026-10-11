@@ -922,22 +922,29 @@ function suggestionSlug(value){
     document.getElementById("photoEditor").hidden=false;box.hidden=false;
     const activities=Array.isArray(entry.activities)?entry.activities.join(" "):String(entry.activities||"");
     const activity=(activities.split(/[,;|]/)[0]||entry.type||"travel").trim();
-    const queries=[
-      destination+" scenic landscape",
-      destination+" famous landmark",
-      destination+" "+activity+" photography"
+    const type=String(entry.type||"").toLowerCase();
+    const baseQueries=[
+      destination+" landscape",
+      destination+" scenic view",
+      destination+" famous places",
+      destination+" travel photography",
+      destination+" nature",
+      destination+" "+activity,
+      "intitle:"+destination+" landscape",
+      "intitle:"+destination+" view"
     ];
-    grid.textContent="Finding photo choices for "+destination+"…";
-    photoSetStatus("Searching licensed image choices. You can also enter an image URL manually below.");
+    const queries=[...new Set(baseQueries.map(q=>q.trim()).filter(Boolean))];
+    grid.textContent="Finding a wider range of photo choices for "+destination+"…";
+    photoSetStatus("Searching multiple image queries. If results are limited, manual Photo URL entry remains available.");
     try{
       const found=[],warnings=[],seen=new Set();
       async function commonsJson(params){
-        // Use a plain cross-origin GET. Custom headers trigger CORS preflight on
-        // Wikimedia and can block the browser before the API request is made.
         const url="https://commons.wikimedia.org/w/api.php?"+new URLSearchParams({...params,format:"json",origin:"*"}).toString();
         let lastError="Wikimedia request failed";
         for(let attempt=0;attempt<3;attempt++){
-          const response=await fetch(url,{method:"GET",mode:"cors",cache:"no-store"});
+          let response;
+          try{response=await fetch(url,{method:"GET",mode:"cors",cache:"no-store"});}
+          catch(err){throw new Error("Browser could not reach Wikimedia Commons: "+(err.message||"network/CORS error"));}
           if(response.ok){
             const data=await response.json();
             if(!data.error)return data;
@@ -948,52 +955,53 @@ function suggestionSlug(value){
             if(response.status!==429&&response.status!==503)throw new Error(lastError);
           }
           const header=response.headers.get("Retry-After");
-          const retrySeconds=header&&/^\d+$/.test(header)?Number(header):Math.min(12,2*Math.pow(2,attempt));
-          await new Promise(resolve=>setTimeout(resolve,Math.max(2,Math.min(retrySeconds,15))*1000));
+          const retrySeconds=header&&/^\d+$/.test(header)?Number(header):Math.min(15,3*Math.pow(2,attempt));
+          await new Promise(resolve=>setTimeout(resolve,Math.max(2,Math.min(retrySeconds,20))*1000));
         }
         throw new Error(lastError+" after retries");
       }
-      // One request returns search results AND image/license metadata together.
-      // This avoids the old separate search/details requests and avoids CORS preflight.
       for(let qi=0;qi<queries.length;qi++){
         try{
           const data=await commonsJson({
             action:"query",generator:"search",gsrsearch:queries[qi],gsrnamespace:"6",
-            gsrlimit:"30",prop:"imageinfo",iiprop:"url|extmetadata",iiurlwidth:"900"
+            gsrlimit:"50",prop:"imageinfo",iiprop:"url|extmetadata",iiurlwidth:"900",
+            iiextmetadatafilter:"LicenseShortName|UsageTerms|Artist|Credit|ImageDescription|LicenseUrl"
           });
           const pages=Object.values((data.query&&data.query.pages)||{});
           for(const p of pages){
             const info=(p.imageinfo&&p.imageinfo[0])||{},meta=info.extmetadata||{};
             const plain=v=>photoPlainMetadata(v&&v.value);
-            const license=plain(meta.LicenseShortName),artist=plain(meta.Artist);
+            const license=plain(meta.LicenseShortName)||plain(meta.UsageTerms);
+            const artist=plain(meta.Artist)||plain(meta.Credit);
             const description=plain(meta.ImageDescription),title=p.title||"";
             const url=info.thumburl||info.url||"";
             const key=url.toLowerCase();
-            if(!url.startsWith("https://")||!license||!artist||seen.has(key))continue;
+            if(!url.startsWith("https://")||!license||seen.has(key))continue;
             seen.add(key);
             found.push({
               title,url,
               source_url:info.descriptionurl||("https://commons.wikimedia.org/wiki/"+encodeURIComponent(title.replace(/ /g,"_"))),
-              credit:[artist,"License: "+license].filter(Boolean).join(" · "),
+              credit:(artist||"Creator credit: see source page")+" · License: "+license,
               alt_text:description||title.replace(/^File:/i,"")+" — "+destination,
               license,license_url:plain(meta.LicenseUrl),_query:queries[qi]
             });
           }
-          if(found.length>=24)break;
+          if(found.length>=80)break;
         }catch(err){warnings.push(queries[qi]+": "+(err.message||"request failed"));}
-        if(qi<queries.length-1&&found.length<24)await new Promise(resolve=>setTimeout(resolve,1200));
+        if(qi<queries.length-1&&found.length<80)await new Promise(resolve=>setTimeout(resolve,1600));
       }
-      const rejectVisual=/\.(pdf|djvu|tif|tiff)\b|\b(scan|book cover|book page|postcard|poster|map of|map showing|brochure|document|manuscript|painting|drawing|illustration|logo|coat of arms|fossil|concretion|mineral specimen|rock specimen|geological sample|museum specimen|stereograph|glass negative|lantern slide|portrait|headshot|selfie|group of people|specimen)\b/i;
-      const preferVisual=/\b(landscape|scenic|mountain|mountains|valley|waterfall|lake|forest|ridge|summit|panorama|national park|trail|river|coast|sunrise|sunset|overlook|viewpoint|meadow|alpine|nature|wilderness|beach|island|waterfront|castle|cathedral|bridge|old town|historic|plaza|square|palace|temple|pagoda|harbor|harbour|market|lighthouse|dunes|desert|glacier|fjord|village|skyline|architecture|cityscape|aerial view)\b/i;
+      const rejectVisual=/\.(pdf|djvu|tif|tiff)\b|\b(scan|book cover|book page|postcard|poster|map of|map showing|brochure|document|manuscript|painting|drawing|illustration|logo|coat of arms|fossil|concretion|mineral specimen|rock specimen|geological sample|museum specimen|stereograph|glass negative|lantern slide|portrait|headshot|selfie|group of people|specimen|diagram|chart|flag)\b/i;
+      const preferVisual=/\b(landscape|scenic|mountain|mountains|valley|waterfall|lake|forest|ridge|summit|panorama|national park|trail|river|coast|sunrise|sunset|overlook|viewpoint|meadow|alpine|nature|wilderness|beach|island|waterfront|castle|cathedral|bridge|old town|historic|plaza|square|palace|temple|pagoda|harbor|harbour|market|lighthouse|dunes|desert|glacier|fjord|village|skyline|architecture|cityscape|aerial view|street view|garden|bay|cliff|volcano|water|church|fortress|ruins)\b/i;
       const destinationTerms=normPhotoText(destination).split(" ").filter(x=>x.length>2);
       photoCandidates=found.filter(x=>!rejectVisual.test(x.title+" "+x.alt_text))
         .map((x,i)=>{
           const text=normPhotoText(x.title+" "+x.alt_text);
           const match=destinationTerms.some(term=>text.includes(term));
-          return {...x,_score:(preferVisual.test(x.title+" "+x.alt_text)?5:0)+(match?4:0)+(preferVisual.test(x.alt_text)?1:0)-i*.01};
-        }).sort((a,b)=>b._score-a._score).slice(0,30);
+          const queryMatch=normPhotoText(x._query).includes(normPhotoText(destination));
+          return {...x,_score:(preferVisual.test(x.title+" "+x.alt_text)?5:0)+(match?4:0)+(queryMatch?2:0)+(preferVisual.test(x.alt_text)?1:0)-i*.001};
+        }).sort((a,b)=>b._score-a._score).slice(0,48);
       if(!photoCandidates.length){
-        grid.innerHTML="<div class='editorialStatus'>No usable licensed scenic images were returned for this search. Enter a Photo URL below or use Refresh to try again. Existing photos were not changed.</div>";
+        grid.innerHTML="<div class='editorialStatus'>No licensed images passed the checks for these searches. Enter a Photo URL below or try Refresh later. Existing photos were not changed.</div>";
         photoSetStatus("No licensed scenic candidates passed basic checks."+(warnings.length?" Provider note: "+warnings[0]:"")+" Manual photo entry remains available.");
         return;
       }
@@ -1003,7 +1011,7 @@ function suggestionSlug(value){
         img.addEventListener("error",()=>{img.alt="Image unavailable — choose another candidate";img.style.background="#eef1f4";});
         b.addEventListener("click",()=>photoUseCandidate(photoCandidates[Number(b.dataset.index)]));
       });
-      photoSetStatus("Loaded "+photoCandidates.length+" suggested licensed images for "+destination+". Select one to preview, verify the actual image and license, then save. Suggestions are never auto-approved."+(warnings.length?" Some searches failed; showing usable results found.":""));
+      photoSetStatus("Loaded "+photoCandidates.length+" licensed image choices from multiple searches for "+destination+". Verify each image and source before saving; none is auto-approved."+(warnings.length?" Some queries failed; other results are shown.":""));
     }catch(e){
       grid.innerHTML="<div class='editorialStatus'>Suggested pictures could not be loaded right now. Manual Photo URL, Source URL, Credit and Alt Text fields remain available below. No existing photo was changed.</div>";
       photoSetStatus("Photo suggestions failed: "+(e.message||"Unknown error")+". Manual entry is still available.");
