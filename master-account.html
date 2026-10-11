@@ -926,26 +926,34 @@ function suggestionSlug(value){
     const seasonalContext=[String(entry.name||""),String(entry.category||""),activities,String(entry.type||"")].join(" ").toLowerCase();
     const isCapeCod=/cape\s*cod/i.test(destination+" "+seasonalContext);
     const isSeasonal=/season|summer|fall|autumn|spring|winter|christmas|holiday|ski|snow|leaf|foliage|beach|coast/i.test(seasonalContext);
+    const isSantorini=/santorini/i.test(destination+" "+seasonalContext);
     const queries=isCapeCod ? [
-      "Cape Cod beach dunes summer landscape",
-      "Cape Cod lighthouse harbor scenic",
+      "Cape Cod National Seashore beach dunes",
+      "Cape Cod lighthouse ocean scenic",
+      "Cape Cod Chatham harbor boats",
+      "Cape Cod Provincetown waterfront",
       "Cape Cod salt marsh coastal landscape",
-      "Cape Cod Provincetown Chatham coast",
-      "Cape Cod seasonal "+(seasonalContext.match(/summer|fall|autumn|spring|winter|christmas|holiday/i)||["season"])[0],
-      "Cape Cod National Seashore panorama"
+      "Cape Cod beach sunset panorama"
+    ] : isSantorini ? [
+      "Santorini Oia blue domes caldera",
+      "Santorini Oia village white blue domes",
+      "Santorini famous blue dome church sea",
+      "Santorini caldera sunset Oia panorama",
+      "Santorini Fira cliffside whitewashed buildings",
+      "Santorini iconic Greece island landscape"
     ] : [
-      destination+" landscape",
-      destination+" scenic view",
-      destination+" "+activity,
-      String(entry.name||destination)+" "+(isSeasonal?seasonalContext:"scenic nature"),
-      destination+" landmark panorama",
-      destination+" coast beach landscape"
+      destination+" famous landmark scenic",
+      destination+" iconic viewpoint panorama",
+      destination+" "+activity+" scenic landscape",
+      destination+" best known sights photography",
+      destination+" coastline village skyline",
+      destination+" nature panorama"
     ];
     grid.textContent="Searching Wikimedia Commons for scenic, destination-specific photos of "+destination+"…";
     try{
       const results=[];
       const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-      for(const query of [...new Set(queries)].slice(0,4)){
+      for(const query of [...new Set(queries)].slice(0,6)){
         const params=new URLSearchParams({action:"query",list:"search",srsearch:query,srnamespace:"6",srlimit:"30",format:"json",origin:"*"});
         const response=await fetch("https://commons.wikimedia.org/w/api.php?"+params.toString(),{cache:"no-store"});
         if(!response.ok)throw new Error("Wikimedia search returned HTTP "+response.status);
@@ -967,7 +975,7 @@ function suggestionSlug(value){
             return {title:p.title||"",url:info.thumburl||info.url||"",source_url:"https://commons.wikimedia.org/wiki/"+encodeURIComponent((p.title||"").replace(/ /g,"_")),credit:[artist,license?"License: "+license:""].filter(Boolean).join(" · "),alt_text:plain(meta.ImageDescription)||base+" travel photography",license:license,license_url:plain(meta.LicenseUrl)};
           }).filter(x=>x.url&&/^https:\/\//i.test(x.url)&&x.source_url&&x.credit&&x.license));
         }
-        await pause(1600);
+        await pause(5000);
       }
       const rejectVisual=/\.(pdf|djvu|tif|tiff)\b|\b(scan|book cover|book page|postcard|poster|map of|map showing|brochure|document|manuscript|painting|drawing|illustration|logo|coat of arms|fossil|concretion|mineral specimen|rock specimen|geological sample|museum specimen|historic photograph|historical photograph|stereograph|glass negative|lantern slide|portrait|headshot|selfie|people standing|group of people)\b/i;
       const preferVisual=/\b(landscape|scenic|mountain|mountains|valley|waterfall|lake|forest|ridge|summit|panorama|national park|trail|river|coast|sunrise|sunset|overlook|viewpoint|meadow|alpine|nature|wilderness)\b/i;
@@ -978,7 +986,7 @@ function suggestionSlug(value){
         if(seen.has(key)||rejectVisual.test(searchable))return false;
         seen.add(key);
         return true;
-      }).map((x,index)=>({...x,_score:(preferVisual.test(x.title)?5:0)+(preferVisual.test(x.alt_text)?2:0)+(x.title.toLowerCase().includes(destination.toLowerCase())?3:0)-index*0.01}))
+      }).map((x,index)=>({...x,_score:(preferVisual.test(x.title)?3:0)+(preferVisual.test(x.alt_text)?1:0)+(x.title.toLowerCase().includes(destination.toLowerCase())?3:0)+(isSantorini&&/oia|blue dome|blue-domed|caldera|fira|whitewashed|church|sunset/i.test(x.title+" "+x.alt_text)?10:0)+(isCapeCod&&/cape cod|chatham|provincetown|national seashore|lighthouse|dune|harbor|beach|salt marsh/i.test(x.title+" "+x.alt_text)?8:0)-(/road|highway|parking lot|utility pole|bare rock|rock formation|geological|quarry/i.test(x.title+" "+x.alt_text)?5:0)-index*0.01}))
        .sort((a,b)=>b._score-a._score).slice(0,36);
       if(!photoCandidates.length){grid.textContent="No scenic, licensed candidates passed the quality filter. Try a more specific landmark or activity. No photos were changed.";photoSetStatus("No scenic candidates passed the editorial quality filter. No photos were changed.");return;}
       grid.innerHTML=photoCandidates.map((x,i)=>"<button type='button' class='photoCandidate' data-index='"+i+"'><img src='"+esc(x.url)+"' alt='"+esc(x.alt_text)+"' loading='lazy'><small>"+esc(x.title.replace(/^File:/i,""))+"<br>"+esc(x.license)+"</small></button>").join("");
