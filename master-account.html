@@ -924,7 +924,7 @@ function suggestionSlug(value){
     const base=[destination,String(entry.name||""),String(entry.category||""),activities].filter(Boolean).join(" ").trim();
     const activity=(activities.split(/[,;|]/)[0]||entry.type||"travel").trim();
     const seasonalContext=[String(entry.name||""),String(entry.category||""),activities,String(entry.type||"")].join(" ").toLowerCase();
-    const isCapeCod=/cape\\s*cod/i.test(destination+" "+seasonalContext);
+    const isCapeCod=/cape\s*cod/i.test(destination+" "+seasonalContext);
     const isSeasonal=/season|summer|fall|autumn|spring|winter|christmas|holiday|ski|snow|leaf|foliage|beach|coast/i.test(seasonalContext);
     const queries=isCapeCod ? [
       "Cape Cod beach dunes summer landscape",
