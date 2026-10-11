@@ -44,30 +44,39 @@ function destinationAliases(destination: string, name: string) {
   return [];
 }
 function relevance(item: any, destination: string, name: string) {
+  const raw = String(item.title || "") + " " + String(item.description || "");
   const title = norm(item.title);
   const desc = norm(item.description);
-  const combined = title + " " + desc;
-  if (!title || peopleTerms.test(String(item.title || "")) || peopleTerms.test(String(item.description || "")) || genericTerms.test(String(item.title || ""))) return { ok: false, score: 0 };
+  const combined = norm(raw);
+  if (!title || peopleTerms.test(raw) || genericTerms.test(raw)) return { ok: false, score: 0 };
+  const query = norm(item.searchQuery || "");
+  const queryTerms = [...new Set(query.split(" ").filter((t: string) => t.length >= 4 && !stop.has(t)))];
+  const placeTerms = geographyTerms(destination, name).filter(t => !["united","states","america","canada","italy","france","japan","portugal","norway","slovakia","switzerland","spain","morocco","mexico","jordan","georgia","virginia","carolina","oregon","maine","kentucky","colorado","new","south","north","western","central","eastern","southern","alberta","massachusetts","country"].includes(t));
+  const queryHits = queryTerms.filter(t => title.includes(t));
+  const descQueryHits = queryTerms.filter(t => desc.includes(t));
+  const placeHits = placeTerms.filter(t => title.includes(t) || desc.includes(t));
+  const scenicWords = ["landscape","coast","coastal","beach","waterfall","volcano","crater","lava","ocean","sea","island","mountain","cliff","valley","forest","tropical","lagoon","reef","sunset","sunrise","panorama","scenic","national park","bay","shore","canyon","ridge","viewpoint","castle","cathedral","church","bridge","old town","historic center","plaza","square","palace","temple","pagoda","monastery","harbor","harbour","lake","waterfront","ski resort","alpine","market square","christmas market","lighthouse","dunes","desert","glacier","fjord"];
+  const visual = scenicWords.some(t => combined.includes(norm(t)));
+  const blockedWords = ["plaque","inscription","memorial marker","commemorative tablet","information board","museum label","document","manuscript","book page","stamp","postcard","painting","drawing","illustration","logo","coat of arms","fossil","mineral specimen","rock specimen","geological sample","hotel room","office tower","construction site","parking lot","license plate"];
+  if (blockedWords.some(t => combined.includes(norm(t))) || !visual) return { ok: false, score: 0 };
   const label = norm(destination + " " + name);
-  // For Hawaii, require recognizable outdoor scenery rather than plaques, hotel towers,
-  // construction, or random urban structures.
-  if (label.includes("hawaii") && !scenicTerms.test(String(item.title || "") + " " + String(item.description || ""))) return { ok: false, score: 0 };
-  if (label.includes("hawaii") && genericTerms.test(String(item.title || "") + " " + String(item.description || ""))) return { ok: false, score: 0 };
-  const aliases = destinationAliases(destination, name);
-  const aliasTerms = aliases.flatMap((alias: string) => norm(alias).split(" ").filter((t: string) => t.length >= 4 && !stop.has(t)));
-  const terms = [...new Set([...geographyTerms(destination, name), ...aliasTerms])];
-  const titleHits = terms.filter(t => title.includes(t));
-  const allHits = terms.filter(t => combined.includes(t));
-  // Conservative rule: the file title or its own description must name at least one
-  // destination-specific term, and combined metadata must corroborate another term
-  // when the place has more than one useful term. Ambiguous candidates are skipped.
-  const specific = terms.filter(t => !["united","states","america","canada","italy","france","japan","portugal","norway","slovakia","switzerland","spain","morocco","mexico","jordan","georgia","virginia","carolina","oregon","maine","kentucky","colorado","new","south","north","western","central","eastern","southern","alberta","massachusetts","country"].includes(t));
-  const titleHasSpecific = titleHits.some(t => specific.includes(t));
-  const descHasSpecific = terms.some(t => desc.includes(t) && specific.includes(t));
-  const scenicBoost = scenicTerms.test(String(item.title || "") + " " + String(item.description || "")) ? 8 : 0;
-  const score = titleHits.length * 3 + allHits.length + (titleHasSpecific ? 4 : 0) + (descHasSpecific ? 2 : 0) + scenicBoost;
-  const requiredHits = terms.length > 2 ? 2 : 1;
-  return { ok: (titleHasSpecific || descHasSpecific) && allHits.length >= requiredHits, score };
+  const iconic: Record<string, string[]> = {
+    hawaii: ["na pali coast","waimea canyon","haleakala","road to hana","hawaii volcanoes national park","diamond head","kauai coastline","maui coastline"],
+    "canadian rockies": ["moraine lake","lake louise","jasper national park","icefields parkway","peyto lake","banff national park"],
+    banff: ["moraine lake","lake louise","bow lake","banff national park","icefields parkway","peyto lake"],
+    santorini: ["oia","fira","blue dome","caldera","santorini sunset","imerovigli"],
+    "cape cod": ["cape cod national seashore","nauset light","highland light","chatham lighthouse","provincetown","cape cod beach","salt marsh"],
+    madrid: ["royal palace of madrid","plaza mayor","gran via","retiro park","puerta del sol","cibeles palace","prado museum"],
+    "christmas markets": ["strasbourg christmas market","vienna christmas market","prague christmas market","nuremberg christmas market","colmar christmas market"],
+    "french alps": ["chamonix","mont blanc","aiguille du midi","mer de glace","annecy"],
+    dolomites: ["tre cime di lavaredo","seceda","alpe di siusi","lago di braies","val di funes"]
+  };
+  let iconicHit = false;
+  for (const [key, values] of Object.entries(iconic)) if (label.includes(key) && values.some(t => combined.includes(norm(t)))) iconicHit = true;
+  const destinationSpecific = placeHits.length > 0 || iconicHit;
+  const queryMatches = queryHits.length > 0 || descQueryHits.length >= 2;
+  const score = queryHits.length * 5 + descQueryHits.length * 2 + placeHits.length * 3 + (iconicHit ? 12 : 0) + (visual ? 8 : 0);
+  return { ok: destinationSpecific && queryMatches && visual, score };
 }
 async function commonsSearch(query: string) {
   const url = new URL("https://commons.wikimedia.org/w/api.php");
@@ -195,7 +204,8 @@ Deno.serve(async (req) => {
         ]).filter((query: string, index: number, all: string[]) => all.indexOf(query) === index).slice(0, (isHawaii || isCanadianRockies || isBanff) ? 3 : 2);
         const results: any[] = [];
         for (const query of [...new Set(queries)]) {
-          results.push(...await commonsSearch(query));
+          const found = await commonsSearch(query);
+          results.push(...found.map((photo: any) => ({ ...photo, searchQuery: query })));
         }
         const ranked = results.map((p: any) => ({ ...p, match: relevance(p, destination, name) }))
           .filter((p: any) => p.match.ok)
