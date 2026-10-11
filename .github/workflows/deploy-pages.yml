@@ -65,19 +65,19 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p images
-          curl -fsSL -L "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Christmas_Tree_in_Old_Town_Square_Prague.jpg&width=1600" -o images/prague-christmas.jpg
+          curl --retry 6 --retry-delay 10 --retry-all-errors -fsSL -L --user-agent "RoamSonioSiteDeploy/1.0 (GitHub Pages image sync)" "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Christmas_Tree_in_Old_Town_Square_Prague.jpg&width=1600" -o images/prague-christmas.jpg
           curl -fsSL -L "https://trnavske.radio/data/images/113788.jpg" -o images/trnava-advent.jpg
           curl -fsSL -L "https://s3-eu-central-1.amazonaws.com/tf-prod-visitplzen/visitplzen/var/www/rocketstack/web/app/uploads/vhristmas-amrket-visit-plzen.jpg" -o images/pilsen-christmas.jpg
-          curl -fsSL -L "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/20190201_HlubokaCastle_9207_(47379401602).jpg&width=1600" -o images/hluboka-winter.jpg
+          curl --retry 6 --retry-delay 10 --retry-all-errors -fsSL -L --user-agent "RoamSonioSiteDeploy/1.0 (GitHub Pages image sync)" "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/20190201_HlubokaCastle_9207_(47379401602).jpg&width=1600" -o images/hluboka-winter.jpg
           file images/*
           test "$(file -b --mime-type images/prague-christmas.jpg)" = "image/jpeg"
           test "$(file -b --mime-type images/trnava-advent.jpg)" = "image/jpeg"
           test "$(file -b --mime-type images/pilsen-christmas.jpg)" = "image/jpeg"
           test "$(file -b --mime-type images/hluboka-winter.jpg)" = "image/jpeg"
-          curl -fsSL -L "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Chartres_at_St_Ann_French_Quarter_New_Orleans_Jan_2019_Jackson_Square.jpg&width=1800" -o images/neworleans-frenchquarter.jpg
-          curl -fsSL -L "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Garden_District_in_New_Orleans_(1).jpg&width=1800" -o images/neworleans-gardendistrict.jpg
-          curl -fsSL -L "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Mardi_Gras_Parade,_New_Orleans,_Louisiana_(LOC).jpg&width=1800" -o images/neworleans-carnival.jpg
-          curl -fsSL -L "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Jackson_Square,_French_Quarter.jpg&width=1200" -o images/neworleans-jackson.jpg
+          curl --retry 6 --retry-delay 10 --retry-all-errors -fsSL -L --user-agent "RoamSonioSiteDeploy/1.0 (GitHub Pages image sync)" "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Chartres_at_St_Ann_French_Quarter_New_Orleans_Jan_2019_Jackson_Square.jpg&width=1800" -o images/neworleans-frenchquarter.jpg
+          curl --retry 6 --retry-delay 10 --retry-all-errors -fsSL -L --user-agent "RoamSonioSiteDeploy/1.0 (GitHub Pages image sync)" "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Garden_District_in_New_Orleans_(1).jpg&width=1800" -o images/neworleans-gardendistrict.jpg
+          curl --retry 6 --retry-delay 10 --retry-all-errors -fsSL -L --user-agent "RoamSonioSiteDeploy/1.0 (GitHub Pages image sync)" "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Mardi_Gras_Parade,_New_Orleans,_Louisiana_(LOC).jpg&width=1800" -o images/neworleans-carnival.jpg
+          curl --retry 6 --retry-delay 10 --retry-all-errors -fsSL -L --user-agent "RoamSonioSiteDeploy/1.0 (GitHub Pages image sync)" "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Jackson_Square,_French_Quarter.jpg&width=1200" -o images/neworleans-jackson.jpg
           test "$(file -b --mime-type images/neworleans-frenchquarter.jpg)" = "image/jpeg"
           test "$(file -b --mime-type images/neworleans-gardendistrict.jpg)" = "image/jpeg"
           test "$(file -b --mime-type images/neworleans-carnival.jpg)" = "image/jpeg"
