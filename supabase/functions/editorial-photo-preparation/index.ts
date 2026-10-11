@@ -169,7 +169,10 @@ Deno.serve(async (req) => {
     if (entriesError) throw entriesError;
     const drafts = (allEntries || []).filter((x: any) => (x.status || "draft") === "draft")
       .sort((a: any, b: any) => {
-        // Fair queue: never permanently prioritize one destination. Recheck the oldest entries first.
+        // Explicitly requested retries go first; then process never-checked/oldest entries fairly.
+        const ar = Date.parse(String(a.metadata?.photo_preparation_retry_requested_at || "")) || 0;
+        const br = Date.parse(String(b.metadata?.photo_preparation_retry_requested_at || "")) || 0;
+        if (ar !== br) return br - ar;
         const at = Date.parse(String(a.metadata?.photo_preparation_checked_at || "")) || 0;
         const bt = Date.parse(String(b.metadata?.photo_preparation_checked_at || "")) || 0;
         return at - bt;
@@ -186,7 +189,7 @@ Deno.serve(async (req) => {
       }
       let rows = photoRows || [];
       const roles = ["hero","secondary","mobile"];
-      const replaceExisting = String(entry.metadata?.photo_preparation_source || "") === "Wikimedia Commons";
+      const replaceExisting = entry.metadata?.photo_preparation_force_replace === true;
       if (roles.every(role => rows.some((p: any) => String(p.role || "").toLowerCase() === role && p.url && p.source_url && p.credit && p.alt_text)) && !replaceExisting) {
         readyForApproval++;
         continue;
@@ -277,6 +280,7 @@ Deno.serve(async (req) => {
         const metadata = Object.assign({}, entry.metadata || {}, {
           photo_preparation_status: isReady ? "ready_for_approval" : (attachedForEntry ? "preparing" : "needs_attention"),
           photo_preparation_checked_at: new Date().toISOString(),
+          photo_preparation_retry_requested_at: null,
           photo_preparation_source: "Wikimedia Commons",
           photo_preparation_policy: "strict destination/landmark match; rejects uncertain files; all photos unapproved"
         });
@@ -292,6 +296,7 @@ Deno.serve(async (req) => {
         const metadata = Object.assign({}, entry.metadata || {}, {
           photo_preparation_status: "needs_attention",
           photo_preparation_checked_at: new Date().toISOString(),
+          photo_preparation_retry_requested_at: null,
           photo_preparation_error: message.slice(0, 300)
         });
         try {
