@@ -130,8 +130,7 @@ Deno.serve(async (req) => {
       .sort((a: any, b: any) => {
         const priority = (x: any) => {
           const label = String(x.build_destination || "") + " " + String(x.name || "");
-          return /hawaii/i.test(label) &&
-            String(x.metadata?.photo_preparation_source || "") === "Wikimedia Commons" ? 0 : 1;
+          return String(x.metadata?.photo_preparation_source || "") === "Wikimedia Commons" ? 0 : 1;
         };
         const priorityDifference = priority(a) - priority(b);
         if (priorityDifference !== 0) return priorityDifference;
@@ -151,34 +150,20 @@ Deno.serve(async (req) => {
       }
       let rows = photoRows || [];
       const roles = ["hero","secondary","mobile"];
-      // Replace only prior unapproved Commons auto-candidates for Hawaii; never touch approved photos.
-      if (/hawaii/i.test(String(entry.build_destination || "") + " " + String(entry.name || "")) &&
-          String(entry.metadata?.photo_preparation_source || "") === "Wikimedia Commons") {
-        const { error: replaceError } = await supabase.rpc("roamsonio_worker_delete_unapproved_commons_photos", { p_destination_id: entry.id });
-        if (replaceError) {
-          failures.push(String(entry.name) + ": could not safely replace prior unapproved photo candidates; apply the photo-worker SQL migration first");
-          continue;
-        }
-        const { data: freshRows, error: freshError } = await supabase.rpc("roamsonio_worker_editorial_photos", { p_destination_id: entry.id });
-        if (freshError) {
-          failures.push(String(entry.name) + ": could not reload photo roles after candidate replacement");
-          continue;
-        }
-        rows = freshRows || [];
-      }
-      if (roles.every(role => rows.some((p: any) => String(p.role || "").toLowerCase() === role && p.url && p.source_url && p.credit && p.alt_text))) {
+      const replaceExisting = String(entry.metadata?.photo_preparation_source || "") === "Wikimedia Commons";
+      if (roles.every(role => rows.some((p: any) => String(p.role || "").toLowerCase() === role && p.url && p.source_url && p.credit && p.alt_text)) && !replaceExisting) {
         readyForApproval++;
         continue;
       }
-      candidates.push({ entry, rows });
+      candidates.push({ entry, rows, replaceExisting });
     }
 
     for (const item of candidates) {
       const entry = item.entry;
       const destination = String(entry.build_destination || entry.name || "").trim();
       const name = String(entry.name || "").trim();
-      const existingRows = item.rows || [];
-      const alreadyFilled = new Set(existingRows.filter((p: any) => p.url && p.source_url && p.credit && p.alt_text).map((p: any) => String(p.role || "").toLowerCase()));
+      let existingRows = item.rows || [];
+      let alreadyFilled = new Set(existingRows.filter((p: any) => p.url && p.source_url && p.credit && p.alt_text).map((p: any) => String(p.role || "").toLowerCase()));
       try {
         // Search several destination-specific phrases instead of one exact quoted phrase.
         // Existing conservative relevance checks below still decide which candidates may attach.
@@ -203,6 +188,20 @@ Deno.serve(async (req) => {
           .filter((p: any) => p.match.ok)
           .sort((a: any,b: any) => b.match.score-a.match.score);
         const unique = ranked.filter((p: any, i: number, arr: any[]) => arr.findIndex((q: any) => q.pageid === p.pageid) === i);
+        if (item.replaceExisting) {
+          // Keep the existing set unless three distinct replacement candidates are available.
+          if (unique.length < 3) {
+            failures.push(name + ": found only " + unique.length + " suitable replacement candidates; kept existing photos for manual review");
+            needsAttention++;
+            continue;
+          }
+          const { error: replaceError } = await supabase.rpc("roamsonio_worker_delete_unapproved_commons_photos", { p_destination_id: entry.id });
+          if (replaceError) throw replaceError;
+          const { data: freshRows, error: freshError } = await supabase.rpc("roamsonio_worker_editorial_photos", { p_destination_id: entry.id });
+          if (freshError) throw freshError;
+          existingRows = freshRows || [];
+          alreadyFilled = new Set(existingRows.filter((p: any) => p.url && p.source_url && p.credit && p.alt_text).map((p: any) => String(p.role || "").toLowerCase()));
+        }
         const roles = ["hero","secondary","mobile"].filter(role => !alreadyFilled.has(role));
         const usedUrls = new Set(existingRows.map((p: any) => p.url).filter(Boolean));
         let attachedForEntry = 0;
