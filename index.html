@@ -461,7 +461,7 @@ fetch(editorialUrl,{headers:{apikey:"sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5
     if(seasonEl)seasonEl.textContent="Master library · no approved destinations returned";
     return;
   }
-  var now=new Date(),anchor=new Date(2020,0,5),week=Math.floor(Math.floor((now-anchor)/86400000)/7),offset=(week*3)%approved.length;
+  var easternParts=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());var easternDate=easternParts.find(function(p){return p.type==="year";}).value+"-"+easternParts.find(function(p){return p.type==="month";}).value+"-"+easternParts.find(function(p){return p.type==="day";}).value;var easternDay= new Date(easternDate+"T00:00:00Z");var anchor=new Date("2020-01-05T00:00:00Z");var week=Math.floor(Math.floor((easternDay-anchor)/86400000)/7),offset=(week*3)%approved.length;
   var ordered=approved.slice(offset).concat(approved.slice(0,offset)).slice(0,6);
   box.innerHTML=ordered.map(function(c,i){
     var href="sample-trip.html?v=20261010-photo-gallery-1&destination="+encodeURIComponent(c.destination)+"&inspiration="+encodeURIComponent(c.title)+"&photo="+encodeURIComponent(c.image);
