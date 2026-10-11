@@ -124,8 +124,12 @@ Deno.serve(async (req) => {
     const ideasInPool = ideaPool.length;
     const ideasAvailable = candidates.length;
     const ideasSkippedAsExisting = ideasInPool - ideasAvailable;
+    // Add a small, steady batch to the private Master Inbox each week rather than
+    // flooding the queue with the entire remaining idea pool on the first run.
+    const weeklyDraftLimit = 3;
+    const weeklyBatch = candidates.slice(0, weeklyDraftLimit);
 
-    for (const c of candidates) {
+    for (const c of weeklyBatch) {
       try {
         const name = String(c.name || "").trim();
         const destination = String(c.destination || name).trim();
@@ -167,7 +171,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    const result = { startedAt, finishedAt: new Date().toISOString(), ideasInPool, ideasAvailable, ideasSkippedAsExisting, created, duplicates, photoCandidates, failures, status: failures.length ? "completed_with_warnings" : "completed", message: ideasAvailable === 0 ? "No new ideas available; add more ideas to the curated pool." : `Reviewed ${ideasInPool} ideas; ${ideasAvailable} were new candidates.`, published: 0 };
+    const result = { startedAt, finishedAt: new Date().toISOString(), ideasInPool, ideasAvailable, ideasSkippedAsExisting, weeklyDraftLimit, selectedThisRun: weeklyBatch.length, created, duplicates, photoCandidates, failures, status: failures.length ? "completed_with_warnings" : "completed", message: ideasAvailable === 0 ? "No new ideas available; add more ideas to the curated pool." : `Found ${ideasAvailable} unused ideas and selected up to ${weeklyDraftLimit} for this week's private Master Inbox. Created ${created} draft(s); nothing was published.`, published: 0 };
     await supabase.from("roamsonio_admin_audit_log").insert({
       action: "editorial_suggestion_generation",
       details: result
