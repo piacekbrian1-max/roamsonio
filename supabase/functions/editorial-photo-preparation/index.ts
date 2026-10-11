@@ -17,6 +17,22 @@ function geographyTerms(destination: string, name: string) {
   const terms = raw.split(/\s+/).filter(t => t.length >= 4 && !stop.has(t) && !/^\d+$/.test(t));
   return [...new Set(terms)].slice(0, 12);
 }
+function destinationAliases(destination: string, name: string) {
+  const label = norm(destination + " " + name);
+  if (label.includes("colorado") && (label.includes("ski") || label.includes("country"))) {
+    return ["Vail Colorado", "Aspen Colorado", "Telluride Colorado", "Breckenridge Colorado", "Rocky Mountains Colorado"];
+  }
+  if (label.includes("canadian rockies")) {
+    return ["Banff National Park", "Lake Louise Alberta", "Moraine Lake Alberta", "Jasper National Park"];
+  }
+  if (label.includes("banff") || label.includes("lake louise")) {
+    return ["Banff National Park", "Lake Louise Alberta", "Moraine Lake Alberta", "Canadian Rockies Alberta"];
+  }
+  if (label.includes("dolomites")) {
+    return ["Tre Cime di Lavaredo", "Seceda Dolomites", "Alpe di Siusi", "Val di Funes"];
+  }
+  return [];
+}
 function relevance(item: any, destination: string, name: string) {
   const title = norm(item.title);
   const desc = norm(item.description);
@@ -118,10 +134,12 @@ Deno.serve(async (req) => {
         // Search several destination-specific phrases instead of one exact quoted phrase.
         // Existing conservative relevance checks below still decide which candidates may attach.
         const searchTerms = destination.replace(/&/g, " ").trim();
+        const aliases = destinationAliases(destination, name);
         const queries = [
           searchTerms + " landscape",
           name + " landmark",
-          searchTerms + " national park lake"
+          searchTerms + " national park lake",
+          ...aliases.map((alias: string) => alias + " landscape")
         ];
         const results: any[] = [];
         for (const query of [...new Set(queries)]) {
