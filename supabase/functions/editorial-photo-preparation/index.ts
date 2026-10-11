@@ -69,7 +69,17 @@ function relevance(item: any, destination: string, name: string) {
     madrid: ["royal palace of madrid","plaza mayor","gran via","retiro park","puerta del sol","cibeles palace","prado museum"],
     "christmas markets": ["strasbourg christmas market","vienna christmas market","prague christmas market","nuremberg christmas market","colmar christmas market"],
     "french alps": ["chamonix","mont blanc","aiguille du midi","mer de glace","annecy"],
-    dolomites: ["tre cime di lavaredo","seceda","alpe di siusi","lago di braies","val di funes"]
+    dolomites: ["tre cime di lavaredo","seceda","alpe di siusi","lago di braies","val di funes"],
+    colorado: ["maroon bells","rocky mountain national park","aspen grove","colorado rockies"],
+    kyoto: ["kiyomizu dera","arashiyama","fushimi inari","kyoto temple","kyoto garden"],
+    patagonia: ["fitz roy","torres del paine","patagonia lake","patagonia mountain"],
+    "raja ampat": ["raja ampat","wayag","piaynemo"],
+    "costa rica": ["monteverde","arenal volcano","costa rica rainforest"],
+    "new orleans": ["french quarter","jackson square","garden district","new orleans riverfront"],
+    savannah: ["savannah historic district","savannah river street","forsyth park","savannah historic square"],
+    oaxaca: ["oaxaca historic center","santo domingo oaxaca","oaxaca market"],
+    cappadocia: ["cappadocia fairy chimneys","goreme","cappadocia valley"],
+    madeira: ["madeira levada","madeira cliffs","pico do arieiro"]
   };
   let iconicHit = false;
   for (const [key, values] of Object.entries(iconic)) if (label.includes(key) && values.some(t => combined.includes(norm(t)))) iconicHit = true;
