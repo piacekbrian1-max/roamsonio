@@ -4,11 +4,15 @@ on:
   # Process queued photo retries automatically in small, sequential batches.
   # Manual trigger remains available for an immediate run.
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/30 * * * *"
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: roamsonio-editorial-photo-preparation
+  cancel-in-progress: false
 
 jobs:
   prepare-editorial-photos:
