@@ -1183,26 +1183,25 @@ function suggestionSlug(value){
     if(!selectedEditorialId){photoSetStatus("Select a destination first.");return;}
     const entry=editorialEntries.find(x=>String(x.id)===String(selectedEditorialId));
     const label=(entry||{}).name||"this destination";
-    const removable=[...editorialPhotos];
-    if(!removable.length){photoSetStatus("No saved photos are attached to "+label+".");return;}
-    if(!confirm("Remove all "+removable.length+" photo(s) from "+label+", including approved images? This affects only this destination's editorial photo set. It does not change other destinations or saved trips/snapshots."))return;
+    const expectedCount=editorialPhotos.length;
+    if(!expectedCount){photoSetStatus("No saved photos are attached to "+label+".");return;}
+    if(!confirm("Remove all "+expectedCount+" photo(s) from "+label+", including approved images? Only this destination's editorial photo set will be changed. Saved trips and snapshots are untouched."))return;
     const btn=document.getElementById("clearUnapprovedPhotosBtn");
     btn.disabled=true;btn.textContent="Removing…";
-    let deleted=0,firstError="";
     try{
-      for(const p of removable){
-        const {error}=await client.rpc("roamsonio_admin_delete_editorial_photo",{p_photo_id:p.id});
-        if(error){firstError=error.message||JSON.stringify(error)||"delete failed";break;}
-        deleted++;
+      const {data,error}=await client.rpc("roamsonio_admin_clear_editorial_photo_set",{p_destination_id:selectedEditorialId});
+      if(error)throw error;
+      await photoLoad();
+      const remaining=editorialPhotos.length;
+      if(remaining===0){
+        selectedPhotoId=null;document.getElementById("photoEditor").hidden=true;
+        photoSetStatus("Verified: "+Number(data||0)+" photo(s) removed from "+label+". No photos remain attached. Other destinations and saved trips/snapshots were not changed.");
+      }else{
+        photoSetStatus("Removal did not complete: "+remaining+" photo(s) remain attached to "+label+". The database reported "+Number(data||0)+" deleted. Do not publish until this is resolved.");
       }
-      selectedPhotoId=null;
-      document.getElementById("photoEditor").hidden=true;
-      await photoLoad();
-      if(firstError)photoSetStatus("Removed "+deleted+" of "+removable.length+" photo(s). Delete stopped with: "+firstError+". If this mentions MFA, re-authenticate through Master Admin Security and retry.");
-      else photoSetStatus("Removed all "+deleted+" photo(s) from "+label+". Add replacement images when ready. Other destinations and saved trips/snapshots were not changed.");
     }catch(e){
-      photoSetStatus("Removed "+deleted+" of "+removable.length+" photo(s), then stopped: "+(e.message||"Unknown error")+". Refreshing the photo list.");
-      await photoLoad();
+      photoSetStatus("Could not clear photo set: "+(e.message||"Unknown error")+". No success was reported. Check Master Admin MFA and confirm the new photo-set-clear SQL migration has been applied.");
+      try{await photoLoad();}catch(_){}
     }finally{
       btn.disabled=false;btn.textContent="Clear Photo Set";
     }
