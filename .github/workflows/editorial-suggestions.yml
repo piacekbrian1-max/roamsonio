@@ -1,9 +1,7 @@
 name: Weekly RoamSonio Editorial Suggestions
 
 on:
-  schedule:
-    # Run at 09:00 America/New_York year-round; only one of these UTC checks proceeds.
-    - cron: "0 13,14 * * 0"
+  # Scheduled runs intentionally paused until the expanded generator is tested.
   workflow_dispatch:
 
 permissions:
