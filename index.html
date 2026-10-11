@@ -509,10 +509,11 @@ function photo(t){
   var dk=t.destinationKnowledge;
   if(dk&&Array.isArray(dk.photos)&&dk.photos.length){
     var p=dk.photos[0],u=typeof p==="string"?p:p&&p.url;
-    if(u)return u;
+    if(typeof u==="string"&&u.indexOf("https://")===0)return u;
   }
-  if(t.image)return t.image;
-  var ds=(t.destinations||[]);
+  var direct=[t.heroPhoto,t.image,t.photo,t.coverPhoto];
+  for(var q=0;q<direct.length;q++)if(typeof direct[q]==="string"&&direct[q].indexOf("https://")===0)return direct[q];
+  var ds=Array.isArray(t.destinations)?t.destinations:[];
   for(var i=0;i<ds.length;i++){
     var k=String(ds[i]||"").toLowerCase();
     if(k.indexOf("trnava")>=0)return images.trnava;
@@ -520,10 +521,14 @@ function photo(t){
     if(k.indexOf("pilsen")>=0)return images.pilsen;
     if(k.indexOf("hlub")>=0)return images.hluboka;
     if(k.indexOf("vienna")>=0)return images.vienna;
+    if(k.indexOf("kyoto")>=0)return images.kyoto;
+    if(k.indexOf("oktoberfest")>=0||k.indexOf("munich")>=0)return images.oktoberfest;
     if(k.indexOf("atlanta")>=0)return images.atlanta;
+    if(k.indexOf("gatlinburg")>=0||k.indexOf("smoky mountains")>=0)return images.gatlinburg;
     if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return images.neworleans;
   }
-  return images.prague}
+  return "";
+}
 function guideKey(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}
 function collectTrip(t){
   var out=[],rs=t&&t.guideReviews&&typeof t.guideReviews==="object"?t.guideReviews:{};
