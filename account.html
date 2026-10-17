@@ -276,6 +276,20 @@ a{color:inherit;text-decoration:none}
   .accountGrid{grid-template-columns:1fr}
   .tile{min-height:190px}
 }
+
+/* Share RoamSonio — account-level site recommendation, independent of trip sharing. */
+.recommendPanel{margin-top:18px;padding:26px;background:linear-gradient(120deg,#0B2D4A,#173F5E);color:#fff;border:1px solid #244c68;border-radius:14px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px;align-items:center}
+.recommendPanel .ey{color:#E4BD72}
+.recommendPanel h2{font:600 clamp(25px,3vw,34px)/1.08 "Playfair Display",serif;margin:8px 0}
+.recommendPanel p{font-size:11px;line-height:1.65;color:#d7e1e8;margin:0;max-width:650px}
+.recommendActions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.recommendActions button,.recommendActions a{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid #D4A85A;border-radius:6px;background:#D4A85A;color:#0B2D4A;padding:11px 13px;font:800 9px/1 "DM Sans",sans-serif;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.recommendActions .recommendSecondary{background:transparent;color:#fff;border-color:#ffffff70}
+.recommendStatus{grid-column:1/-1;display:none;padding-top:8px;color:#f5dfad;font-size:10px}
+.recommendStatus.show{display:block}
+@media(max-width:700px){.recommendPanel{grid-template-columns:1fr;padding:22px}.recommendActions{justify-content:flex-start}.recommendActions button,.recommendActions a{flex:1 1 auto}}
+@media(max-width:420px){.recommendActions{display:grid;grid-template-columns:1fr}.recommendActions button,.recommendActions a{width:100%}}
+
 </style>
 <style id="roamsonio-global-nav">.rsTop{position:sticky!important;top:0!important;z-index:1000!important;width:100%!important;height:68px!important;min-height:68px!important;background:rgba(248,245,237,.98)!important;color:#0B2D4A!important;border-bottom:1px solid #D9E0E7!important;backdrop-filter:blur(14px)!important}.rsNav{width:min(1440px,100%)!important;height:68px!important;margin:0 auto!important;padding:0 28px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:28px!important}.rsBrand{display:flex!important;align-items:center!important;gap:10px!important;flex:0 0 auto!important;min-width:0!important;text-decoration:none!important}.rsMark{width:42px!important;height:42px!important;border:2px solid #D4A85A!important;border-radius:10px!important;display:grid!important;place-items:center!important;background:#F8F5ED!important;flex:0 0 42px!important;overflow:hidden!important}.rsMark svg{width:32px!important;height:32px!important}.rsBrand strong{display:block!important;font:600 22px/1.05 "Playfair Display","Georgia",serif!important;white-space:nowrap!important}.rsRoam{color:#0B2D4A!important}.rsSonio{color:#D4A85A!important}.rsBrand small{display:block!important;margin-top:3px!important;color:#58718A!important;font:700 7px/1.1 "DM Sans",Arial,sans-serif!important;letter-spacing:.18em!important;white-space:nowrap!important}.rsLinks{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:19px!important;min-width:0!important;white-space:nowrap!important}.rsLinks a{color:#0B2D4A!important;text-decoration:none!important;font:700 12px/1.1 "DM Sans",Arial,sans-serif!important}.rsLinks a:hover{color:#A47C2F!important}@media(max-width:1100px){.rsNav{padding:0 20px!important;gap:18px!important}.rsLinks{gap:13px!important}.rsLinks a{font-size:11px!important}}@media(max-width:800px){.rsTop,.rsNav{height:auto!important;min-height:66px!important}.rsNav{padding:9px 16px!important;gap:12px!important}.rsBrand{gap:8px!important}.rsMark{width:38px!important;height:38px!important;flex-basis:38px!important}.rsMark svg{width:29px!important;height:29px!important}.rsBrand strong{font-size:20px!important}.rsBrand small{font-size:6px!important}.rsLinks{gap:9px!important;flex-wrap:wrap!important;row-gap:6px!important}.rsLinks a{font-size:10px!important}}@media(max-width:560px){.rsTop,.rsNav{min-height:62px!important}.rsNav{padding:8px 11px!important;gap:8px!important}.rsMark{width:34px!important;height:34px!important;flex-basis:34px!important}.rsMark svg{width:26px!important;height:26px!important}.rsBrand strong{font-size:18px!important}.rsBrand small{font-size:5px!important}.rsLinks{gap:6px 8px!important}.rsLinks a{font-size:9px!important}}</style><style id="roamsonio-unified-ui">
 html,body{max-width:100%;overflow-x:hidden}
@@ -389,6 +403,19 @@ body{padding-top:68px!important}
         <div class="tileAction"><span>View Shared With Me →</span></div>
       </a>
     </div>
+    <section class="recommendPanel" id="recommendRoamsonio" aria-labelledby="recommendTitle">
+      <div>
+        <div class="ey">Spread the word</div>
+        <h2 id="recommendTitle">Enjoying RoamSonio?</h2>
+        <p>Know someone who loves to travel? Share RoamSonio with them so they can dream up their next journey, too.</p>
+      </div>
+      <div class="recommendActions">
+        <button type="button" id="recommendShare">↗ Share RoamSonio</button>
+        <button type="button" class="recommendSecondary" id="recommendCopy">Copy site link</button>
+        <a id="recommendEmail" href="mailto:?subject=Discover%20RoamSonio&body=I%20thought%20you%20might%20enjoy%20RoamSonio%20for%20planning%20your%20next%20trip%3A%20https%3A%2F%2Froamsonio.com">Recommend by email</a>
+      </div>
+      <div id="recommendStatus" class="recommendStatus" role="status" aria-live="polite"></div>
+    </section>
   </section>
 </main>
 
@@ -406,6 +433,33 @@ const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","s
   const {data:isMaster}=await client.rpc("roamsonio_is_master_admin");
    if(isMaster===true){document.getElementById("masterAccountTile").style.display="flex";}
 })();
+
+
+const recommendUrl=window.location.origin+window.location.pathname.replace(/[^/]*$/,"index.html");
+const recommendStatus=document.getElementById("recommendStatus");
+function showRecommendStatus(message){recommendStatus.textContent=message;recommendStatus.classList.add("show")}
+document.getElementById("recommendEmail").href="mailto:?subject="+encodeURIComponent("Discover RoamSonio")+"&body="+encodeURIComponent("I thought you might enjoy RoamSonio for planning your next trip: "+recommendUrl);
+document.getElementById("recommendCopy").addEventListener("click",async()=>{
+  try{
+    if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(recommendUrl);}
+    else{
+      const field=document.createElement("textarea");field.value=recommendUrl;field.setAttribute("readonly","");field.style.position="fixed";field.style.opacity="0";document.body.appendChild(field);field.select();
+      const copied=document.execCommand("copy");field.remove();if(!copied)throw new Error("Copy unavailable");
+    }
+    showRecommendStatus("Website link copied. Paste it into a message or post.");
+  }catch(e){showRecommendStatus("Copy isn’t available here. Use Share RoamSonio or copy this link: "+recommendUrl);}
+});
+document.getElementById("recommendShare").addEventListener("click",async()=>{
+  if(navigator.share){
+    try{await navigator.share({title:"RoamSonio — Dream it. Plan it. Live it.",text:"Discover RoamSonio for planning your next journey.",url:recommendUrl});}
+    catch(e){if(e&&e.name!=="AbortError")showRecommendStatus("Sharing didn’t open. Try Copy site link instead.");}
+  }else{
+    try{
+      if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(recommendUrl);showRecommendStatus("Your device doesn’t offer a share menu here, so the website link was copied.");}
+      else showRecommendStatus("Your browser doesn’t offer a share menu here. Use Copy site link or Recommend by email.");
+    }catch(e){showRecommendStatus("Your browser doesn’t offer a share menu here. Use Copy site link or Recommend by email.");}
+  }
+});
 
 document.getElementById("profileLink").addEventListener("click",e=>{
   e.preventDefault();
