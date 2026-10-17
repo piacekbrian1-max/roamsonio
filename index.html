@@ -347,14 +347,29 @@ function loadPersistentTrips(){
     var raw=JSON.parse(localStorage.getItem(KEY)||"[]");
     local=cleanSavedTrips(Array.isArray(raw)?raw:[]);
   }catch(e){local=[]}
+  function tripIdentity(t){
+    t=t||{};
+    var name=String(t.name||"").trim().toLowerCase();
+    var nolaId="febaebf6-7369-4922-b069-c745eee8c16f";
+    var europeId="a636626a-e7b2-4337-b950-be9682edde63";
+    if(String(t.id||"")===nolaId||String(t.supabaseId||"")===nolaId||
+       (name.indexOf("new orleans")===0&&String(t.start||"")==="2027-01-16"&&String(t.end||"")==="2027-01-20"))return "known:new-orleans-2027";
+    if(String(t.id||"")===europeId||String(t.supabaseId||"")===europeId||name==="european thanksgiving adventure 2026")return "known:europe-2026";
+    if(t.supabaseId)return "server:"+String(t.supabaseId);
+    return "trip:"+name+"|"+String(t.start||"")+"|"+String(t.end||"")+"|"+(Array.isArray(t.destinations)?t.destinations.map(String).join("|").toLowerCase():"");
+  }
   return accountTripsCache.map(function(serverTrip){
     var serverId=String(serverTrip.supabaseId||serverTrip.id||"");
+    var identity=tripIdentity(serverTrip);
     var match=local.find(function(t){
-      return serverId && String(t.supabaseId||t.id||"")===serverId;
+      return (serverId && String(t.supabaseId||t.id||"")===serverId) ||
+        tripIdentity(t)===identity;
     });
     if(!match)return serverTrip;
+    /* Only enrich a trip already confirmed as owned by the signed-in account. */
     var merged=Object.assign({},serverTrip,match);
     merged.supabaseId=serverId;
+    merged.id=serverTrip.id||match.id||serverId;
     if(!merged.name)merged.name=serverTrip.name;
     return merged;
   });
