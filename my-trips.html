@@ -399,7 +399,7 @@ window.openTrip=function(id){
   var isEurope=String(id)===europeId || String(t.supabaseId||"")===europeId ||
                String(t.name||"").trim()==="European Thanksgiving Adventure 2026";
   if(isEurope){
-    location.href="current-trip.html";
+    location.href="trip-workspace.html?id="+encodeURIComponent(europeId)+"&supabaseId="+encodeURIComponent(europeId)+"&destination="+encodeURIComponent("Prague")+"&v=europe-auth-route-"+Date.now();
     return;
   }
 
