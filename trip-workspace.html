@@ -429,8 +429,9 @@ button,a{max-width:100%}
 .tripCompass{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-top:22px}.compassCard{border:1px solid var(--line);background:var(--paper);border-radius:16px;padding:24px;box-shadow:var(--shadow)}.compassCard.primaryCompass{background:linear-gradient(135deg,#0B2D4A,#163F60);color:white;border-color:#0B2D4A}.compassEyebrow{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#D4A85A;font-weight:700}.compassCard h3{font:600 28px "Playfair Display",serif;margin:8px 0}.compassCard p{font-size:11px;line-height:1.65;color:var(--muted);margin:0}.primaryCompass p{color:#dbe4e0}.compassSteps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px}.compassStep{padding:11px 10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:9px}.compassStep b{display:block;font:600 16px "Playfair Display",serif;color:#D4A85A}.compassStep span{display:block;font-size:8px;line-height:1.45;color:#d9e2de;margin-top:4px}@media(max-width:800px){.tripCompass{grid-template-columns:1fr}.compassSteps{grid-template-columns:1fr 1fr}}@media(max-width:600px){.compassCard{padding:20px}}
 </style><style id="roamsonio-global-nav">.rsTop{position:sticky!important;top:0!important;z-index:1000!important;width:100%!important;height:68px!important;min-height:68px!important;background:rgba(248,245,237,.98)!important;color:#0B2D4A!important;border-bottom:1px solid #D9E0E7!important;backdrop-filter:blur(14px)!important}.rsNav{width:min(1440px,100%)!important;height:68px!important;margin:0 auto!important;padding:0 28px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:28px!important}.rsBrand{display:flex!important;align-items:center!important;gap:10px!important;flex:0 0 auto!important;min-width:0!important;text-decoration:none!important}.rsMark{width:42px!important;height:42px!important;border:2px solid #D4A85A!important;border-radius:10px!important;display:grid!important;place-items:center!important;background:#F8F5ED!important;flex:0 0 42px!important;overflow:hidden!important}.rsMark svg{width:32px!important;height:32px!important}.rsBrand strong{display:block!important;font:600 22px/1.05 "Playfair Display","Georgia",serif!important;white-space:nowrap!important}.rsRoam{color:#0B2D4A!important}.rsSonio{color:#D4A85A!important}.rsBrand small{display:block!important;margin-top:3px!important;color:#58718A!important;font:700 7px/1.1 "DM Sans",Arial,sans-serif!important;letter-spacing:.18em!important;white-space:nowrap!important}.rsLinks{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:19px!important;min-width:0!important;white-space:nowrap!important}.rsLinks a{color:#0B2D4A!important;text-decoration:none!important;font:700 12px/1.1 "DM Sans",Arial,sans-serif!important}.rsLinks a:hover{color:#A47C2F!important}@media(max-width:1100px){.rsNav{padding:0 20px!important;gap:18px!important}.rsLinks{gap:13px!important}.rsLinks a{font-size:11px!important}}@media(max-width:800px){.rsTop,.rsNav{height:auto!important;min-height:66px!important}.rsNav{padding:9px 16px!important;gap:12px!important}.rsBrand{gap:8px!important}.rsMark{width:38px!important;height:38px!important;flex-basis:38px!important}.rsMark svg{width:29px!important;height:29px!important}.rsBrand strong{font-size:20px!important}.rsBrand small{font-size:6px!important}.rsLinks{gap:9px!important;flex-wrap:wrap!important;row-gap:6px!important}.rsLinks a{font-size:10px!important}}@media(max-width:560px){.rsTop,.rsNav{min-height:62px!important}.rsNav{padding:8px 11px!important;gap:8px!important}.rsMark{width:34px!important;height:34px!important;flex-basis:34px!important}.rsMark svg{width:26px!important;height:26px!important}.rsBrand strong{font-size:18px!important}.rsBrand small{font-size:5px!important}.rsLinks{gap:6px 8px!important}.rsLinks a{font-size:9px!important}}</style><style id="roamsonio-unified-ui">html,body{max-width:100%;overflow-x:hidden}*,*::before,*::after{box-sizing:border-box}body{background:#F8F5ED;color:#0B2D4A}.rsNav{box-sizing:border-box!important;width:100%!important;max-width:1440px!important;margin:0 auto!important}.rsLinks{flex:1 1 auto!important;min-width:0!important}.rsLinks a{white-space:nowrap!important}.btn,button,input,select,textarea{font-family:"DM Sans",Arial,sans-serif}.btn{border-radius:7px}.btn.primary,.primary{background:#D4A85A;color:#0B2D4A;border-color:#D4A85A}@media (min-width:801px) and (max-width:1500px){.rsNav{padding-left:20px!important;padding-right:20px!important;gap:18px!important}.rsLinks{gap:13px!important}.rsLinks a{font-size:11px!important}}@media (max-width:800px){.rsNav{width:100%!important;max-width:none!important}}</style>
 <style id="atlanta-ipad-banner-freeze">
-/* iPad trip banner freeze — presentation only. No trip/workspace logic changes. */
+/* Atlanta iPad banner freeze — presentation only. No trip/workspace logic changes. */
 @media (min-width:601px) and (max-width:1180px){
+  /* Keep the page from becoming a scroll container; this lets Safari anchor fixed UI to the viewport. */
   html{overflow-x:hidden!important;}
   body{padding-top:68px!important;overflow-x:visible!important;}
   .rsTop{
@@ -446,61 +447,18 @@ button,a{max-width:100%}
     -webkit-backdrop-filter:none!important;
   }
 }
-/* iPadOS can report a desktop-sized viewport, especially on iPad Pro/landscape.
-   Detecting the touch iPad separately makes the freeze work regardless of CSS width. */
-html.ipad-trip-freeze{overflow-x:hidden!important;}
-body.ipad-trip-freeze{padding-top:68px!important;overflow-x:visible!important;}
-body.ipad-trip-freeze .rsTop{
-  position:fixed!important;
-  inset:0 0 auto 0!important;
-  width:100%!important;
-  height:68px!important;
-  min-height:68px!important;
-  z-index:9999!important;
-  transform:none!important;
-  -webkit-transform:none!important;
-  backdrop-filter:none!important;
-  -webkit-backdrop-filter:none!important;
-}
 </style>
-<script>
-(function(){
-  var ua=navigator.userAgent||"";
-  var isIPad=/iPad/i.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
-  if(isIPad){
-    document.documentElement.classList.add("ipad-trip-freeze");
-    document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("ipad-trip-freeze");});
-  }
-})();
-</script>
 </head>
 <body>
-<!-- RoamSonio workspace banner deployment marker: current global navigation + iPad freeze -->
 <header class="rsTop"><div class="rsNav"><a class="rsBrand" href="index.html" aria-label="RoamSonio home"><span class="rsMark"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#F8F5ED"/><circle cx="45" cy="18" r="8" fill="#D4A85A"/><path d="M10 46 25 29l8 9 8-12 13 20H10Z" fill="#0B2D4A"/><path d="M17 20c8-7 18-8 27-4 5 2 8 5 10 9" fill="none" stroke="#D4A85A" stroke-width="3" stroke-linecap="round"/></svg></span><span><strong><span class="rsRoam">Roam</span><span class="rsSonio">Sonio</span></strong><small>DREAM IT. PLAN IT. LIVE IT.</small></span></a><nav class="rsLinks" aria-label="Primary navigation"><a href="index.html">My RoamSonio</a><a href="my-trips.html">My Trips</a><a href="build-trip.html">Build Your Trip</a><a href="travel-desk.html">Travel Desk</a><a href="about.html">About Us</a><a href="account.html" id="rsAccountLink">My Account</a><a href="login.html?return=trip-workspace.html" id="rsAuthLink" class="rsAuthBtn">Sign In</a></nav></div></header>
 
 <header class="hero" id="home">
 <div class="coverGrid">
-<div class="coverMain"><img id="heroMain" src="images/prague-christmas.jpg" alt=""><div class="heroPhotoCredit" id="heroPhotoCredit">Photo · destination editorial image</div><div class="coverCaption"><div class="eyebrow" id="heroEyebrow">YOUR TRIP · SMARTLY PLANNED</div><h1 id="heroTitle">Trip</h1><p id="heroText">A magazine-style trip workspace that plans around your home base, interests, pace, dates and travel group.</p><div class="heroActions"><a class="btn primary" href="#itinerary">Explore the journey</a><a class="btn" id="routeMap" target="_blank">Open route map</a><a class="btn" id="shareTripButton" href="#">Share trip</a><button type="button" class="btn" id="editTripButton">Edit trip</button><a class="btn" href="index.html">Home</a></div></div></div>
+<div class="coverMain"><img id="heroMain" src="images/prague-christmas.jpg" alt=""><div class="heroPhotoCredit" id="heroPhotoCredit">Photo · destination editorial image</div><div class="coverCaption"><div class="eyebrow" id="heroEyebrow">YOUR TRIP · SMARTLY PLANNED</div><h1 id="heroTitle">Trip</h1><p id="heroText">A magazine-style trip workspace that plans around your home base, interests, pace, dates and travel group.</p><div class="heroActions"><a class="btn primary" href="#itinerary">Explore the journey</a><a class="btn" id="routeMap" target="_blank">Open route map</a><a class="btn" id="shareTripButton" href="#">Share trip</a><button type="button" class="btn" id="recoverTripButton">Recover full trip</button><a class="btn" href="index.html">Home</a></div></div></div>
 <div class="coverSide"><div><img id="heroSide1" src="images/prague-christmas.jpg" alt=""><div class="coverMini" id="side1Label">Destination</div></div><div><img id="heroSide2" src="images/prague-christmas.jpg" alt=""><div class="coverMini" id="side2Label">Local character</div></div></div>
 </div>
-<div class="weatherLead" id="weatherLead"><div class="weatherLeadIntro"><b>Trip weather</b><span>Current conditions · stay averages</span></div></div><div id="editTripShell" style="display:none;max-width:1500px;width:94%;margin:18px auto 0;background:#fffdf9;border:1px solid #D9E0E7;border-radius:12px;padding:22px;box-shadow:0 18px 50px #0B2D4A14"><div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap"><div><div class="kicker">TRIP EDITOR</div><h2 style="font:600 32px/1.1 &quot;Playfair Display&quot;,serif;margin:6px 0">Edit this trip</h2><p style="margin:0;color:#4F6B8A;font-size:12px;line-height:1.5">Edit these fields and save the changes to the existing trip. Suggestions and itinerary regeneration will be handled separately in the next step.</p></div><button type="button" class="btn" id="closeEditTripButton" style="background:#0B2D4A;color:white;border-color:#0B2D4A">Close</button></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:20px"><label style="font-size:12px;color:#4F6B8A">Trip name<input id="editTripName" type="text" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label><label style="font-size:12px;color:#4F6B8A">Start date<input id="editTripStart" type="date" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label><label style="font-size:12px;color:#4F6B8A">End date<input id="editTripEnd" type="date" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label><label style="grid-column:1/-1;font-size:12px;color:#4F6B8A">Destinations <span style="color:#8A6A35">(comma separated)</span><input id="editTripDestinations" type="text" style="display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #D9E0E7;border-radius:8px;font:inherit;background:white"></label><div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px"><button type="button" class="btn" id="cancelEditTripButton">Cancel</button><button type="button" class="btn primary" id="saveEditTripButton">Save changes</button></div></div>
+<div class="weatherLead" id="weatherLead"><div class="weatherLeadIntro"><b>Trip weather</b><span>Current conditions · stay averages</span></div></div>
 </header>
-<script>
-/* Atlanta initial-image preload: presentation only. The workspace still renders saved trip data normally. */
-(function(){
-  var p=new URLSearchParams(location.search);
-  var d=(p.get("destination")||"").toLowerCase();
-  var id=p.get("id")||sessionStorage.getItem("openTripId")||"";
-  var atlantaId="16f08031-885a-45d6-a79e-480fb1d39c67";
-  if(id===atlantaId||d.indexOf("atlanta")>=0){
-    var a="https://commons.wikimedia.org/wiki/Special:FilePath/Atlanta%20Skyline%20from%20Piedmont%20Park%20-%20October%202024.png?width=1800";
-    var b="https://commons.wikimedia.org/wiki/Special:FilePath/Ponce%20City%20Market%20from%20Historic%20Fourth%20Ward%20Park.jpg?width=1600";
-    var c="https://commons.wikimedia.org/wiki/Special:FilePath/To%20the%20Beltline.jpg?width=1600";
-    var m=document.getElementById("heroMain"),s1=document.getElementById("heroSide1"),s2=document.getElementById("heroSide2");
-    if(m)m.src=a;if(s1)s1.src=b;if(s2)s2.src=c;
-  }
-})();
-</script>
 
 <main>
 <section id="dashboard" class="section">
@@ -682,9 +640,7 @@ if((String(id)===atlantaDurableId||String(serverId)===atlantaDurableId||slug(url
     if(asnap){
       asnap.id=(trip&&trip.id)||id||atlantaDurableId;
       asnap.supabaseId=atlantaDurableId;
-      var localRevision=Number(trip&&trip.revision)||0;
-      var durableRevision=Number(asnap&&asnap.revision)||0;
-      if(!trip||durableRevision>localRevision)trip=asnap;
+      if(!trip||JSON.stringify(asnap).length>JSON.stringify(trip).length)trip=asnap;
       else if(!trip.supabaseId)trip.supabaseId=atlantaDurableId;
     }
   }catch(e){console.warn("Atlanta durable load unavailable:",e)}
@@ -728,38 +684,7 @@ safetySnapshot();
 if(id==="trip-template"){
   trip={id:"trip-template",name:"New Trip",title:"New Trip",destinations:[],travelers:1,start:"",end:"",days:1,status:"Planning",groupType:"Individual traveler",pace:"Balanced",transport:"Walk + transit",homeBase:"Downtown / city center",preferences:[],mustSee:[],localFood:[],food:[],sights:[],areas:[],resources:[],weatherQuery:"",eventQuery:"",camsQuery:"",foodBudget:"",mobility:"",energy:"",evening:"",plan:[],originalPlan:[],smartVersion:2,masterTemplate:"roamwell-trip-master-v1"};
 }
-/* If this browser has no local copy, recover the requested saved trip
-   from the authenticated owner's server snapshot before redirecting away. */
-if(!trip&&rsWorkspaceAuth&&(serverId||id)){
-  try{
-    var requestedTripId=serverId||id;
-    var recovery=await rsWorkspaceAuth.rpc("roamsonio_recover_trip",{p_trip_id:requestedTripId});
-    if(!recovery.error){
-      var payload=recovery.data;
-      if(typeof payload==="string"){try{payload=JSON.parse(payload)}catch(e){}}
-      var snapshot=payload&&payload.trip_snapshot;
-      if(snapshot&&typeof snapshot==="object"&&!Array.isArray(snapshot)){
-        trip=JSON.parse(JSON.stringify(snapshot));
-        trip.id=trip.id||id||requestedTripId;
-        trip.supabaseId=String(payload.id||requestedTripId);
-        trip.name=trip.name||payload.name||"Saved RoamSonio Trip";
-        var existing=trips.findIndex(function(t){return String(t.id||"")===String(trip.id)||String(t.supabaseId||"")===String(trip.supabaseId)});
-        if(existing>=0)trips[existing]=trip;else trips.push(trip);
-        localStorage.setItem(KEY,JSON.stringify(trips));
-        sessionStorage.setItem("openTripId",trip.id);
-      }
-    }else{
-      console.warn("Saved trip recovery unavailable:",recovery.error);
-    }
-  }catch(recoveryError){console.warn("Saved trip recovery unavailable:",recoveryError)}
-}
-if(!trip){
-  console.error("RoamSonio trip open failed: no local trip matched and server recovery did not return a usable snapshot.",{
-    requestedId:id||null,requestedSupabaseId:serverId||null,destination:urlDestination||null
-  });
-  document.body.innerHTML='<main style="max-width:760px;margin:8vh auto;padding:28px;font:16px/1.6 Arial,sans-serif;color:#0B2D4A;background:#F8F5ED"><section style="background:#fffdf9;border:1px solid #D9E0E7;border-radius:14px;padding:28px"><h1 style="font-family:Georgia,serif">Your saved trip was not opened</h1><p>RoamSonio reached the trip workspace, but could not load a matching browser copy or recover a usable saved snapshot from your account. Your trip has not been deleted by this page.</p><p><strong>Trip reference:</strong> '+String(serverId||id||"not present").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})+'</p><p>Do not recreate the trip. Return to My Trips or contact support with this reference so the saved account record can be checked.</p><p><a href="my-trips.html" style="display:inline-block;padding:12px 16px;background:#D4A85A;color:#0B2D4A;text-decoration:none;border-radius:5px;font-weight:bold">Back to My Trips</a> <a href="current-trip.html" style="display:inline-block;padding:12px 16px;border:1px solid #D9E0E7;color:#0B2D4A;text-decoration:none;border-radius:5px">Try opening Europe again</a></p></section></main>';
-  return;
-}
+if(!trip){location.href="my-trips.html";return}
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 window.recoverFullTrip=async function recoverFullTrip(){
   var btn=document.getElementById("recoverTripButton");
@@ -799,12 +724,6 @@ window.recoverFullTrip=async function recoverFullTrip(){
 
 async function save(){
   var a=load(),i=a.findIndex(function(t){return t.id===trip.id});
-  var previous=i>=0?a[i]:null;
-  var previousRevision=Number(previous&&previous.revision)||0;
-  var currentRevision=Number(trip.revision)||0;
-  trip.revision=Math.max(previousRevision,currentRevision)+1;
-  trip.updatedAt=new Date().toISOString();
-  if(!trip.createdAt)trip.createdAt=(previous&&previous.createdAt)||trip.updatedAt;
   if(i>=0)a[i]=trip;else a.push(trip);
   localStorage.setItem(KEY,JSON.stringify(a));
   sessionStorage.setItem("openTripId",trip.id);
@@ -837,10 +756,7 @@ prague:"images/prague-christmas.jpg",
 trnava:"images/trnava-advent.jpg",
 pilsen:"images/pilsen-christmas.jpg",
 hluboka:"images/hluboka-winter.jpg",
-vienna:"https://commons.wikimedia.org/wiki/Special:FilePath/Vienna%20skyline%20at%20night.jpg?width=1600",
-kyoto:"https://commons.wikimedia.org/wiki/Special:FilePath/Kiyomizu-dera_in_Kyoto.jpg?width=1600",
-oktoberfest:"https://commons.wikimedia.org/wiki/Special:FilePath/Oktoberfest%20Munich.jpg?width=1600",
-gatlinburg:"https://commons.wikimedia.org/wiki/Special:FilePath/Downtown%20Gatlinburg%2C%20Tennessee.JPG?width=1800",
+vienna:"images/prague-christmas.jpg",
 neworleans:"https://upload.wikimedia.org/wikipedia/commons/4/45/New_Orleans_skyline.jpg",
 neworleans2:"https://upload.wikimedia.org/wikipedia/commons/6/6a/Jackson_Square%2C_French_Quarter.jpg",
 neworleans3:"https://upload.wikimedia.org/wikipedia/commons/a/a6/New_Orleans%2C_LA_-_French_Quarter_%28Vieux_Carre%29_-_Jackson_Square_-_Cabildo_and_St_Louis_Cathedral.jpg",
@@ -1147,12 +1063,8 @@ if(d.indexOf("atlanta")>=0||n.indexOf("atlanta")>=0)return profile.atlanta;
 return null;
 }
 function destinationImage(name,i){
-var k=slug(name),tn=slug(trip.name||""),photos=Array.isArray(trip.heroPhotos)?trip.heroPhotos:[],dk=trip.destinationKnowledge,knowledgePhotos=dk&&Array.isArray(dk.photos)?dk.photos:[];
-/* Photo rule: use the destination's approved/stored photo first; never substitute Prague for an unrelated place. */
-if(photos.length){var selected=photos[i%photos.length];if(typeof selected==="string"&&selected.indexOf("https://")===0)return selected;}
-if(knowledgePhotos.length){var p=knowledgePhotos[i%knowledgePhotos.length],u=typeof p==="string"?p:p&&p.url;if(typeof u==="string"&&u.indexOf("https://")===0)return u;}
-if(k.indexOf("new orleans")<0&&tn.indexOf("new orleans")>=0)k="new orleans";if(k.indexOf("atlanta")<0&&tn.indexOf("atlanta")>=0)k="atlanta";if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return i%3===0?imgs.neworleans:i%3===1?imgs.neworleans2:imgs.neworleans3;
-if(k.indexOf("prague")>=0||k.indexOf("praha")>=0)return imgs.prague;if(k.indexOf("trnava")>=0)return imgs.trnava;if(k.indexOf("pilsen")>=0||k.indexOf("plzen")>=0)return imgs.pilsen;if(k.indexOf("hlub")>=0)return imgs.hluboka;if(k.indexOf("vienna")>=0||k.indexOf("wien")>=0)return imgs.vienna;if(k.indexOf("kyoto")>=0)return imgs.kyoto;if(k.indexOf("oktoberfest")>=0||k.indexOf("munich")>=0)return imgs.oktoberfest;if(k.indexOf("gatlinburg")>=0||k.indexOf("smoky mountains")>=0)return imgs.gatlinburg;if(k.indexOf("atlanta")>=0)return imgs.atlanta;return "";}
+var k=slug(name),tn=slug(trip.name||"");if(k.indexOf("new orleans")<0&&tn.indexOf("new orleans")>=0)k="new orleans";if(k.indexOf("atlanta")<0&&tn.indexOf("atlanta")>=0)k="atlanta";if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return i%3===0?imgs.neworleans:i%3===1?imgs.neworleans2:imgs.neworleans3;
+if(k.indexOf("prague")>=0)return imgs.prague;if(k.indexOf("trnava")>=0)return imgs.trnava;if(k.indexOf("pilsen")>=0)return imgs.pilsen;if(k.indexOf("hlub")>=0)return imgs.hluboka;if(k.indexOf("vienna")>=0)return imgs.vienna;if(k.indexOf("atlanta")>=0)return imgs.atlanta;return imgs.prague}
 function baseLabel(){return (trip.homeBase||document.getElementById("homeBase").value||trip.stay||"").trim()||"Downtown / city center"}
 function interestScore(area,slot){
 var prefs=(trip.preferences||[]).map(slug).join(" "),s=slug(area)+ " "+slug(slot),score=0;
@@ -1255,7 +1167,6 @@ trip.plan=clonePlan(plan);trip.originalPlan=clonePlan(plan);trip.homeBase=baseLa
 }
 window.buildSmartPlan=buildSmartPlan;
 window.saveSmartSettings=function(){trip.homeBase=document.getElementById("homeBase").value.trim()||"Downtown / city center";trip.transport=document.getElementById("smartTransport").value;trip.walkingRadius=document.getElementById("smartRadius").value;save();buildSmartPlan()};
-function initEditTripShell(){var open=document.getElementById("editTripButton"),panel=document.getElementById("editTripShell"),close=document.getElementById("closeEditTripButton"),cancel=document.getElementById("cancelEditTripButton"),saveButton=document.getElementById("saveEditTripButton");if(!open||!panel||!close||!cancel||!saveButton)return;var name=document.getElementById("editTripName"),startDate=document.getElementById("editTripStart"),endDate=document.getElementById("editTripEnd"),destinations=document.getElementById("editTripDestinations");function loadFields(){if(name)name.value=trip.name||"";if(startDate)startDate.value=trip.start||"";if(endDate)endDate.value=trip.end||"";if(destinations)destinations.value=(trip.destinations||[]).join(", ");}function closeEditor(){panel.style.display="none";open.textContent="Edit trip";loadFields();}function show(){loadFields();panel.style.display="block";panel.scrollIntoView({behavior:"smooth",block:"start"});open.textContent="Editing trip";}async function saveEdits(){var original=JSON.parse(JSON.stringify(trip));var nextName=String(name&&name.value||"").trim(),nextStart=String(startDate&&startDate.value||"").trim(),nextEnd=String(endDate&&endDate.value||"").trim(),nextDestinations=String(destinations&&destinations.value||"").split(/[,\n]/).map(function(x){return x.trim()}).filter(Boolean);if(!nextName){alert("Trip name is required.");return;}if(!nextStart||!nextEnd){alert("Start and end dates are required.");return;}if(nextEnd<nextStart){alert("End date cannot be before start date.");return;}if(!nextDestinations.length){alert("At least one destination is required.");return;}trip.name=nextName;trip.start=nextStart;trip.end=nextEnd;trip.destinations=nextDestinations;try{await save();renderHeader();renderRoute();renderDestinations();panel.style.display="none";open.textContent="Edit trip";alert("Trip changes saved. Itinerary and suggestions were not regenerated.");}catch(e){trip=original;loadFields();alert("Trip changes could not be saved. Nothing was changed.");console.warn("Edit trip save failed:",e);}}open.addEventListener("click",show);close.addEventListener("click",closeEditor);cancel.addEventListener("click",closeEditor);saveButton.addEventListener("click",saveEdits);loadFields();}
 function renderHeader(){
 var ds=(trip.destinations||[]),n=dates().n;
 document.title=(trip.name||"Trip")+" · Smart Travel Workspace";
@@ -1268,7 +1179,7 @@ document.getElementById("dashTitle").textContent=trip.name||"Your trip";document
 document.getElementById("overviewLead").textContent="RoamSonio uses the completed European Thanksgiving trip as the master template, then adapts the same structure to this destination, your dates, home base, interests and traveler profile.";
 document.getElementById("homeBase").value=trip.homeBase&&trip.homeBase!=="Downtown / city center"?trip.homeBase:"";
 document.getElementById("smartTransport").value=trip.transport||"Walk + transit";document.getElementById("smartRadius").value=trip.walkingRadius||"Moderate — combine nearby areas";
-var d0=ds[0]||"",samplePhoto=trip.heroPhoto||new URLSearchParams(location.search).get("photo")||"";document.getElementById("heroMain").src=/^https:\/\//i.test(samplePhoto)?samplePhoto:destinationImage(d0,0);document.getElementById("heroMain").alt=d0;
+var d0=ds[0]||"";document.getElementById("heroMain").src=destinationImage(d0,0);document.getElementById("heroMain").alt=d0;
 document.getElementById("heroSide1").src=destinationImage(d0,1);document.getElementById("heroSide2").src=destinationImage(d0,2);document.getElementById("side1Label").textContent=d0+" · local character";document.getElementById("side2Label").textContent=d0+" · seasonal atmosphere";
  document.getElementById("heroPhotoCredit").textContent=slug(d0).indexOf("new orleans")>=0?"Photography · Wikimedia Commons":"Destination editorial image";
 document.getElementById("routeMap").href="https://www.google.com/maps/dir/"+encodeURIComponent((trip.homeBase||"Downtown "+d0))+"/"+encodeURIComponent(d0);
@@ -1532,7 +1443,7 @@ return ["All cuisines"];
 function renderGuide(){
 var destinationKey=slug((trip.destinations||[])[0]||""),tripNameKey=slug(trip.name||""),
 isAtlanta=destinationKey.indexOf("atlanta")>=0||tripNameKey.indexOf("atlanta")>=0,
-isN=(destinationKey.indexOf("new orleans")>=0||destinationKey==="nola"||tripNameKey.indexOf("new orleans")>=0)&&!isAtlanta,
+isN=!!cityProfile()&&!isAtlanta,
 filter=document.getElementById("guideFilter"),sel=document.getElementById("guideSelect"),
 cuisineRow=document.getElementById("guideCuisineRow"),cuisineSel=document.getElementById("guideCuisine"),
 grid=document.getElementById("guideGrid"),count=document.getElementById("guideCount");
@@ -1542,33 +1453,15 @@ filter.innerHTML="";sel.innerHTML="";
    The guide engine is shared, but every destination owns its own data/source rules.
    Never fall back to another city's restaurants. */
 var destination=destinationKey,city=destination;
-/* Resolve destination names centrally so "Kyoto, Japan", "Praha", "Plzeň",
-   "Hluboká Castle" and similar labels map to the same guide-data keys. */
-var guideAliases={
-neworleans:["new orleans","nola","neworleans"],
-lisbon:["lisbon","lisboa"],
-atlanta:["atlanta"],
-kyoto:["kyoto"],
-prague:["prague","praha"],
-vienna:["vienna","wien"],
-munich:["munich","munchen","muenchen","m nchen"],
-pilsen:["pilsen","plzen","plzeň","plze"],
-trnava:["trnava"],
-hluboka:["hluboka","hluboka nad vltavou","hlubok"]
-};
-var guideMatch=Object.keys(guideAliases).find(function(key){
-return guideAliases[key].some(function(alias){return destination.indexOf(slug(alias))>=0||tripNameKey.indexOf(slug(alias))>=0});
-});
-if(guideMatch)city=guideMatch;
-function hasCuratedGuideData(category){
-return !!((isN&&nolaGuide[category]&&nolaGuide[category].length)||
-(isAtlanta&&atlantaGuide[category]&&atlantaGuide[category].length)||
-(activityGuide[city]&&activityGuide[city][category]&&activityGuide[city][category].length)||
-(localGuide[city]&&localGuide[city][category]&&localGuide[city][category].length));
-}
+if(destination.indexOf("new orleans")>=0||destination==="nola")city="neworleans";
+else if(destination.indexOf("prague")>=0||destination.indexOf("praha")>=0)city="prague";
+else if(destination.indexOf("vienna")>=0||destination.indexOf("wien")>=0)city="vienna";
+else if(destination.indexOf("pilsen")>=0||destination.indexOf("plzen")>=0)city="pilsen";
+else if(destination.indexOf("trnava")>=0)city="trnava";
+else if(destination.indexOf("hluboka")>=0)city="hluboka";
+else if(destination.indexOf("atlanta")>=0)city="atlanta";
 
 var destinationSources={
-munich:"https://www.munich.travel/en/topics/eat-drink",
 prague:"https://prague.eu/en/objevujte-kategorie/food-and-drink/",
 vienna:"https://www.wien.info/en/dine-drink",
 pilsen:"https://www.visitpilsen.eu/en/gastro/",
@@ -1579,32 +1472,6 @@ neworleans:"https://www.neworleans.com/"
 };
 
 var localGuide={
-munich:{
-Breakfast:[
-["Café Frischhut","Viktualienmarkt","Bakery / Schmalznudel café","Café / Bakery"],
-["Café Luitpold","Brienner Straße","Historic coffeehouse / pastry","Café / Bakery"],
-["Dallmayr Café-Bistro","Dienerstraße / Old Town","Coffeehouse / breakfast","Café / Bakery"],
-["Man Versus Machine","Glockenbachviertel","Specialty coffee","Café / Bakery"],
-["Rischart Café am Marienplatz","Marienplatz","Bakery / café","Café / Bakery"],
-["Cotidiano Gärtnerplatz","Gärtnerplatz","Brunch / café","International"]
-],
-Lunch:[
-["Viktualienmarkt","Old Town","Market stalls / Bavarian specialties","Food hall / International"],
-["Augustiner-Keller","Near Hauptbahnhof","Traditional Bavarian beer garden / meals","Restaurant"],
-["Wirtshaus in der Au","Au-Haidhausen","Bavarian cuisine / dumplings","Restaurant"],
-["Schneider Bräuhaus","Tal / Old Town","Traditional Bavarian food","Restaurant"],
-["Der Pschorr","Viktualienmarkt","Bavarian cuisine","Restaurant"],
-["Görreshof","Schwabing","Traditional Bavarian inn","Restaurant"]
-],
-Dinner:[
-["Tantris","Schwabing","Fine dining / modern cuisine","Restaurant"],
-["Wirtshaus in der Au","Au-Haidhausen","Bavarian classics","Restaurant"],
-["Augustiner am Platzl","Near Hofbräuhaus","Traditional Bavarian dining","Restaurant"],
-["Schneider Bräuhaus","Tal / Old Town","Bavarian food and wheat beer","Restaurant"],
-["Spatenhaus an der Oper","Near National Theatre","Bavarian cuisine","Restaurant"],
-["Servus Heidi","Schwanthalerhöhe","Modern Bavarian / Alpine","Restaurant"]
-]
-},
 prague:{
 Breakfast:[
 ["Café Savoy","Malá Strana","Czech café / breakfast","Czech"],
@@ -1953,176 +1820,6 @@ Bars:[
 };
 
 var activityGuide={
-lisbon:{
-Breakfast:[
-["Pastéis de Belém","Belém","Famous custard tarts and café","Bakery"],
-["A Brasileira","Chiado","Historic café","Café"],
-["Dear Breakfast","Chiado / Príncipe Real","Breakfast and brunch","Brunch"],
-["Fábrica Coffee Roasters","Several central locations","Specialty coffee","Coffee"]
-],
-Lunch:[
-["Time Out Market Lisboa","Cais do Sodré","Food hall with multiple vendors","Market"],
-["Cervejaria Ramiro","Intendente","Seafood restaurant","Seafood"],
-["O Trevo","Praça Luís de Camões","Casual bifana sandwich","Portuguese"],
-["O Prado","Sé / Alfama area","Seasonal Portuguese cooking","Portuguese"]
-],
-Dinner:[
-["Taberna da Rua das Flores","Chiado","Portuguese small plates","Portuguese"],
-["Ponto Final","Cacilhas, across the river","Portuguese dining and river views","Portuguese"],
-["Solar dos Presuntos","Restauradores","Traditional Portuguese cuisine","Portuguese"],
-["Prado","Baixa / Sé area","Seasonal Portuguese restaurant","Portuguese"]
-],
-"Special Occasions":[
-["Belcanto","Chiado","Tasting-menu fine dining; reservations advised","Fine dining"],
-["Alma","Chiado","Contemporary Portuguese tasting menus","Fine dining"],
-["Feitoria","Belém","Modern Portuguese fine dining","Fine dining"],
-["Eleven","Parque Eduardo VII area","Contemporary fine dining","Fine dining"]
-],
-Bars:[
-["Pavilhão Chinês","Príncipe Real","Eclectic cocktail bar","Cocktails"],
-["Red Frog","Avenida da Liberdade area","Cocktail bar; check reservations","Cocktails"],
-["Park Bar","Bairro Alto","Rooftop bar","Rooftop"],
-["Foxtrot","São Bento","Classic cocktail bar","Cocktails"]
-],
-Breweries:[
-["Dois Corvos Cervejeira","Marvila","Craft brewery and taproom; confirm current hours","Craft beer"],
-["Musa de Marvila","Marvila","Craft beer brewery and taproom","Craft beer"],
-["8a Colina","Graça","Lisbon craft brewery","Craft beer"],
-["Oitava Colina Taproom","Graça area","Craft beer venue; verify current location and hours","Craft beer"]
-],
-"Coffee & Bakeries":[
-["Fábrica Coffee Roasters","Central Lisbon","Specialty coffee","Coffee"],
-["Manteigaria","Chiado / Cais do Sodré","Pastéis de nata bakery","Bakery"],
-["Pastéis de Belém","Belém","Traditional custard tarts","Bakery"],
-["Confeitaria Nacional","Baixa","Historic pastry shop","Bakery"]
-],
-Music:[
-["Hot Clube de Portugal","Príncipe Real","Jazz club; check performance schedule","Live music"],
-["Musicbox","Cais do Sodré","Live music and club nights","Live music"],
-["Casa Independente","Intendente","Music and cultural events","Live music"],
-["B.Leza","Cais do Sodré","Live music and dance nights","Live music"]
-],
-"Theater & Shows":[
-["Teatro Nacional D. Maria II","Rossio","National theatre; check season","Theatre"],
-["Teatro São Luiz","Chiado","Theatre and performance","Theatre"],
-["Fado in Chiado","Chiado","Fado performance; check showtimes","Cultural show"],
-["Coliseu dos Recreios","Restauradores","Concerts and stage shows","Shows"]
-],
-Family:[
-["Oceanário de Lisboa","Parque das Nações","Large aquarium","Family"],
-["Pavilhão do Conhecimento","Parque das Nações","Interactive science museum","Family"],
-["Jardim Zoológico de Lisboa","Sete Rios","Zoo","Family"],
-["Castelo de São Jorge","Alfama","Historic castle and viewpoints","Family"]
-],
-Neighborhoods:[
-["Alfama","Historic center","Old lanes, viewpoints and Fado culture","Explore"],
-["Belém","West Lisbon","Monuments, gardens and pastries","Explore"],
-["Chiado","Central Lisbon","Shops, cafés and theatres","Explore"],
-["Príncipe Real","Central Lisbon","Gardens, boutiques and dining","Explore"]
-],
-Museums:[
-["Museu Nacional do Azulejo","Xabregas","Portuguese tile art and history","Museum"],
-["MAAT","Belém","Art, architecture and technology","Museum"],
-["Museu Calouste Gulbenkian","Avenidas Novas","Art collection and gardens","Museum"],
-["Museu do Fado","Alfama","Fado music history","Museum"]
-],
-Markets:[
-["Time Out Market Lisboa","Cais do Sodré","Food hall and dining stalls","Market"],
-["Feira da Ladra","Campo de Santa Clara","Flea market; typically Tuesdays and Saturdays, verify dates","Market"],
-["Mercado de Campo de Ourique","Campo de Ourique","Neighborhood food market","Market"],
-["Mercado de Arroios","Arroios","Local produce and food market","Market"]
-],
-Activities:[
-["Belém Tower","Belém","Riverside historic monument; verify access","Attraction"],
-["Jerónimos Monastery","Belém","Historic monastery","Attraction"],
-["São Jorge Castle","Alfama","Castle and city views","Attraction"],
-["Tram 28 route","Central Lisbon","Historic tram route; check service and crowding","Experience"]
-]
-},
-kyoto:{
-Breakfast:[
-["Inoda Coffee Honten","Sakaimachi-dori, Nakagyo","Historic Kyoto coffeehouse","Café"],
-["Smart Coffee","Teramachi, Nakagyo","Coffeehouse and pancakes","Café"],
-["Weekenders Coffee Tominokoji","Tominokoji, central Kyoto","Specialty coffee","Coffee"],
-["Kissa Master","Central Kyoto","Japanese-style coffee shop","Café"]
-],
-Lunch:[
-["Nishiki Market","Nakagyo, central Kyoto","Food market with small bites","Market"],
-["Honke Owariya","Oike, Nakagyo","Traditional soba restaurant","Japanese"],
-["Gogyo Kyoto","Yanaginobanba, central Kyoto","Ramen","Japanese"],
-["Men-ya Inoichi","Shijo area","Ramen","Japanese"]
-],
-Dinner:[
-["Gion Tanto","Gion, Higashiyama","Okonomiyaki","Japanese"],
-["Izuu","Gion","Kyoto-style sushi","Japanese"],
-["Kichi Kichi Omurice","Pontocho area","Omurice","Japanese"],
-["Gion Karyo","Gion","Kaiseki dining","Japanese"]
-],
-"Special Occasions":[
-["Kikunoi Honten","Higashiyama","Kaiseki dining","Japanese fine dining"],
-["Gion Sasaki","Higashiyama","Seasonal tasting menu","Japanese fine dining"],
-["Hyotei","Nanzenji area","Historic kaiseki restaurant","Japanese fine dining"],
-["Mizai","Maruyama Park area","Kaiseki dining","Japanese fine dining"]
-],
-Bars:[
-["L'Escamoteur Bar","Kawaramachi","Cocktail bar","Cocktails"],
-["Bar Rocking Chair","Shimogyo","Cocktail bar","Cocktails"],
-["Bee's Knees","Central Kyoto","Cocktail bar","Cocktails"],
-["Pig & Whistle","Sanjo area","Pub","Pub"]
-],
-Breweries:[
-["Kyoto Brewing Co.","Minami-ku","Craft brewery and taproom; check current taproom hours","Craft beer"],
-["Kizakura Kappa Country","Fushimi","Sake brewery museum and restaurant","Brewery visit"],
-["Fushimi Sake District","Fushimi","Historic sake-brewing district and tasting venues","Brewery district"],
-["Spring Valley Brewery Kyoto","Shijo / Nishiki area","Craft beer brewery restaurant","Craft beer"]
-],
-"Coffee & Bakeries":[
-["% Arabica Kyoto Higashiyama","Higashiyama","Specialty coffee","Coffee"],
-["Weekenders Coffee Tominokoji","Central Kyoto","Specialty coffee","Coffee"],
-["Sizuya Shijo Karasuma","Shijo Karasuma","Kyoto bakery","Bakery"],
-["Walder","Nakagyo","Bakery","Bakery"]
-],
-Music:[
-["磔磔 (Taku Taku)","Shijo area","Live music venue; check event schedule","Live music"],
-["Live House Kyoto MUSE","Shijo area","Live music venue","Live music"],
-["RAG","Sanjo area","Jazz and live music","Live music"]
-],
-"Theater & Shows":[
-["Minamiza Theatre","Gion / Shijo","Kabuki theatre; check performance calendar","Theatre"],
-["ROHM Theatre Kyoto","Okazaki","Performing arts and concerts","Theatre"],
-["Gion Corner","Gion","Traditional performing arts","Cultural show"]
-],
-Family:[
-["Kyoto Railway Museum","Shimogyo","Railway exhibits and steam locomotive","Family"],
-["Kyoto Aquarium","Umekoji Park","Aquarium","Family"],
-["Kyoto City Zoo","Okazaki","Zoo","Family"],
-["Toei Kyoto Studio Park","Uzumasa","Film sets and live shows","Family"]
-],
-Neighborhoods:[
-["Gion","Higashiyama","Historic lanes and traditional architecture","Explore"],
-["Arashiyama","Western Kyoto","Bamboo grove and riverside district","Explore"],
-["Fushimi","Southern Kyoto","Canals and sake-brewing district","Explore"],
-["Nishijin","North-central Kyoto","Textile heritage and quieter streets","Explore"]
-],
-Museums:[
-["Kyoto National Museum","Higashiyama","Japanese art and cultural history","Museum"],
-["Kyoto International Manga Museum","Nakagyo","Manga collection and exhibitions","Museum"],
-["Kyoto Railway Museum","Shimogyo","Railway history and exhibits","Museum"],
-["Kyoto Museum of Crafts and Design","Okazaki","Traditional crafts","Museum"]
-],
-Markets:[
-["Nishiki Market","Central Kyoto","Food market; many small vendors","Market"],
-["Toji Kobo Market","Toji Temple","Monthly flea and antiques market; date-dependent","Market"],
-["Kitano Tenmangu Tenjin Market","Kamishichiken","Monthly flea market; date-dependent","Market"],
-["Kyoto Central Wholesale Market","Shimogyo","Wholesale food market; access varies","Market"]
-],
-Activities:[
-["Fushimi Inari Taisha","Fushimi","Shrine paths and torii gates","Attraction"],
-["Kiyomizu-dera","Higashiyama","Historic temple and city views","Attraction"],
-["Arashiyama Bamboo Grove","Arashiyama","Bamboo walking paths","Outdoor"],
-["Nijo Castle","Nakagyo","Historic castle and gardens","Attraction"]
-]
-},
 prague:{
 Family:[
 ["Prague Zoo","Troja","Zoo","Family"],
@@ -2257,134 +1954,31 @@ Markets:[
 var cats=isN?categories:(isAtlanta?atlantaCategories:["Breakfast","Lunch","Dinner","Special Occasions","Bars","Breweries","Coffee & Bakeries","Music","Theater & Shows","Family","Neighborhoods","Museums","Markets"]);
 var active=trip.guideCategory||"Dinner",cuisine=trip.guideCuisine||"All cuisines",guidePages={};
 
-var liveGuideCache={};
-var liveGuidePending={},liveGuideWaiters={};
-function discoverLiveGuidePlaces(category,done){
-var key=slug((trip.destinations||[])[0]||trip.name||"")+"|v2|"+category;
-trip.liveGuidePlaces=trip.liveGuidePlaces||{};
-if(Array.isArray(trip.liveGuidePlaces[key])&&trip.liveGuidePlaces[key].length){liveGuideCache[key]=trip.liveGuidePlaces[key];done(liveGuideCache[key]);return}
-if(liveGuideCache[key]&&liveGuideCache[key].length){done(liveGuideCache[key]);return}
-if(liveGuidePending[key]){liveGuideWaiters[key]=liveGuideWaiters[key]||[];liveGuideWaiters[key].push(done);return;}
-liveGuidePending[key]=true;liveGuideWaiters[key]=[];
-var place=(trip.destinations||[])[0]||trip.name||"";
-var qcats={
-"Breakfast":['["amenity"~"cafe|bakery"]'],
-"Lunch":['["amenity"~"restaurant|fast_food|food_court"]'],
-"Dinner":['["amenity"="restaurant"]'],
-"Special Occasions":['["amenity"="restaurant"]'],
-"Bars":['["amenity"~"bar|pub|nightclub"]'],
-"Breweries":['["craft"~"brewery|microbrewery"]','["microbrewery"="yes"]','["brewery"="yes"]','["industrial"="brewery"]','["amenity"="brewery"]'],
-"Coffee & Bakeries":['["amenity"~"cafe|bakery"]'],
-"Museums":['["tourism"="museum"]'],
-"Markets":['["amenity"="marketplace"]','["shop"~"market|farm"]','["amenity"="food_court"]'],
-"Family":['["tourism"~"zoo|aquarium|theme_park|attraction|museum"]','["leisure"~"park|playground"]','["amenity"="playground"]'],
-"Neighborhoods":['["place"~"suburb|quarter|neighbourhood"]'],
-"Music":['["amenity"~"music_venue|nightclub"]'],
-"Theater & Shows":['["amenity"="theatre"]'],
-"Activities":['["tourism"~"attraction|museum|gallery|viewpoint|artwork"]','["leisure"~"park|garden"]']
-};
-var selectors=qcats[category]||['["tourism"~"attraction|museum|gallery"]'];
-fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q="+encodeURIComponent(place),{headers:{"Accept-Language":"en"}})
-.then(function(r){if(!r.ok)throw Error("geocode unavailable");return r.json()})
-.then(function(rows){if(!rows||!rows.length)throw Error("destination not found");var p=rows[0],lat=Number(p.lat),lon=Number(p.lon),blocks=[];selectors.forEach(function(selector){blocks.push('node'+selector+'(around:12000,'+lat+','+lon+');way'+selector+'(around:12000,'+lat+','+lon+');relation'+selector+'(around:12000,'+lat+','+lon+');')});var query='[out:json][timeout:4];('+blocks.join('')+');out center tags 24;';
-var endpoints=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
-var requests=endpoints.map(function(endpoint){return new Promise(function(resolve,reject){var timer=setTimeout(function(){reject(Error("place provider timed out"))},3000);fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:"data="+encodeURIComponent(query)}).then(function(r){if(!r.ok)throw Error("place provider unavailable");return r.json()}).then(function(data){if(!data||!Array.isArray(data.elements))throw Error("invalid place data");clearTimeout(timer);resolve(data)}).catch(function(e){clearTimeout(timer);reject(e)});});});
-return Promise.any(requests).catch(function(){throw Error("all place providers unavailable")})})
-.then(function(data){var seen={},places=(data.elements||[]).map(function(el){var tags=el.tags||{},amenity=String(tags.amenity||"");if(category==="Breakfast"&&amenity!=="cafe"&&amenity!=="bakery")return null;if(category==="Lunch"&&["restaurant","fast_food","food_court"].indexOf(amenity)<0)return null;if(category==="Dinner"&&amenity!=="restaurant")return null;var name=tags["name:en"]||tags["official_name:en"]||tags.int_name||tags.name;if(!name||seen[name.toLowerCase()])return null;seen[name.toLowerCase()]=true;var lat=el.lat||(el.center&&el.center.lat),lon=el.lon||(el.center&&el.center.lon),area=tags["addr:suburb"]||tags["addr:neighbourhood"]||tags["addr:city"]||"Local area",kind=tags.cuisine||tags.amenity||tags.tourism||tags.shop||tags.leisure||tags.craft||"Place";return [name,area,String(kind).replace(/_/g," "), "OpenStreetMap place data",lat&&lon?"https://www.openstreetmap.org/?mlat="+lat+"&mlon="+lon+"&zoom=17":""]}).filter(Boolean);if(category==="Lunch"||category==="Dinner"){var other=category==="Lunch"?"Breakfast":"Lunch",prior=trip.liveGuidePlaces[slug((trip.destinations||[])[0]||trip.name||"")+"|v2|"+other]||liveGuideCache[slug((trip.destinations||[])[0]||trip.name||"")+"|v2|"+other]||[],priorNames={};prior.forEach(function(p){if(p&&p[0])priorNames[String(p[0]).toLowerCase()]=true});places=places.filter(function(p){return !priorNames[String(p[0]).toLowerCase()]});}places=places.slice(0,24);liveGuideCache[key]=places;if(places.length){trip.liveGuidePlaces=trip.liveGuidePlaces||{};trip.liveGuidePlaces[key]=places;save()}done(places);(liveGuideWaiters[key]||[]).forEach(function(cb){try{cb(places)}catch(e){}});liveGuideWaiters[key]=[]})
-.catch(function(){liveGuideCache[key]=[];done([]);(liveGuideWaiters[key]||[]).forEach(function(cb){try{cb([])}catch(e){}});liveGuideWaiters[key]=[]})
-.finally(function(){delete liveGuidePending[key]});
-}
 function destinationItems(category){
-var liveKey=slug((trip.destinations||[])[0]||trip.name||"")+"|v2|"+category;
-trip.liveGuidePlaces=trip.liveGuidePlaces||{};
-if(Array.isArray(trip.liveGuidePlaces[liveKey])&&trip.liveGuidePlaces[liveKey].length)return trip.liveGuidePlaces[liveKey];
-if(liveGuideCache[liveKey]&&liveGuideCache[liveKey].length)return liveGuideCache[liveKey];
 var items;
 if(isN)items=nolaGuide[category]||[];
 else if(isAtlanta)items=atlantaGuide[category]||[];
 else items=(activityGuide[city]&&activityGuide[city][category])||((localGuide[city]&&localGuide[city][category])||[]);
 if(items.length)return items;
 
-/* First-class destination knowledge supplies real places for destinations that
-   do not have a hand-curated profile. Existing curated destinations keep their
-   existing data above. */
-var dk=trip.destinationKnowledge,food=dk&&Array.isArray(dk.food)?dk.food:[],todo=dk&&Array.isArray(dk.thingsToDo)?dk.thingsToDo:[],ent=dk&&Array.isArray(dk.entertainment)?dk.entertainment:[];
-/* Use the saved build data first, so Editorial Library food remains available even when live POI discovery is sparse. */
-if(!food.length&&Array.isArray(trip.food))food=trip.food;
-var foodCategories=["Breakfast","Lunch","Dinner","Special Occasions","Bars","Breweries","Coffee & Bakeries"];
-if(food.length&&foodCategories.indexOf(category)>=0){
-  if(category==="Music"||category==="Theater & Shows"){
-  var entItems=ent.map(function(x){
-    var name=typeof x==="string"?x:String(x&&x.name||"").trim(),kind=typeof x==="object"&&x?(x.category||"Entertainment"):"Entertainment";
-    return [name,"Destination area",kind,"OpenStreetMap destination discovery"];
-  }).filter(function(x){return !!x[0]});
-  if(entItems.length)return entItems;
-  var entTodo=todo.map(function(x){
-    var name=typeof x==="string"?x:String(x&&x.name||"").trim(),kind=typeof x==="object"&&x?(x.category||"Attraction"):"Attraction";
-    return [name,"Destination area",kind,"Destination knowledge"];
-  }).filter(function(x){return !!x[0]&&/music|theatre|theater|nightclub|club|concert|show|performance|arts/.test(String(x[2]).toLowerCase())});
-  if(entTodo.length)return entTodo;
-}
-var foodItems=food.map(function(x){
-    var name=typeof x==="string"?x:String(x&&x.name||"").trim();
-    var area=typeof x==="object"&&x?(x.area||x.neighborhood||"Destination"): "Destination";
-    var kind=typeof x==="object"&&x?(x.category||"Food & drink"):"Food & drink";
-    return [name,area,kind,"Destination knowledge"];
-  }).filter(function(x){return !!x[0]});
-
-  /* Use the destination's actual source type to create different food lanes.
-     Do not show the same mixed restaurant list for every food category. */
-  var typeFor=String(category||"").toLowerCase();
-  var filtered=foodItems.filter(function(x){
-    var kind=String(x[2]||"").toLowerCase();
-    if(typeFor==="breakfast"||typeFor==="coffee & bakeries")return /cafe|coffee|bakery|pastry/.test(kind);
-    if(typeFor==="bars")return /bar/.test(kind);
-    if(typeFor==="breweries")return /brewery|pub/.test(kind);
-    if(typeFor==="lunch"||typeFor==="dinner"||typeFor==="special occasions")return /restaurant|food_court|food hall|bistro|dining/.test(kind);
-    return true;
-  });
-  if(filtered.length)return filtered;
-  /* If the destination does not have enough typed source data, keep real
-     destination places available rather than replacing them with fake names. */
-  if(foodItems.length)return foodItems;
-}
-if(todo.length){
-  var todoItems=todo.map(function(x){
-    var name=typeof x==="string"?x:String(x&&x.name||"").trim();
-    var kind=typeof x==="object"&&x?(x.category||"Attraction"):"Attraction";
-    return [name,"Destination area",kind,"Destination knowledge"];
-  }).filter(function(x){return !!x[0]});
-  if(todoItems.length)return todoItems;
-}
-
-/* Universal destination-aware fallback.
-   Never fabricate venue names such as "Explore Breakfast in City Centre".
-   When the library/build has no curated venues for this destination/category,
-   show a small number of honest, destination-specific discovery options that
-   search the selected destination and category. */
-var destLabel=(trip.destinations||[])[0]||trip.name||destination||"this destination";
-var categoryQueries={
-"Breakfast":["best breakfast cafés and bakeries","highly rated breakfast spots"],
-"Lunch":["local lunch restaurants and markets","top-rated lunch spots"],
-"Dinner":["local restaurants for dinner","highly rated dinner restaurants"],
-"Special Occasions":["special occasion and fine dining restaurants","romantic restaurants"],
-"Bars":["popular local bars","cocktail bars"],
-"Breweries":["local breweries and brewpubs","craft beer breweries"],
-"Coffee & Bakeries":["specialty coffee shops and bakeries","local pastry shops"],
-"Music":["live music venues and concert halls","music events"],
-"Theater & Shows":["theatres and performing arts venues","live shows and performances"],
-"Museums":["top museums and galleries","local history museums"],
-"Markets":["markets and food markets","local artisan markets"],
-"Family":["family attractions and activities","family-friendly museums and parks"],
-"Neighborhoods":["historic neighborhoods and districts","local neighborhoods worth exploring"],
-"Breweries":["breweries and brewpubs","craft beer destinations"],
-"Activities":["top attractions and things to do","landmarks and cultural sights"]
+/* For categories without curated destination data, provide destination-specific
+   discovery lanes rather than borrowing another city's content. */
+var areaSets={
+prague:["Staré Město","Malá Strana","Vinohrady","Karlín","Holešovice","Nové Město"],
+vienna:["Innere Stadt","Neubau","Mariahilf","Leopoldstadt","Alsergrund","Landstraße"],
+pilsen:["City Centre","Old Town","Brewery District","Lochotín"],
+trnava:["City Centre","Main Street","Trinity Square","Historic Centre"],
+hluboka:["Town Centre","Castle route","Park Hluboká","Hluboká area"],
+default:["City Centre","Historic Centre","Downtown","Main Square","Local neighbourhoods","Nearby"]
 };
-var queries=categoryQueries[category]||["top "+String(category||"attractions").toLowerCase()+" and things to do","best "+String(category||"attractions").toLowerCase()+" in the area"];
-return queries.map(function(q,i){
-var searchQuery=encodeURIComponent(destLabel+" "+q);
-return ["Find "+q+" in "+destLabel,destLabel,"Destination-specific discovery. Search current places, then confirm opening hours and details before visiting.","Destination discovery", "https://www.google.com/maps/search/"+searchQuery];
-});
+var areas=areaSets[city]||areaSets.default,arr=[];
+for(var q=0;q<areas.length;q++)arr.push([
+"Explore "+category+" in "+areas[q],
+areas[q],
+"Search current "+category.toLowerCase()+" options in this destination area",
+"Destination discovery"
+]);
+return arr;
 }
 function classifyDestinationCuisine(item,category){
 var n=slug((item[0]||"")+" "+(item[2]||"")+" "+(item[3]||"")),c=slug(category||"");
@@ -2448,13 +2042,12 @@ for(var i=0;i<visible.length;i++){
 var it=visible[i],name=it[0],neighborhood=it[1],type=it[2],note=it[3],price=guidePrice(name,active),cost=guideCost(price,active),description=guideDescription(name,type,note,active),card=document.createElement("article");
 card.className="card guideCard";
 var q=name+" "+((trip.destinations||[])[0]||""),review=guideReviews()[guideReviewKey(name)]||{},online=guideOnlineRating(name),onlineHtml=guideOnlineHtml(name);
-var isDiscovery=name.indexOf("Explore ")===0||name.indexOf("Find ")===0||note==="Destination discovery";
+var isDiscovery=name.indexOf("Explore ")===0;
 if(isDiscovery){
 q=((trip.destinations||[])[0]||city)+" "+active+" "+neighborhood;
 }
 var sourceUrl=destinationSources[city]||search(q+" "+active);
-var discoveryUrl=String(it[4]||("https://www.google.com/maps/search/"+encodeURIComponent((trip.destinations||[])[0]||trip.name||city)+" "+encodeURIComponent(active)));
-card.innerHTML="<div class='ey guideEyebrow'><span>"+esc(active)+"</span>"+priceMarkup(price)+"</div><h3>"+esc(name)+"</h3><span class='guideNeighborhood'>"+esc(neighborhood)+"</span><div class='guideCost'><b>"+(isDiscovery?"Current local search":"Typical food spend")+"</b><span>"+(isDiscovery?"Open current options":" "+cost+" / person")+"</span></div><p class='guideType'>"+esc(description)+"</p>"+(isDiscovery?"<div class='guideNote'>RoamSonio keeps this destination-specific. Open the current local source/search to see live options.</div>":"<div class='guideReview'><div class='guideOnlineSlot'>"+onlineHtml+"</div><div class='guidePersonal'><span class='guidePersonalLabel'>Your rating</span>"+guideStarButtons(name,Number(review.rating||0))+"</div><div class='guideReviewActions'><button type='button' class='guideReviewToggle "+(review.favorite?"active":"")+"' data-favorite>Favorite</button><button type='button' class='guideReviewToggle "+(review.recommend?"active":"")+"' data-recommend>Would recommend</button><label class='guideVisited'><input type='checkbox' data-visited "+(review.visited?"checked":"")+"> Visited</label></div><textarea class='guideReviewNote' data-note placeholder='Add your private RoamSonio note...'>"+esc(review.note||"")+"</textarea><button type='button' class='guideReviewSave' data-save-review>Save your experience</button></div>")+"<p class='guideNote'>Check current hours, menus and reservations before visiting.</p><div class='guideActions'><a class='guideButton primary' target='_blank' rel='noopener' href='"+(isDiscovery?discoveryUrl:maps(q))+"'>"+(isDiscovery?"Search current options":"Open in Maps")+"</a><a class='guideButton' target='_blank' rel='noopener' href='"+(isDiscovery?search((trip.destinations||[])[0]||trip.name||city+" official tourism guide"):search(q+" official website"))+"'>"+(isDiscovery?"Destination information":"Website / hours")+"</a><a class='guideButton' target='_blank' rel='noopener' href='"+search(q+" reviews")+"'>Reviews</a></div>";
+card.innerHTML="<div class='ey guideEyebrow'><span>"+esc(active)+"</span>"+priceMarkup(price)+"</div><h3>"+esc(name)+"</h3><span class='guideNeighborhood'>"+esc(neighborhood)+"</span><div class='guideCost'><b>"+(isDiscovery?"Current local search":"Typical food spend")+"</b><span>"+(isDiscovery?"Open current options":" "+cost+" / person")+"</span></div><p class='guideType'>"+esc(description)+"</p>"+(isDiscovery?"<div class='guideNote'>RoamSonio keeps this destination-specific. Open the current local source/search to see live options.</div>":"<div class='guideReview'><div class='guideOnlineSlot'>"+onlineHtml+"</div><div class='guidePersonal'><span class='guidePersonalLabel'>Your rating</span>"+guideStarButtons(name,Number(review.rating||0))+"</div><div class='guideReviewActions'><button type='button' class='guideReviewToggle "+(review.favorite?"active":"")+"' data-favorite>Favorite</button><button type='button' class='guideReviewToggle "+(review.recommend?"active":"")+"' data-recommend>Would recommend</button><label class='guideVisited'><input type='checkbox' data-visited "+(review.visited?"checked":"")+"> Visited</label></div><textarea class='guideReviewNote' data-note placeholder='Add your private RoamSonio note...'>"+esc(review.note||"")+"</textarea><button type='button' class='guideReviewSave' data-save-review>Save your experience</button></div>")+"<p class='guideNote'>Check current hours, menus and reservations before visiting.</p><div class='guideActions'><a class='guideButton primary' target='_blank' rel='noopener' href='"+(isDiscovery?search(q):maps(q))+"'>"+(isDiscovery?"Search current options":"Open in Maps")+"</a><a class='guideButton' target='_blank' rel='noopener' href='"+(isDiscovery?sourceUrl:search(q+" official website"))+"'>"+(isDiscovery?"Official destination guide":"Website / hours")+"</a><a class='guideButton' target='_blank' rel='noopener' href='"+search(q+" reviews")+"'>Reviews</a></div>";
 if(!isDiscovery){bindGuideReviewControls(card,name,review);hydrateGuideLiveRating(name,(trip.destinations||[])[0]||"",card)}
 grid.appendChild(card);
 }}
@@ -2469,22 +2062,6 @@ cuisineSel.onchange=function(){cuisine=this.value;trip.guideCuisine=cuisine;guid
 }else{cuisineRow.style.display="none";cuisineSel.innerHTML="";cuisine="All cuisines";trip.guideCuisine="All cuisines"}
 sel.onchange=function(){trip.guideCategory=this.value;trip.guideCuisine="All cuisines";guidePages={};save();renderGuide()};
 draw();
-/* Trigger live place lookup whenever the visible list is still a discovery fallback.
-   Do not rely on city-profile flags: they can classify a destination without
-   providing actual venue records, which previously prevented Kyoto and others
-   from ever reaching the live lookup. */
-var firstItem=destinationItems(active)[0],liveKey=slug((trip.destinations||[])[0]||trip.name||"")+"|v2|"+active,hasLive=!!((trip.liveGuidePlaces&&Array.isArray(trip.liveGuidePlaces[liveKey])&&trip.liveGuidePlaces[liveKey].length)||(liveGuideCache[liveKey]&&liveGuideCache[liveKey].length)),hasCurated=hasCuratedGuideData(active),needsLive=!hasLive&&!hasCurated;
-if(needsLive){
-discoverLiveGuidePlaces(active,function(found){
-if(found&&found.length){guidePages[active+"|"+cuisine]=0;draw()}
-else{
-var status=document.getElementById("guideLiveStatus");
-if(status)status.remove();
-/* Keep the already-rendered destination-specific map-search cards visible.
-   Provider outages should never leave a slow-loading error banner over them. */
-}
-});
-}
 }
 function renderEvents(){
 var e=document.getElementById("eventGrid");e.innerHTML="";
@@ -2763,7 +2340,70 @@ function renderResources(){var e=document.getElementById("resourceGrid"),d=(trip
 if(slug(d).indexOf("new orleans")>=0){rs[0]=["New Orleans & Company","https://www.neworleans.com/"];rs[2]=["January / event guide","https://www.neworleans.com/plan/january-in-new-orleans/"];rs[3]=["Eater New Orleans","https://nola.eater.com/"];rs.push(["Mardi Gras parade schedule","https://www.neworleans.com/events/holidays-seasonal/mardi-gras/mardi-gras-parade-schedule/"])}
 e.innerHTML="";for(var i=0;i<rs.length;i++){var a=document.createElement("a");a.className="link";a.target="_blank";a.href=rs[i][1];a.innerHTML="<b>"+esc(rs[i][0])+"</b><small>Open resource</small>";e.appendChild(a)}}
 
-ensureRoamsonioFramework();ensureOriginalPlan();renderHeader();renderRoute();renderDestinations();renderPlan();renderGuide();renderEvents();renderWeather();renderCams();renderTravel();renderBudget();renderMemories();renderResources();initEditTripShell();var shareTripButton=document.getElementById("shareTripButton");if(shareTripButton)shareTripButton.href="share-trip.html?id="+encodeURIComponent(trip.id);
+ensureRoamsonioFramework();ensureOriginalPlan();renderHeader();renderRoute();renderDestinations();renderPlan();renderGuide();renderEvents();renderWeather();renderCams();renderTravel();renderBudget();renderMemories();renderResources();var shareTripButton=document.getElementById("shareTripButton");if(shareTripButton)shareTripButton.href="share-trip.html?id="+encodeURIComponent(trip.id);var recoverButton=document.getElementById("recoverTripButton");if(recoverButton){recoverButton.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(typeof window.recoverFullTrip==="function"){window.recoverFullTrip()}else{alert("Recovery is still loading. Please wait a moment and try again.")}})}
 })();
 </script>
-</body></html>
+<script>
+(function(){
+  function attachRecoveryRescue(){
+    var b=document.getElementById("recoverTripButton");
+    if(!b||b.dataset.rescueBound==="1")return;
+    b.dataset.rescueBound="1";
+    b.addEventListener("click",async function(e){
+      e.preventDefault();e.stopImmediatePropagation();
+      if(!confirm("Recover the complete saved trip from your RoamSonio account? Your current browser copy will be backed up first."))return;
+      b.disabled=true;b.textContent="Recovering…";
+      try{
+        var key="big-thanksgiving-trips-v1",all=[];
+        try{all=JSON.parse(localStorage.getItem(key)||"[]")}catch(x){}
+        var params=new URLSearchParams(location.search),id=params.get("id")||sessionStorage.getItem("openTripId");
+        var local=Array.isArray(all)?all.find(function(t){return t.id===id}):null;
+        if(!local)throw new Error("The trip is not available in this browser copy.");
+        var sb=window.supabase&&window.supabase.createClient?window.supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy"):null;
+        if(!sb)throw new Error("The account recovery service did not load.");
+        var sr=await sb.auth.getSession(),sess=sr.data&&sr.data.session;
+        if(!sess||!sess.user)throw new Error("Your RoamSonio account session is not active.");
+        var tripId=local.supabaseId||local.id;
+        var rr=await sb.rpc("roamsonio_recover_trip",{p_trip_id:tripId});
+        var p=rr.data;
+        if(rr.error){
+          var candidatesResult=await sb.rpc("roamsonio_recover_trip_candidates",{});
+          if(candidatesResult.error)throw rr.error;
+          var candidates=candidatesResult.data;
+          if(typeof candidates==="string")candidates=JSON.parse(candidates);
+          if(!Array.isArray(candidates)||!candidates.length)throw new Error("No saved trips with complete snapshots were found for this account.");
+          function candidateScore(c){
+            var snap=c&&c.trip_snapshot||{},name=String(c.name||snap.name||"").toLowerCase();
+            var text=JSON.stringify(snap).toLowerCase();
+            var score=0;
+            if(name.indexOf("european thanksgiving")>=0)score+=100;
+            if(name.indexOf("thanksgiving")>=0)score+=60;
+            if(text.indexOf("thanksgiving")>=0)score+=40;
+            if(text.indexOf("trnava")>=0)score+=20;
+            if(text.indexOf("prague")>=0)score+=15;
+            if(text.indexOf("pilsen")>=0)score+=15;
+            return score;
+          }
+          candidates.sort(function(a,b){return candidateScore(b)-candidateScore(a)});
+          p=candidates[0];
+        } else {
+          if(typeof p==="string")p=JSON.parse(p);
+        }
+        if(!p||!p.trip_snapshot)throw new Error("No complete saved snapshot was returned.");
+        var recovered=JSON.parse(JSON.stringify(p.trip_snapshot));
+        recovered.id=local.id;recovered.supabaseId=p.id||tripId;
+        if(!recovered.name&&p.name)recovered.name=p.name;
+        localStorage.setItem(key,JSON.stringify(all.map(function(t){return t.id===local.id?recovered:t})));
+        sessionStorage.setItem("openTripId",recovered.id);
+        alert("Complete trip recovered successfully.");
+        location.reload();
+      }catch(err){
+        console.error("Recovery rescue:",err);
+        alert("Recovery reached the account service, but could not complete.\\n\\n"+(err&&err.message?err.message:String(err)));
+        b.disabled=false;b.textContent="Recover full trip";
+      }
+    },true);
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",attachRecoveryRescue);else attachRecoveryRescue();
+})();
+</script></body></html>
