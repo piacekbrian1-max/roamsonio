@@ -594,23 +594,30 @@ setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio 
       }
       try{
         var result=await client.rpc("roamsonio_recover_trip_candidates");
-        var rpcError=result.error;
         var rows=result.data;
         if(typeof rows==="string"){try{rows=JSON.parse(rows)}catch(e){rows=[]}}
         if(!Array.isArray(rows))rows=[];
-        /* If snapshot recovery returns no complete snapshots, query only rows
-           explicitly owned by the authenticated user. RLS remains in force.
-           This lets the dashboard show saved trips whose snapshot needs repair
-           without ever falling back to arbitrary browser/localStorage trips. */
-        if((rpcError || !rows.length) && session.user && session.user.id){
+        /* Always query the authenticated owner's trip rows as well as the
+           snapshot RPC. The RPC can return a partial list, so it must not be
+           treated as the complete source of saved trips. Explicit owner filter
+           plus Supabase RLS prevents other users' trips from being displayed. */
+        if(session.user && session.user.id){
           var owned=await client.from("trips")
             .select("id,name,trip_snapshot,owner_id,updated_at")
             .eq("owner_id",session.user.id)
             .order("updated_at",{ascending:false});
           if(!owned.error && Array.isArray(owned.data)){
-            rows=owned.data.filter(function(row){
-              return row && row.id && String(row.owner_id)===String(session.user.id);
+            var byId={};
+            rows.forEach(function(row){if(row&&row.id)byId[String(row.id)]=row;});
+            owned.data.forEach(function(row){
+              if(row&&row.id&&String(row.owner_id)===String(session.user.id)){
+                var prior=byId[String(row.id)]||{};
+                byId[String(row.id)]=Object.assign({},prior,row);
+              }
             });
+            rows=Object.keys(byId).map(function(id){return byId[id];});
+          } else if(result.error) {
+            throw owned.error||result.error;
           }
         }
         accountTripsCache=rows.filter(function(row){
