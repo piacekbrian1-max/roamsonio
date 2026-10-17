@@ -284,6 +284,12 @@ var accountTripsLoadError="";
 var accountTripsRequestUser="";
 var accountTripsRequestPromise=null;
 var accountTripsRequestToken=0;
+window.__roamsonioSetHomepageTrips=function(trips,loaded,error){
+  accountTripsCache=Array.isArray(trips)?trips:[];
+  accountTripsLoaded=!!loaded;
+  accountTripsLoadError=error?String(error):"";
+  window.dispatchEvent(new Event("roamsonio-auth-updated"));
+};
 var images={
 trnava:"images/trnava-advent.jpg",
 prague:"images/prague-christmas.jpg",
@@ -616,27 +622,26 @@ setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio 
     var account=document.getElementById("rsAccountLink"), auth=document.getElementById("rsAuthLink");
     if(!account||!auth) return;
     var page=location.pathname.split("/").pop()||"index.html";
+    var requestUser="";
+    var requestPromise=null;
+    var requestToken=0;
     async function refreshAccountTrips(session){
       var userId=session&&session.user&&session.user.id?String(session.user.id):"";
       if(!userId){
-        accountTripsRequestToken++;
-        accountTripsRequestUser="";
-        accountTripsRequestPromise=null;
-        accountTripsCache=[];
-        accountTripsLoaded=false;
-        accountTripsLoadError="";
-        window.dispatchEvent(new Event("roamsonio-auth-updated"));
+        requestToken++;
+        requestUser="";
+        requestPromise=null;
+        if(window.__roamsonioSetHomepageTrips)window.__roamsonioSetHomepageTrips([],false,"");
         return;
       }
-      if(accountTripsRequestUser===userId && (accountTripsLoaded || accountTripsRequestPromise)){
-        if(accountTripsRequestPromise) await accountTripsRequestPromise;
+      if(requestUser===userId && requestPromise){
+        await requestPromise;
         return;
       }
-      accountTripsRequestUser=userId;
-      accountTripsLoaded=false;
-      accountTripsLoadError="";
-      var token=++accountTripsRequestToken;
-      accountTripsCache=[];
+      if(requestUser===userId && window.__roamsonioHomepageLoaded===true)return;
+      requestUser=userId;
+      var token=++requestToken;
+      if(window.__roamsonioSetHomepageTrips)window.__roamsonioSetHomepageTrips([],false,"");
       var task=(async function(){
         try{
           var owned=await Promise.race([
@@ -661,26 +666,21 @@ setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio 
             trip.name=trip.name||row.name||"Saved RoamSonio Trip";
             return trip;
           });
-          if(token===accountTripsRequestToken){
-            accountTripsCache=trips;
-            accountTripsLoaded=true;
-            accountTripsLoadError="";
+          if(token===requestToken){
+            window.__roamsonioHomepageLoaded=true;
+            if(window.__roamsonioSetHomepageTrips)window.__roamsonioSetHomepageTrips(trips,true,"");
           }
         }catch(e){
-          if(token===accountTripsRequestToken){
-            accountTripsCache=[];
-            accountTripsLoaded=false;
-            accountTripsLoadError=e&&e.message?String(e.message):String(e);
+          if(token===requestToken){
+            window.__roamsonioHomepageLoaded=false;
+            if(window.__roamsonioSetHomepageTrips)window.__roamsonioSetHomepageTrips([],false,e&&e.message?String(e.message):String(e));
           }
           console.warn("Could not load owner-authorized trips:",e);
         }finally{
-          if(token===accountTripsRequestToken){
-            accountTripsRequestPromise=null;
-            window.dispatchEvent(new Event("roamsonio-auth-updated"));
-          }
+          if(token===requestToken)requestPromise=null;
         }
       })();
-      accountTripsRequestPromise=task;
+      requestPromise=task;
       await task;
     }
     function render(session){
