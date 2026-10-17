@@ -55,17 +55,22 @@ body{padding-top:68px!important}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script id="roamsonio-private-my-trips-auth-guard">
 (function(){
   var loginUrl="login.html?return="+encodeURIComponent("my-trips.html");
-  function deny(){location.replace(loginUrl);}
+  var client=null,sessionCheckComplete=false,redirecting=false;
+  function deny(){if(redirecting)return;redirecting=true;location.replace(loginUrl);}
+  function allow(){sessionCheckComplete=true;document.documentElement.classList.remove("rs-auth-pending");}
   if(!window.supabase||typeof window.supabase.createClient!=="function"){deny();return;}
-  var client=window.supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy");
+  client=window.supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy");
+  // Wait for the persisted session check before deciding the visitor is signed out.
+  // Supabase can emit an initial null session while storage is still being restored.
+  client.auth.onAuthStateChange(function(event,session){
+    if(session){allow();return;}
+    if(sessionCheckComplete&&event==="SIGNED_OUT"){deny();}
+  });
   client.auth.getSession().then(function(r){
-    if(r.data&&r.data.session){document.documentElement.classList.remove("rs-auth-pending");}
+    sessionCheckComplete=true;
+    if(r.data&&r.data.session){allow();}
     else{deny();}
   }).catch(deny);
-  client.auth.onAuthStateChange(function(event,session){
-    if(session){document.documentElement.classList.remove("rs-auth-pending");}
-    else{deny();}
-  });
 })();
 </script>
 <script>
