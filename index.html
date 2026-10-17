@@ -280,6 +280,7 @@ body{padding-top:68px!important}
 var KEY="big-thanksgiving-trips-v1";
 var accountTripsCache=[];
 var accountTripsLoaded=false;
+var accountTripsLoadError="";
 var images={
 trnava:"images/trnava-advent.jpg",
 prague:"images/prague-christmas.jpg",
@@ -486,6 +487,18 @@ function renderDashboard(){
 var readyBox=document.getElementById("readyTrips"),planningBox=document.getElementById("planningTrips"),grid=document.getElementById("dashGrid");
 if(!readyBox||!planningBox||!grid)return;
 var saved=load(),all=saved.map(function(t){var r=readiness(t);return{t:t,r:r,state:tripState(t)}});
+if(document.body.classList.contains("rsAuthenticated")&&!saved.length){
+  var detail=accountTripsLoadError
+    ? "Account trip loading failed: "+esc(accountTripsLoadError)
+    : accountTripsLoaded
+      ? "The account query completed but returned "+accountTripsCache.length+" trip record(s)."
+      : "Waiting for the signed-in account trip query to finish.";
+  var diagnostic="<div class='tripRowsEmpty' style='margin-top:10px;text-align:left'><strong>Homepage trip-loading check</strong><br>"+detail+"<br><small>No trip records were changed. This check is visible only while signed in.</small></div>";
+  readyBox.innerHTML=diagnostic;
+  planningBox.innerHTML="";
+  grid.innerHTML="";
+  return;
+}
 
 function sortByDate(a,b){
  var da=parseDate(a.t.start),db=parseDate(b.t.start);
@@ -603,6 +616,7 @@ setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio 
     async function refreshAccountTrips(session){
       accountTripsCache=[];
       accountTripsLoaded=false;
+      accountTripsLoadError="";
       if(!session){
         window.dispatchEvent(new Event("roamsonio-auth-updated"));
         return;
@@ -652,6 +666,7 @@ setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio 
         /* Fail closed: an RPC/network error must never fall back to shared localStorage. */
         accountTripsCache=[];
         accountTripsLoaded=false;
+        accountTripsLoadError=e&&e.message?String(e.message):String(e);
         console.warn("Could not load owner-authorized trips:",e);
       }
       window.dispatchEvent(new Event("roamsonio-auth-updated"));
