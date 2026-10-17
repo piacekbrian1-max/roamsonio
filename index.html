@@ -626,10 +626,15 @@ setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio 
            recovery RPC here: if it stalls, the homepage would remain loading
            forever even though the account's trips are available. Supabase RLS
            and this explicit owner_id filter keep other users' trips private. */
-        var owned=await client.from("trips")
-          .select("id,name,trip_snapshot,owner_id,updated_at")
-          .eq("owner_id",session.user.id)
-          .order("updated_at",{ascending:false});
+        var owned=await Promise.race([
+          client.from("trips")
+            .select("id,name,trip_snapshot,owner_id,updated_at")
+            .eq("owner_id",session.user.id)
+            .order("updated_at",{ascending:false}),
+          new Promise(function(_,reject){
+            setTimeout(function(){reject(new Error("The saved-trip database request did not finish within 12 seconds."));},12000);
+          })
+        ]);
         if(owned.error)throw owned.error;
         var rows=Array.isArray(owned.data)?owned.data:[];
         accountTripsCache=rows.filter(function(row){
