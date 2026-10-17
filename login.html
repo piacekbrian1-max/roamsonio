@@ -77,9 +77,23 @@ body{padding-top:68px!important}
 const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy");
 const statusBox=document.getElementById("status");
 function status(msg){statusBox.textContent=msg;statusBox.classList.add("show")}
+function safeReturnTarget(){
+  const requested=new URLSearchParams(location.search).get("return")||"account.html";
+  /* Return only to this site's relative pages; never accept an external URL. */
+  if(/^https?:\/\//i.test(requested)||requested.startsWith("//"))return "account.html";
+  return requested.replace(/^\/+/, "")||"account.html";
+}
+/* If workspace's first session check races with auth restoration, avoid
+   trapping an already-signed-in user on the sign-in form. */
+client.auth.getSession().then(({data,error})=>{
+  if(!error&&data&&data.session){
+    const target=safeReturnTarget();
+    if(target!=="login.html"&&!target.startsWith("login.html?"))location.replace(target);
+  }
+}).catch(()=>{});
 document.getElementById("signupBtn").onclick=()=>{const ret=new URLSearchParams(location.search).get("return")||"account.html";location.href="signup.html?return="+encodeURIComponent(ret);};
 document.getElementById("resetBtn").onclick=(e)=>{e.preventDefault();location.href="reset-password.html";};
-document.getElementById("loginForm").onsubmit=async(e)=>{e.preventDefault();status("Signing you in…");const email=document.getElementById("email").value.trim(),password=document.getElementById("password").value;const {error}=await client.auth.signInWithPassword({email,password});if(error){status(error.message);return}location.href=new URLSearchParams(location.search).get("return")||"account.html";};
+document.getElementById("loginForm").onsubmit=async(e)=>{e.preventDefault();status("Signing you in…");const email=document.getElementById("email").value.trim(),password=document.getElementById("password").value;const {error}=await client.auth.signInWithPassword({email,password});if(error){status(error.message);return}location.href=safeReturnTarget();};
 </script>
 <style id="roamsonio-auth-nav">
 .rsLinks{gap:14px!important;flex-wrap:wrap!important}
