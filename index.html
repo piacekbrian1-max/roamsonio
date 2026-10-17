@@ -338,26 +338,25 @@ function cleanSavedTrips(a){
   return out;
 }
 function loadPersistentTrips(){
-  /* Only render trips returned by the owner-filtered account recovery RPC.
-     Browser copies may enrich a matching server-owned trip, but never create
-     a visible trip on their own. Unlinked legacy copies remain untouched. */
-  if(!document.body.classList.contains("rsAuthenticated")||!accountTripsLoaded)return [];
+  /* Private trip cards are never rendered while signed out. Once the
+     authenticated session is confirmed, keep existing browser-saved trips
+     visible even if account recovery is temporarily unavailable. */
+  if(!document.body.classList.contains("rsAuthenticated"))return [];
   var local=[];
   try{
     var raw=JSON.parse(localStorage.getItem(KEY)||"[]");
     local=cleanSavedTrips(Array.isArray(raw)?raw:[]);
   }catch(e){local=[]}
-  return accountTripsCache.map(function(serverTrip){
+  var merged=local.slice();
+  accountTripsCache.forEach(function(serverTrip){
     var serverId=String(serverTrip.supabaseId||serverTrip.id||"");
-    var match=local.find(function(t){
-      return serverId && String(t.supabaseId||t.id||"")===serverId;
+    var i=merged.findIndex(function(t){
+      return serverId && (String(t.supabaseId||"")===serverId||String(t.id||"")===serverId);
     });
-    if(!match)return serverTrip;
-    var merged=Object.assign({},serverTrip,match);
-    merged.supabaseId=serverId;
-    if(!merged.name)merged.name=serverTrip.name;
-    return merged;
+    if(i<0)merged.push(serverTrip);
+    else merged[i]=Object.assign({},serverTrip,merged[i],{supabaseId:serverId});
   });
+  return merged;
 }
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 function tripHref(t){
