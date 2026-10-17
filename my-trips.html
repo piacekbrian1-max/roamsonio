@@ -331,125 +331,58 @@ window.restoreProtectedBrowserCopy=restoreProtectedBrowserCopy;
 safetyBackup();
 
 async function render(){
-  var el=document.getElementById("tripList"),state=findProtectedTrips(),a=state.trips;
-
+  var el=document.getElementById("tripList");
+  var browserState=findProtectedTrips();
+  var browserCopies=browserState.trips;
   el.innerHTML="";
-  if(state.source==="protected-backup"&&a.length){
-    showStatus("<b>Recovery copy found.</b> RoamSonio found "+a.length+" original trip(s) in the protected browser backup. <button type='button' onclick='restoreProtectedBrowserCopy()' style='margin-left:8px;border:1px solid #D4A85A;background:#D4A85A;color:#0B2D4A;border-radius:7px;padding:8px 10px;font-weight:800;cursor:pointer'>Restore original trips</button>",false);
-  }
 
-  // IMPORTANT: durable account snapshots are authoritative when they exist.
-  // The browser may contain older/incomplete shells for the same trips. Always
-  // merge the account snapshots, even when localStorage already has trips.
+  // Do not display or merge browser-only trips until a server record proves
+  // they belong to the currently authenticated account.
   var accountTrips=[];
   try{
     accountTrips=await loadAccountTripCopies();
   }catch(e){
     var msg=e&&e.message?e.message:String(e);
-    dEl.innerHTML="<b>Account recovery error</b><br>"+esc(msg)+"<br><small>The saved database records were not changed.</small>";
-    if(!a.length){
-      el.innerHTML='<div class="empty">RoamSonio could not read the durable trip snapshots. Nothing was deleted or rebuilt.</div>';
-      return;
-    }
+    dEl.innerHTML="<b>Account verification unavailable</b><br>"+esc(msg)+"<br><small>Your browser recovery copies were not changed. For privacy, they are hidden until ownership can be verified.</small>";
+    el.innerHTML='<div class="empty">RoamSonio could not verify account ownership right now. Your saved browser copies remain untouched.</div>';
+    window.rsAuthorizedTrips=[];
+    return;
   }
 
-  if(accountTrips.length){
-    var merged=a.slice();
-    var replaced=0;
-
-    // Match durable/account copies to browser copies by server ID first, then
-    // by the trip's stable visible identity. Recovery runs can produce a new
-    // browser wrapper ID even when they refer to the same saved journey.
-    function tripIdentity(t){
-      t=t||{};
-      var name=String(t.name||"").trim().toLowerCase();
-
-      // These are the three known original saved journeys. Older browser
-      // wrappers sometimes lost their server ID or date fields, so for these
-      // known names the visible trip name is the stable recovery identity.
-      var nolaStableId="febaebf6-7369-4922-b069-c745eee8c16f";
-      var europeStableId="a636626a-e7b2-4337-b950-be9682edde63";
-      if(String(t.id||"")===nolaStableId || String(t.supabaseId||"")===nolaStableId || (name.indexOf("new orleans")===0 && String(t.start||"")==="2027-01-16" && String(t.end||"")==="2027-01-20"))return "known:new-orleans-2027";
-      if(String(t.id||"")===europeStableId || String(t.supabaseId||"")===europeStableId || name==="european thanksgiving adventure 2026")return "known:europe-2026";
-      if(name==="new trip test")return "known:new-trip-test";
-
-      if(t.supabaseId)return "server:"+String(t.supabaseId);
-      var start=String(t.start||"").trim();
-      var end=String(t.end||"").trim();
-      var dest=Array.isArray(t.destinations)?t.destinations.map(String).join("|").trim().toLowerCase():"";
-      return "trip:"+name+"|"+start+"|"+end+"|"+dest;
-    }
-
-    function findMatch(list,target){
-      var targetServer=target&&target.supabaseId?String(target.supabaseId):"";
-      for(var i=0;i<list.length;i++){
-        var x=list[i]||{};
-        if(targetServer && x.supabaseId && String(x.supabaseId)===targetServer)return i;
-      }
-      var key=tripIdentity(target);
-      for(var j=0;j<list.length;j++){
-        if(tripIdentity(list[j])===key)return j;
-      }
-      return -1;
-    }
-
-    for(var ai=0;ai<accountTrips.length;ai++){
-      var at=accountTrips[ai],match=findMatch(merged,at);
-      if(match>=0){
-        // Never choose a trip copy by JSON size. That can replace a newer
-        // editable trip with an older snapshot that happens to contain more fields.
-        // Until both copies carry explicit version metadata, preserve the browser
-        // copy and only fill in the durable identifier.
-        var browserCopy=merged[match];
-        var browserRevision=Number(browserCopy&&browserCopy.revision)||0;
-        var accountRevision=Number(at&&at.revision)||0;
-        if(accountRevision>0 && accountRevision>browserRevision){
-          merged[match]=at;
-          replaced++;
-        }else if(at.supabaseId && !browserCopy.supabaseId){
-          browserCopy.supabaseId=at.supabaseId;
-        }
-      }else{
-        merged.push(at);
-      }
-    }
-
-    // Final safety pass: collapse any duplicate copies already present in
-    // browser storage. Keep the richest copy so this is a de-duplication only;
-    // it does not rebuild or discard the underlying trip data.
-    var unique=[],seen={};
-    for(var ui=0;ui<merged.length;ui++){
-      var ut=merged[ui],uk=tripIdentity(ut);
-      var prior=seen[uk];
-      if(prior===undefined){
-        seen[uk]=unique.length;
-        unique.push(ut);
-      }else{
-        var prev=unique[prior];
-        var prevRevision=Number(prev&&prev.revision)||0;
-        var candidateRevision=Number(ut&&ut.revision)||0;
-        if(candidateRevision>prevRevision)unique[prior]=ut;
-      }
-    }
-    a=unique;
-    localStorage.setItem(KEY,JSON.stringify(a));
-  }
+  var a=accountTrips.map(function(serverTrip){
+    var serverId=String(serverTrip.supabaseId||serverTrip.id||"");
+    var match=browserCopies.find(function(t){
+      return serverId && String(t.supabaseId||t.id||"")===serverId;
+    });
+    if(!match)return serverTrip;
+    // A local copy may enrich a server-authorized trip only after its server
+    // ID matches a row returned for this signed-in account.
+    var merged=Object.assign({},serverTrip,match);
+    merged.supabaseId=serverId;
+    merged._hasAuthorizedBrowserCopy=true;
+    if(!merged.name)merged.name=serverTrip.name;
+    return merged;
+  });
+  window.rsAuthorizedTrips=a;
 
   if(!a.length){
-    el.innerHTML='<div class="empty">No saved trips are currently visible, and no durable trip snapshots were returned for this account.</div>';
+    el.innerHTML='<div class="empty">No account-linked trips were found for this account. Any older browser-only recovery copies remain stored, but are hidden until they can be safely associated with the correct account.</div>';
     return;
   }
 
   for(var i=a.length-1;i>=0;i--){
     var t=a[i],d=document.createElement("div");
     d.className="trip";
-    var hasServer=t.supabaseId;
-    d.innerHTML="<div><b>"+esc(t.name||"Unnamed trip")+"</b><small>"+esc((t.destinations||[]).join(" · "))+" · "+(t.days||"")+" days · "+esc(t.status||"Planning")+"</small></div><div><button onclick='openTrip("+JSON.stringify(t.id)+")'>Open trip</button> <button onclick='deleteTrip("+JSON.stringify(t.id)+" )'>Delete</button></div>";
+    var buttons="<button onclick='openTrip("+JSON.stringify(t.id)+")'>Open trip</button>";
+    if(t._hasAuthorizedBrowserCopy){
+      buttons+=" <button onclick='deleteTrip("+JSON.stringify(t.id)+")'>Delete</button>";
+    }
+    d.innerHTML="<div><b>"+esc(t.name||"Unnamed trip")+"</b><small>"+esc((t.destinations||[]).join(" · "))+" · "+(t.days||"")+" days · "+esc(t.status||"Planning")+"</small></div><div>"+buttons+"</div>";
     el.appendChild(d);
   }
 }
 window.openTrip=function(id){
-  var a=load(),t=a.find(function(x){return x.id===id})||{};
+  var a=load(),t=a.find(function(x){return x.id===id})||(window.rsAuthorizedTrips||[]).find(function(x){return x.id===id})||{};
   var d=(t.destinations||[])[0]||"";
   sessionStorage.setItem("openTripId",id);
 
