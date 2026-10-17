@@ -438,7 +438,8 @@ const client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","s
 const recommendUrl=window.location.origin+window.location.pathname.replace(/[^/]*$/,"index.html");
 const recommendStatus=document.getElementById("recommendStatus");
 function showRecommendStatus(message){recommendStatus.textContent=message;recommendStatus.classList.add("show")}
-document.getElementById("recommendEmail").href="mailto:?subject="+encodeURIComponent("Discover RoamSonio")+"&body="+encodeURIComponent("I thought you might enjoy RoamSonio for planning your next trip: "+recommendUrl);
+const recommendLandingUrl=window.location.origin+window.location.pathname.replace(/[^/]*$/,"share.html");
+document.getElementById("recommendEmail").href="mailto:?subject="+encodeURIComponent("Discover RoamSonio")+"&body="+encodeURIComponent("I thought you might enjoy RoamSonio for planning your next trip.\n\nTake a look here: "+recommendLandingUrl+"\n\nDream it. Plan it. Live it.");
 document.getElementById("recommendCopy").addEventListener("click",async()=>{
   try{
     if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(recommendUrl);}
