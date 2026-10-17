@@ -617,40 +617,23 @@ setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio 
       accountTripsCache=[];
       accountTripsLoaded=false;
       accountTripsLoadError="";
-      if(!session){
+      if(!session || !session.user || !session.user.id){
         window.dispatchEvent(new Event("roamsonio-auth-updated"));
         return;
       }
       try{
-        var result=await client.rpc("roamsonio_recover_trip_candidates");
-        var rows=result.data;
-        if(typeof rows==="string"){try{rows=JSON.parse(rows)}catch(e){rows=[]}}
-        if(!Array.isArray(rows))rows=[];
-        /* Always query the authenticated owner's trip rows as well as the
-           snapshot RPC. The RPC can return a partial list, so it must not be
-           treated as the complete source of saved trips. Explicit owner filter
-           plus Supabase RLS prevents other users' trips from being displayed. */
-        if(session.user && session.user.id){
-          var owned=await client.from("trips")
-            .select("id,name,trip_snapshot,owner_id,updated_at")
-            .eq("owner_id",session.user.id)
-            .order("updated_at",{ascending:false});
-          if(!owned.error && Array.isArray(owned.data)){
-            var byId={};
-            rows.forEach(function(row){if(row&&row.id)byId[String(row.id)]=row;});
-            owned.data.forEach(function(row){
-              if(row&&row.id&&String(row.owner_id)===String(session.user.id)){
-                var prior=byId[String(row.id)]||{};
-                byId[String(row.id)]=Object.assign({},prior,row);
-              }
-            });
-            rows=Object.keys(byId).map(function(id){return byId[id];});
-          } else if(result.error) {
-            throw owned.error||result.error;
-          }
-        }
+        /* Read the signed-in owner's trip rows directly. Do not wait on the
+           recovery RPC here: if it stalls, the homepage would remain loading
+           forever even though the account's trips are available. Supabase RLS
+           and this explicit owner_id filter keep other users' trips private. */
+        var owned=await client.from("trips")
+          .select("id,name,trip_snapshot,owner_id,updated_at")
+          .eq("owner_id",session.user.id)
+          .order("updated_at",{ascending:false});
+        if(owned.error)throw owned.error;
+        var rows=Array.isArray(owned.data)?owned.data:[];
         accountTripsCache=rows.filter(function(row){
-          return row&&row.id&&String(row.owner_id||session.user.id)===String(session.user.id);
+          return row&&row.id&&String(row.owner_id)===String(session.user.id);
         }).map(function(row){
           var snapshot=row.trip_snapshot;
           var trip=snapshot&&typeof snapshot==="object"&&!Array.isArray(snapshot)
@@ -663,7 +646,6 @@ setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio 
         });
         accountTripsLoaded=true;
       }catch(e){
-        /* Fail closed: an RPC/network error must never fall back to shared localStorage. */
         accountTripsCache=[];
         accountTripsLoaded=false;
         accountTripsLoadError=e&&e.message?String(e.message):String(e);
