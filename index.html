@@ -631,36 +631,35 @@ setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio 
         requestToken++;
         requestUser="";
         requestPromise=null;
+        window.__roamsonioHomepageLoaded=false;
         if(window.__roamsonioSetHomepageTrips)window.__roamsonioSetHomepageTrips([],false,"");
         return;
       }
-      if(requestUser===userId && requestPromise){
-        await requestPromise;
-        return;
-      }
+      if(requestUser===userId && requestPromise){ await requestPromise; return; }
       if(requestUser===userId && window.__roamsonioHomepageLoaded===true)return;
       requestUser=userId;
       var token=++requestToken;
+      window.__roamsonioHomepageLoaded=false;
       if(window.__roamsonioSetHomepageTrips)window.__roamsonioSetHomepageTrips([],false,"");
       var task=(async function(){
         try{
-          var owned=await Promise.race([
-            client.from("trips")
-              .select("id,name,trip_snapshot,owner_id,updated_at")
-              .eq("owner_id",userId)
-              .order("updated_at",{ascending:false}),
+          /* Match My Trips: recover complete account-owned snapshots via the
+             established RPC instead of relying on the direct table query. */
+          var result=await Promise.race([
+            client.rpc("roamsonio_recover_trip_candidates"),
             new Promise(function(_,reject){
-              setTimeout(function(){reject(new Error("The saved-trip database request did not finish within 12 seconds."));},12000);
+              setTimeout(function(){reject(new Error("The saved-trip recovery request did not finish within 12 seconds."));},12000);
             })
           ]);
-          if(owned.error)throw owned.error;
-          var rows=Array.isArray(owned.data)?owned.data:[];
+          if(result.error)throw result.error;
+          var rows=result.data;
+          if(typeof rows==="string"){try{rows=JSON.parse(rows)}catch(e){rows=[]}}
+          if(rows && !Array.isArray(rows) && Array.isArray(rows.items))rows=rows.items;
+          if(!Array.isArray(rows))rows=[];
           var trips=rows.filter(function(row){
-            return row&&row.id&&String(row.owner_id)===userId;
+            return row&&row.id&&row.trip_snapshot&&typeof row.trip_snapshot==="object";
           }).map(function(row){
-            var snapshot=row.trip_snapshot;
-            var trip=snapshot&&typeof snapshot==="object"&&!Array.isArray(snapshot)
-              ? JSON.parse(JSON.stringify(snapshot)) : {};
+            var trip=JSON.parse(JSON.stringify(row.trip_snapshot));
             trip.id=trip.id||row.id;
             trip.supabaseId=String(row.id);
             trip.name=trip.name||row.name||"Saved RoamSonio Trip";
@@ -675,7 +674,7 @@ setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio 
             window.__roamsonioHomepageLoaded=false;
             if(window.__roamsonioSetHomepageTrips)window.__roamsonioSetHomepageTrips([],false,e&&e.message?String(e.message):String(e));
           }
-          console.warn("Could not load owner-authorized trips:",e);
+          console.warn("Could not recover owner-authorized trips:",e);
         }finally{
           if(token===requestToken)requestPromise=null;
         }
