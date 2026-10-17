@@ -1,33 +1,43 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<title>Open European Thanksgiving Adventure · RoamSonio</title>
+<meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
+<title>European Thanksgiving Adventure · RoamSonio</title>
 <style>
-:root{--navy:#0B2D4A;--gold:#D4A85A;--cream:#F8F5ED}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:var(--cream);color:var(--navy);font:16px Arial,sans-serif}
+:root{--navy:#0B2D4A;--gold:#D4A85A;--cream:#F8F5ED}*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:var(--cream);color:var(--navy);font:16px Arial,sans-serif}
 main{width:min(560px,100%);padding:32px;border:1px solid #dfd5c3;border-radius:16px;background:#fffdf9;text-align:center}
-a{display:inline-block;margin-top:12px;padding:14px 18px;border-radius:6px;background:var(--gold);color:var(--navy);text-decoration:none;font-weight:700}
-</style>
-</head>
-<body>
-<main>
+a{display:inline-block;margin:10px 6px 0;padding:14px 18px;border-radius:6px;background:var(--gold);color:var(--navy);text-decoration:none;font-weight:700}
+.secondary{background:#fff;border:1px solid #d9e0e7}p{color:#58718a;line-height:1.6}#status{font-size:13px}
+</style></head><body><main>
 <h1>European Thanksgiving Adventure</h1>
-<p>Open your saved trip in RoamSonio.</p>
-<a id="openTrip" href="trip-workspace.html?id=a636626a-e7b2-4337-b950-be9682edde63&amp;supabaseId=a636626a-e7b2-4337-b950-be9682edde63&amp;destination=Prague">Open my trip</a>
+<p id="status">Opening your saved trip…</p>
+<a id="open" href="trip-workspace.html?id=a636626a-e7b2-4337-b950-be9682edde63&amp;supabaseId=a636626a-e7b2-4337-b950-be9682edde63&amp;destination=Prague">Open my trip</a>
+<a class="secondary" href="my-trips.html">Back to My Trips</a>
 </main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
-  var target="trip-workspace.html?id=a636626a-e7b2-4337-b950-be9682edde63&supabaseId=a636626a-e7b2-4337-b950-be9682edde63&destination=Prague";
-  document.getElementById("openTrip").href=target;
-  try{sessionStorage.setItem("openTripId","a636626a-e7b2-4337-b950-be9682edde63")}catch(e){}
-  location.replace(target);
+ var target="trip-workspace.html?id=a636626a-e7b2-4337-b950-be9682edde63&supabaseId=a636626a-e7b2-4337-b950-be9682edde63&destination=Prague";
+ var login="login.html?return="+encodeURIComponent(target);
+ var open=document.getElementById("open"),status=document.getElementById("status");
+ open.href=target;
+ try{sessionStorage.setItem("openTripId","a636626a-e7b2-4337-b950-be9682edde63")}catch(e){}
+ if(!window.supabase){status.textContent="Tap Open my trip to continue.";return}
+ var client=supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy");
+ client.auth.getSession().then(function(result){
+   if(result.data&&result.data.session){
+     status.textContent="Your account session is active. Opening your trip…";
+     location.replace(target);
+   }else{
+     status.textContent="Please sign in to access this private trip.";
+     open.href=login;open.textContent="Sign in and open my trip";
+   }
+ }).catch(function(){
+   status.textContent="Tap Open my trip to continue, or sign in if prompted.";
+ });
 })();
-</script>
-</body>
-</html>
+</script></body></html>
