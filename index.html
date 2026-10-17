@@ -171,7 +171,12 @@ body{padding-top:68px!important}
   .rsLinks a{padding:13px 8px!important;border-bottom:1px solid #D9E0E7!important;font-size:11px!important}
   .rsLinks a:last-child{border-bottom:0!important}
 }
-</style></head>
+</style>
+<style id="roamsonio-private-trip-visibility">
+/* Personal trip dashboards stay absent until the signed-in session is confirmed. */
+body:not(.rsAuthenticated) #trip-dashboard,body:not(.rsAuthenticated) #trip-library{display:none!important}
+</style>
+</head>
 <body>
 <header class="rsTop"><div class="rsNav"><a class="rsBrand" href="index.html" aria-label="RoamSonio home"><span class="rsMark"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#F8F5ED"/><circle cx="45" cy="18" r="8" fill="#D4A85A"/><path d="M10 46 25 29l8 9 8-12 13 20H10Z" fill="#0B2D4A"/><path d="M17 20c8-7 18-8 27-4 5 2 8 5 10 9" fill="none" stroke="#D4A85A" stroke-width="3" stroke-linecap="round"/></svg></span><span><strong><span class="rsRoam">Roam</span><span class="rsSonio">Sonio</span></strong><small>DREAM IT. PLAN IT. LIVE IT.</small></span></a><nav class="rsLinks" aria-label="Primary navigation"><a href="index.html">My RoamSonio</a><a href="my-trips.html">My Trips</a><a href="build-trip.html">Build Your Trip</a><a href="travel-desk.html">Travel Desk</a><a href="about.html">About Us</a><a href="account.html" id="rsAccountLink">My Account</a><a href="login.html?return=index.html" id="rsAuthLink" class="rsAuthBtn">Sign In</a></nav></div></header>
 
@@ -278,6 +283,8 @@ body{padding-top:68px!important}
 <script>
 (function(){
 var KEY="big-thanksgiving-trips-v1";
+var accountTripsCache=[];
+var accountTripsLoaded=false;
 var images={
 trnava:"images/trnava-advent.jpg",
 prague:"images/prague-christmas.jpg",
@@ -336,11 +343,26 @@ function cleanSavedTrips(a){
   return out;
 }
 function loadPersistentTrips(){
-  /* Never seed a personal trip into the public homepage. Only render trips already stored in this browser. */
+  /* Only render trips returned by the owner-filtered account recovery RPC.
+     Browser copies may enrich a matching server-owned trip, but never create
+     a visible trip on their own. Unlinked legacy copies remain untouched. */
+  if(!document.body.classList.contains("rsAuthenticated")||!accountTripsLoaded)return [];
+  var local=[];
   try{
     var raw=JSON.parse(localStorage.getItem(KEY)||"[]");
-    return cleanSavedTrips(Array.isArray(raw)?raw:[]);
-  }catch(e){return[]}
+    local=cleanSavedTrips(Array.isArray(raw)?raw:[]);
+  }catch(e){local=[]}
+  return accountTripsCache.map(function(serverTrip){
+    var serverId=String(serverTrip.supabaseId||serverTrip.id||"");
+    var match=local.find(function(t){
+      return serverId && String(t.supabaseId||t.id||"")===serverId;
+    });
+    if(!match)return serverTrip;
+    var merged=Object.assign({},serverTrip,match);
+    merged.supabaseId=serverId;
+    if(!merged.name)merged.name=serverTrip.name;
+    return merged;
+  });
 }
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 function tripHref(t){
@@ -550,6 +572,10 @@ function renderHomeRoamSonio(){
 try{buildSuggestions();}catch(e){console.error('RoamSonio Explore failed to initialize',e);}
 try{renderDashboard();}catch(e){console.error('RoamSonio trip dashboard failed to initialize',e);}
 try{renderHomeRoamSonio();}catch(e){console.error('RoamSonio saved experiences failed to initialize',e);}
+window.addEventListener("roamsonio-auth-updated",function(){
+  try{renderDashboard();}catch(e){console.error('RoamSonio trip dashboard auth refresh failed',e);}
+  try{renderHomeRoamSonio();}catch(e){console.error('RoamSonio saved experiences auth refresh failed',e);}
+});
 setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio trip dashboard refresh failed',e);}},60000);
 })();
 </script>
@@ -567,13 +593,46 @@ setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio 
     var account=document.getElementById("rsAccountLink"), auth=document.getElementById("rsAuthLink");
     if(!account||!auth) return;
     var page=location.pathname.split("/").pop()||"index.html";
+    async function refreshAccountTrips(session){
+      accountTripsCache=[];
+      accountTripsLoaded=false;
+      if(!session){
+        window.dispatchEvent(new Event("roamsonio-auth-updated"));
+        return;
+      }
+      try{
+        var result=await client.rpc("roamsonio_recover_trip_candidates");
+        if(result.error)throw result.error;
+        var rows=result.data;
+        if(typeof rows==="string"){try{rows=JSON.parse(rows)}catch(e){rows=[]}}
+        if(!Array.isArray(rows))rows=[];
+        accountTripsCache=rows.filter(function(row){
+          return row&&row.id&&row.trip_snapshot&&typeof row.trip_snapshot==="object";
+        }).map(function(row){
+          var trip=JSON.parse(JSON.stringify(row.trip_snapshot));
+          trip.id=trip.id||row.id;
+          trip.supabaseId=String(row.id);
+          trip.name=trip.name||row.name||"RoamSonio Trip";
+          return trip;
+        });
+        accountTripsLoaded=true;
+      }catch(e){
+        /* Fail closed: an RPC/network error must never fall back to shared localStorage. */
+        accountTripsCache=[];
+        accountTripsLoaded=false;
+        console.warn("Could not load owner-authorized trips:",e);
+      }
+      window.dispatchEvent(new Event("roamsonio-auth-updated"));
+    }
     function render(session){
       var signedIn=!!session;
+      document.body.classList.toggle("rsAuthenticated",signedIn);
       account.href=signedIn?"account.html":"login.html?return=account.html";
       auth.textContent=signedIn?"Sign Out":"Sign In";
       auth.href=signedIn?"#":"login.html?return="+encodeURIComponent(page);
+      refreshAccountTrips(session);
     }
-    client.auth.getSession().then(function(r){render(r.data&&r.data.session);});
+    client.auth.getSession().then(function(r){render(r.data&&r.data.session);}).catch(function(){render(null);});
     client.auth.onAuthStateChange(function(event,session){render(session);});
     auth.addEventListener("click",async function(e){
       if(auth.textContent==="Sign Out"){

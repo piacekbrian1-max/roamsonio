@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en" class="rs-auth-pending"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>RoamSonio · My Trips</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -48,11 +48,31 @@ body{padding-top:68px!important}
   .rsLinks a{padding:13px 8px!important;border-bottom:1px solid #D9E0E7!important;font-size:11px!important}
   .rsLinks a:last-child{border-bottom:0!important}
 }
-</style></head><body>
+</style><style id="roamsonio-private-my-trips-guard">html.rs-auth-pending body{visibility:hidden!important}</style></head><body>
 <header class="rsTop"><div class="rsNav"><a class="rsBrand" href="index.html" aria-label="RoamSonio home"><span class="rsMark"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#F8F5ED"/><circle cx="45" cy="18" r="8" fill="#D4A85A"/><path d="M10 46 25 29l8 9 8-12 13 20H10Z" fill="#0B2D4A"/><path d="M17 20c8-7 18-8 27-4 5 2 8 5 10 9" fill="none" stroke="#D4A85A" stroke-width="3" stroke-linecap="round"/></svg></span><span><strong><span class="rsRoam">Roam</span><span class="rsSonio">Sonio</span></strong><small>DREAM IT. PLAN IT. LIVE IT.</small></span></a><nav class="rsLinks" aria-label="Primary navigation"><a href="index.html">My RoamSonio</a><a href="my-trips.html">My Trips</a><a href="build-trip.html">Build Your Trip</a><a href="travel-desk.html">Travel Desk</a><a href="about.html">About Us</a><a href="account.html" id="rsAccountLink">My Account</a><a href="login.html?return=my-trips.html" id="rsAuthLink" class="rsAuthBtn">Sign In</a></nav></div></header>
 <header class="hero"><div class="ey">ROAMSONIO · YOUR TRAVEL LIBRARY</div><h1><span id="tripOwnerName">My</span> Trips</h1><p id="tripOwnerIntro">Your saved journeys are kept separate from the current trip. Open a trip to work with its own plans, memories and journal, or start something completely new.</p><div class="actions"><a class="btn" href="index.html">Home</a><a class="btn primary" href="build-trip.html">Build a new trip</a><a class="btn" href="current-trip.html">Current trip</a></div></header>
 <main class="wrap"><section class="panel"><div class="ey">Saved journeys</div><h2 class="serif">Your trips</h2><p>These are your saved RoamSonio trips — journeys you have created and are keeping in your trip library. Use this page to manage your trips, open a trip to continue planning it, or remove a trip you no longer need.</p><div id="recoveryStatus" class="empty" style="display:none;margin-bottom:12px"></div><div id="tripList" class="tripList"></div></section></main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script id="roamsonio-private-my-trips-auth-guard">
+(function(){
+  var loginUrl="login.html?return="+encodeURIComponent("my-trips.html");
+  var client=null,sessionCheckComplete=false,redirecting=false;
+  function deny(){if(redirecting)return;redirecting=true;location.replace(loginUrl);}
+  function allow(){sessionCheckComplete=true;document.documentElement.classList.remove("rs-auth-pending");}
+  if(!window.supabase||typeof window.supabase.createClient!=="function"){deny();return;}
+  client=window.supabase.createClient("https://vqtqchxoecrahtrnoocy.supabase.co","sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy");
+  // Wait for the persisted session check before deciding the visitor is signed out.
+  // Supabase can emit an initial null session while storage is still being restored.
+  client.auth.onAuthStateChange(function(event,session){
+    if(session){allow();return;}
+    if(sessionCheckComplete&&event==="SIGNED_OUT"){deny();}
+  });
+  client.auth.getSession().then(function(r){
+    sessionCheckComplete=true;
+    if(r.data&&r.data.session){allow();}
+    else{deny();}
+  }).catch(deny);
+})();
+</script>
 <script>
 (function(){
 var authLink=document.getElementById("authLink");
@@ -316,125 +336,58 @@ window.restoreProtectedBrowserCopy=restoreProtectedBrowserCopy;
 safetyBackup();
 
 async function render(){
-  var el=document.getElementById("tripList"),state=findProtectedTrips(),a=state.trips;
-
+  var el=document.getElementById("tripList");
+  var browserState=findProtectedTrips();
+  var browserCopies=browserState.trips;
   el.innerHTML="";
-  if(state.source==="protected-backup"&&a.length){
-    showStatus("<b>Recovery copy found.</b> RoamSonio found "+a.length+" original trip(s) in the protected browser backup. <button type='button' onclick='restoreProtectedBrowserCopy()' style='margin-left:8px;border:1px solid #D4A85A;background:#D4A85A;color:#0B2D4A;border-radius:7px;padding:8px 10px;font-weight:800;cursor:pointer'>Restore original trips</button>",false);
-  }
 
-  // IMPORTANT: durable account snapshots are authoritative when they exist.
-  // The browser may contain older/incomplete shells for the same trips. Always
-  // merge the account snapshots, even when localStorage already has trips.
+  // Do not display or merge browser-only trips until a server record proves
+  // they belong to the currently authenticated account.
   var accountTrips=[];
   try{
     accountTrips=await loadAccountTripCopies();
   }catch(e){
     var msg=e&&e.message?e.message:String(e);
-    dEl.innerHTML="<b>Account recovery error</b><br>"+esc(msg)+"<br><small>The saved database records were not changed.</small>";
-    if(!a.length){
-      el.innerHTML='<div class="empty">RoamSonio could not read the durable trip snapshots. Nothing was deleted or rebuilt.</div>';
-      return;
-    }
+    dEl.innerHTML="<b>Account verification unavailable</b><br>"+esc(msg)+"<br><small>Your browser recovery copies were not changed. For privacy, they are hidden until ownership can be verified.</small>";
+    el.innerHTML='<div class="empty">RoamSonio could not verify account ownership right now. Your saved browser copies remain untouched.</div>';
+    window.rsAuthorizedTrips=[];
+    return;
   }
 
-  if(accountTrips.length){
-    var merged=a.slice();
-    var replaced=0;
-
-    // Match durable/account copies to browser copies by server ID first, then
-    // by the trip's stable visible identity. Recovery runs can produce a new
-    // browser wrapper ID even when they refer to the same saved journey.
-    function tripIdentity(t){
-      t=t||{};
-      var name=String(t.name||"").trim().toLowerCase();
-
-      // These are the three known original saved journeys. Older browser
-      // wrappers sometimes lost their server ID or date fields, so for these
-      // known names the visible trip name is the stable recovery identity.
-      var nolaStableId="febaebf6-7369-4922-b069-c745eee8c16f";
-      var europeStableId="a636626a-e7b2-4337-b950-be9682edde63";
-      if(String(t.id||"")===nolaStableId || String(t.supabaseId||"")===nolaStableId || (name.indexOf("new orleans")===0 && String(t.start||"")==="2027-01-16" && String(t.end||"")==="2027-01-20"))return "known:new-orleans-2027";
-      if(String(t.id||"")===europeStableId || String(t.supabaseId||"")===europeStableId || name==="european thanksgiving adventure 2026")return "known:europe-2026";
-      if(name==="new trip test")return "known:new-trip-test";
-
-      if(t.supabaseId)return "server:"+String(t.supabaseId);
-      var start=String(t.start||"").trim();
-      var end=String(t.end||"").trim();
-      var dest=Array.isArray(t.destinations)?t.destinations.map(String).join("|").trim().toLowerCase():"";
-      return "trip:"+name+"|"+start+"|"+end+"|"+dest;
-    }
-
-    function findMatch(list,target){
-      var targetServer=target&&target.supabaseId?String(target.supabaseId):"";
-      for(var i=0;i<list.length;i++){
-        var x=list[i]||{};
-        if(targetServer && x.supabaseId && String(x.supabaseId)===targetServer)return i;
-      }
-      var key=tripIdentity(target);
-      for(var j=0;j<list.length;j++){
-        if(tripIdentity(list[j])===key)return j;
-      }
-      return -1;
-    }
-
-    for(var ai=0;ai<accountTrips.length;ai++){
-      var at=accountTrips[ai],match=findMatch(merged,at);
-      if(match>=0){
-        // Never choose a trip copy by JSON size. That can replace a newer
-        // editable trip with an older snapshot that happens to contain more fields.
-        // Until both copies carry explicit version metadata, preserve the browser
-        // copy and only fill in the durable identifier.
-        var browserCopy=merged[match];
-        var browserRevision=Number(browserCopy&&browserCopy.revision)||0;
-        var accountRevision=Number(at&&at.revision)||0;
-        if(accountRevision>0 && accountRevision>browserRevision){
-          merged[match]=at;
-          replaced++;
-        }else if(at.supabaseId && !browserCopy.supabaseId){
-          browserCopy.supabaseId=at.supabaseId;
-        }
-      }else{
-        merged.push(at);
-      }
-    }
-
-    // Final safety pass: collapse any duplicate copies already present in
-    // browser storage. Keep the richest copy so this is a de-duplication only;
-    // it does not rebuild or discard the underlying trip data.
-    var unique=[],seen={};
-    for(var ui=0;ui<merged.length;ui++){
-      var ut=merged[ui],uk=tripIdentity(ut);
-      var prior=seen[uk];
-      if(prior===undefined){
-        seen[uk]=unique.length;
-        unique.push(ut);
-      }else{
-        var prev=unique[prior];
-        var prevRevision=Number(prev&&prev.revision)||0;
-        var candidateRevision=Number(ut&&ut.revision)||0;
-        if(candidateRevision>prevRevision)unique[prior]=ut;
-      }
-    }
-    a=unique;
-    localStorage.setItem(KEY,JSON.stringify(a));
-  }
+  var a=accountTrips.map(function(serverTrip){
+    var serverId=String(serverTrip.supabaseId||serverTrip.id||"");
+    var match=browserCopies.find(function(t){
+      return serverId && String(t.supabaseId||t.id||"")===serverId;
+    });
+    if(!match)return serverTrip;
+    // A local copy may enrich a server-authorized trip only after its server
+    // ID matches a row returned for this signed-in account.
+    var merged=Object.assign({},serverTrip,match);
+    merged.supabaseId=serverId;
+    merged._hasAuthorizedBrowserCopy=true;
+    if(!merged.name)merged.name=serverTrip.name;
+    return merged;
+  });
+  window.rsAuthorizedTrips=a;
 
   if(!a.length){
-    el.innerHTML='<div class="empty">No saved trips are currently visible, and no durable trip snapshots were returned for this account.</div>';
+    el.innerHTML='<div class="empty">No account-linked trips were found for this account. Any older browser-only recovery copies remain stored, but are hidden until they can be safely associated with the correct account.</div>';
     return;
   }
 
   for(var i=a.length-1;i>=0;i--){
     var t=a[i],d=document.createElement("div");
     d.className="trip";
-    var hasServer=t.supabaseId;
-    d.innerHTML="<div><b>"+esc(t.name||"Unnamed trip")+"</b><small>"+esc((t.destinations||[]).join(" · "))+" · "+(t.days||"")+" days · "+esc(t.status||"Planning")+"</small></div><div><button onclick='openTrip("+JSON.stringify(t.id)+")'>Open trip</button> <button onclick='deleteTrip("+JSON.stringify(t.id)+" )'>Delete</button></div>";
+    var buttons="<button onclick='openTrip("+JSON.stringify(t.id)+")'>Open trip</button>";
+    if(t._hasAuthorizedBrowserCopy){
+      buttons+=" <button onclick='deleteTrip("+JSON.stringify(t.id)+")'>Delete</button>";
+    }
+    d.innerHTML="<div><b>"+esc(t.name||"Unnamed trip")+"</b><small>"+esc((t.destinations||[]).join(" · "))+" · "+(t.days||"")+" days · "+esc(t.status||"Planning")+"</small></div><div>"+buttons+"</div>";
     el.appendChild(d);
   }
 }
 window.openTrip=function(id){
-  var a=load(),t=a.find(function(x){return x.id===id})||{};
+  var a=load(),t=a.find(function(x){return x.id===id})||(window.rsAuthorizedTrips||[]).find(function(x){return x.id===id})||{};
   var d=(t.destinations||[])[0]||"";
   sessionStorage.setItem("openTripId",id);
 
@@ -446,7 +399,7 @@ window.openTrip=function(id){
   var isEurope=String(id)===europeId || String(t.supabaseId||"")===europeId ||
                String(t.name||"").trim()==="European Thanksgiving Adventure 2026";
   if(isEurope){
-    location.href="current-trip.html";
+    location.href="trip-workspace.html?id="+encodeURIComponent(europeId)+"&supabaseId="+encodeURIComponent(europeId)+"&destination="+encodeURIComponent("Prague")+"&v=europe-auth-route-"+Date.now();
     return;
   }
 
