@@ -753,7 +753,13 @@ if(!trip&&rsWorkspaceAuth&&(serverId||id)){
     }
   }catch(recoveryError){console.warn("Saved trip recovery unavailable:",recoveryError)}
 }
-if(!trip){location.href="my-trips.html";return}
+if(!trip){
+  console.error("RoamSonio trip open failed: no local trip matched and server recovery did not return a usable snapshot.",{
+    requestedId:id||null,requestedSupabaseId:serverId||null,destination:urlDestination||null
+  });
+  document.body.innerHTML='<main style="max-width:760px;margin:8vh auto;padding:28px;font:16px/1.6 Arial,sans-serif;color:#0B2D4A;background:#F8F5ED"><section style="background:#fffdf9;border:1px solid #D9E0E7;border-radius:14px;padding:28px"><h1 style="font-family:Georgia,serif">Your saved trip was not opened</h1><p>RoamSonio reached the trip workspace, but could not load a matching browser copy or recover a usable saved snapshot from your account. Your trip has not been deleted by this page.</p><p><strong>Trip reference:</strong> '+String(serverId||id||"not present").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})+'</p><p>Do not recreate the trip. Return to My Trips or contact support with this reference so the saved account record can be checked.</p><p><a href="my-trips.html" style="display:inline-block;padding:12px 16px;background:#D4A85A;color:#0B2D4A;text-decoration:none;border-radius:5px;font-weight:bold">Back to My Trips</a> <a href="current-trip.html" style="display:inline-block;padding:12px 16px;border:1px solid #D9E0E7;color:#0B2D4A;text-decoration:none;border-radius:5px">Try opening Europe again</a></p></section></main>';
+  return;
+}
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 window.recoverFullTrip=async function recoverFullTrip(){
   var btn=document.getElementById("recoverTripButton");
