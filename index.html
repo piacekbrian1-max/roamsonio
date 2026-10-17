@@ -171,7 +171,12 @@ body{padding-top:68px!important}
   .rsLinks a{padding:13px 8px!important;border-bottom:1px solid #D9E0E7!important;font-size:11px!important}
   .rsLinks a:last-child{border-bottom:0!important}
 }
-</style></head>
+</style>
+<style id="roamsonio-private-trip-visibility">
+/* Personal trip dashboards stay absent until the signed-in session is confirmed. */
+body:not(.rsAuthenticated) #trip-dashboard,body:not(.rsAuthenticated) #trip-library{display:none!important}
+</style>
+</head>
 <body>
 <header class="rsTop"><div class="rsNav"><a class="rsBrand" href="index.html" aria-label="RoamSonio home"><span class="rsMark"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#F8F5ED"/><circle cx="45" cy="18" r="8" fill="#D4A85A"/><path d="M10 46 25 29l8 9 8-12 13 20H10Z" fill="#0B2D4A"/><path d="M17 20c8-7 18-8 27-4 5 2 8 5 10 9" fill="none" stroke="#D4A85A" stroke-width="3" stroke-linecap="round"/></svg></span><span><strong><span class="rsRoam">Roam</span><span class="rsSonio">Sonio</span></strong><small>DREAM IT. PLAN IT. LIVE IT.</small></span></a><nav class="rsLinks" aria-label="Primary navigation"><a href="index.html">My RoamSonio</a><a href="my-trips.html">My Trips</a><a href="build-trip.html">Build Your Trip</a><a href="travel-desk.html">Travel Desk</a><a href="about.html">About Us</a><a href="account.html" id="rsAccountLink">My Account</a><a href="login.html?return=index.html" id="rsAuthLink" class="rsAuthBtn">Sign In</a></nav></div></header>
 
@@ -336,7 +341,8 @@ function cleanSavedTrips(a){
   return out;
 }
 function loadPersistentTrips(){
-  /* Never seed a personal trip into the public homepage. Only render trips already stored in this browser. */
+  /* Private browser trips are rendered only after Supabase confirms a signed-in session. */
+  if(!document.body.classList.contains("rsAuthenticated"))return [];
   try{
     var raw=JSON.parse(localStorage.getItem(KEY)||"[]");
     return cleanSavedTrips(Array.isArray(raw)?raw:[]);
@@ -550,6 +556,10 @@ function renderHomeRoamSonio(){
 try{buildSuggestions();}catch(e){console.error('RoamSonio Explore failed to initialize',e);}
 try{renderDashboard();}catch(e){console.error('RoamSonio trip dashboard failed to initialize',e);}
 try{renderHomeRoamSonio();}catch(e){console.error('RoamSonio saved experiences failed to initialize',e);}
+window.addEventListener("roamsonio-auth-updated",function(){
+  try{renderDashboard();}catch(e){console.error('RoamSonio trip dashboard auth refresh failed',e);}
+  try{renderHomeRoamSonio();}catch(e){console.error('RoamSonio saved experiences auth refresh failed',e);}
+});
 setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio trip dashboard refresh failed',e);}},60000);
 })();
 </script>
@@ -569,9 +579,11 @@ setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio 
     var page=location.pathname.split("/").pop()||"index.html";
     function render(session){
       var signedIn=!!session;
+      document.body.classList.toggle("rsAuthenticated",signedIn);
       account.href=signedIn?"account.html":"login.html?return=account.html";
       auth.textContent=signedIn?"Sign Out":"Sign In";
       auth.href=signedIn?"#":"login.html?return="+encodeURIComponent(page);
+      window.dispatchEvent(new Event("roamsonio-auth-updated"));
     }
     client.auth.getSession().then(function(r){render(r.data&&r.data.session);});
     client.auth.onAuthStateChange(function(event,session){render(session);});
