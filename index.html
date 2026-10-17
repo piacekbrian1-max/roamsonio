@@ -281,6 +281,9 @@ var KEY="big-thanksgiving-trips-v1";
 var accountTripsCache=[];
 var accountTripsLoaded=false;
 var accountTripsLoadError="";
+var accountTripsRequestUser="";
+var accountTripsRequestPromise=null;
+var accountTripsRequestToken=0;
 var images={
 trnava:"images/trnava-advent.jpg",
 prague:"images/prague-christmas.jpg",
@@ -614,49 +617,71 @@ setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio 
     if(!account||!auth) return;
     var page=location.pathname.split("/").pop()||"index.html";
     async function refreshAccountTrips(session){
-      accountTripsCache=[];
-      accountTripsLoaded=false;
-      accountTripsLoadError="";
-      if(!session || !session.user || !session.user.id){
+      var userId=session&&session.user&&session.user.id?String(session.user.id):"";
+      if(!userId){
+        accountTripsRequestToken++;
+        accountTripsRequestUser="";
+        accountTripsRequestPromise=null;
+        accountTripsCache=[];
+        accountTripsLoaded=false;
+        accountTripsLoadError="";
         window.dispatchEvent(new Event("roamsonio-auth-updated"));
         return;
       }
-      try{
-        /* Read the signed-in owner's trip rows directly. Do not wait on the
-           recovery RPC here: if it stalls, the homepage would remain loading
-           forever even though the account's trips are available. Supabase RLS
-           and this explicit owner_id filter keep other users' trips private. */
-        var owned=await Promise.race([
-          client.from("trips")
-            .select("id,name,trip_snapshot,owner_id,updated_at")
-            .eq("owner_id",session.user.id)
-            .order("updated_at",{ascending:false}),
-          new Promise(function(_,reject){
-            setTimeout(function(){reject(new Error("The saved-trip database request did not finish within 12 seconds."));},12000);
-          })
-        ]);
-        if(owned.error)throw owned.error;
-        var rows=Array.isArray(owned.data)?owned.data:[];
-        accountTripsCache=rows.filter(function(row){
-          return row&&row.id&&String(row.owner_id)===String(session.user.id);
-        }).map(function(row){
-          var snapshot=row.trip_snapshot;
-          var trip=snapshot&&typeof snapshot==="object"&&!Array.isArray(snapshot)
-            ? JSON.parse(JSON.stringify(snapshot))
-            : {};
-          trip.id=trip.id||row.id;
-          trip.supabaseId=String(row.id);
-          trip.name=trip.name||row.name||"Saved RoamSonio Trip";
-          return trip;
-        });
-        accountTripsLoaded=true;
-      }catch(e){
-        accountTripsCache=[];
-        accountTripsLoaded=false;
-        accountTripsLoadError=e&&e.message?String(e.message):String(e);
-        console.warn("Could not load owner-authorized trips:",e);
+      if(accountTripsRequestUser===userId && (accountTripsLoaded || accountTripsRequestPromise)){
+        if(accountTripsRequestPromise) await accountTripsRequestPromise;
+        return;
       }
-      window.dispatchEvent(new Event("roamsonio-auth-updated"));
+      accountTripsRequestUser=userId;
+      accountTripsLoaded=false;
+      accountTripsLoadError="";
+      var token=++accountTripsRequestToken;
+      accountTripsCache=[];
+      var task=(async function(){
+        try{
+          var owned=await Promise.race([
+            client.from("trips")
+              .select("id,name,trip_snapshot,owner_id,updated_at")
+              .eq("owner_id",userId)
+              .order("updated_at",{ascending:false}),
+            new Promise(function(_,reject){
+              setTimeout(function(){reject(new Error("The saved-trip database request did not finish within 12 seconds."));},12000);
+            })
+          ]);
+          if(owned.error)throw owned.error;
+          var rows=Array.isArray(owned.data)?owned.data:[];
+          var trips=rows.filter(function(row){
+            return row&&row.id&&String(row.owner_id)===userId;
+          }).map(function(row){
+            var snapshot=row.trip_snapshot;
+            var trip=snapshot&&typeof snapshot==="object"&&!Array.isArray(snapshot)
+              ? JSON.parse(JSON.stringify(snapshot)) : {};
+            trip.id=trip.id||row.id;
+            trip.supabaseId=String(row.id);
+            trip.name=trip.name||row.name||"Saved RoamSonio Trip";
+            return trip;
+          });
+          if(token===accountTripsRequestToken){
+            accountTripsCache=trips;
+            accountTripsLoaded=true;
+            accountTripsLoadError="";
+          }
+        }catch(e){
+          if(token===accountTripsRequestToken){
+            accountTripsCache=[];
+            accountTripsLoaded=false;
+            accountTripsLoadError=e&&e.message?String(e.message):String(e);
+          }
+          console.warn("Could not load owner-authorized trips:",e);
+        }finally{
+          if(token===accountTripsRequestToken){
+            accountTripsRequestPromise=null;
+            window.dispatchEvent(new Event("roamsonio-auth-updated"));
+          }
+        }
+      })();
+      accountTripsRequestPromise=task;
+      await task;
     }
     function render(session){
       var signedIn=!!session;
