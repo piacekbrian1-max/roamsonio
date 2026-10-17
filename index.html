@@ -594,15 +594,15 @@ setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio 
       }
       try{
         var result=await client.rpc("roamsonio_recover_trip_candidates");
+        var rpcError=result.error;
         var rows=result.data;
-        if(result.error)throw result.error;
         if(typeof rows==="string"){try{rows=JSON.parse(rows)}catch(e){rows=[]}}
         if(!Array.isArray(rows))rows=[];
         /* If snapshot recovery returns no complete snapshots, query only rows
            explicitly owned by the authenticated user. RLS remains in force.
            This lets the dashboard show saved trips whose snapshot needs repair
            without ever falling back to arbitrary browser/localStorage trips. */
-        if(!rows.length && session.user && session.user.id){
+        if((rpcError || !rows.length) && session.user && session.user.id){
           var owned=await client.from("trips")
             .select("id,name,trip_snapshot,owner_id,updated_at")
             .eq("owner_id",session.user.id)
