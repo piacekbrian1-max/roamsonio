@@ -4,6 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>RoamSonio · Your Trips</title>
+<meta name="description" content="Dream it. Plan it. Live it. Discover RoamSonio, your travel-planning companion for turning inspiration into memorable journeys.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="RoamSonio">
+<meta property="og:title" content="RoamSonio — Dream it. Plan it. Live it.">
+<meta property="og:description" content="Discover inspiring destinations and plan your next memorable journey with RoamSonio.">
+<meta property="og:url" content="https://piacekbrian1-max.github.io/roamsonio/">
+<meta property="og:image" content="https://raw.githubusercontent.com/piacekbrian1-max/roamsonio/main/social-preview.svg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="RoamSonio — Dream it. Plan it. Live it.">
+<meta name="twitter:description" content="Discover inspiring destinations and plan your next memorable journey with RoamSonio.">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/piacekbrian1-max/roamsonio/main/social-preview.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
@@ -265,6 +278,8 @@ body{padding-top:68px!important}
 <script>
 (function(){
 var KEY="big-thanksgiving-trips-v1";
+var accountTripsCache=[];
+var accountTripsLoaded=false;
 var images={
 trnava:"images/trnava-advent.jpg",
 prague:"images/prague-christmas.jpg",
@@ -323,54 +338,26 @@ function cleanSavedTrips(a){
   return out;
 }
 function loadPersistentTrips(){
+  /* Only render trips returned by the owner-filtered account recovery RPC.
+     Browser copies may enrich a matching server-owned trip, but never create
+     a visible trip on their own. Unlinked legacy copies remain untouched. */
+  if(!document.body.classList.contains("rsAuthenticated")||!accountTripsLoaded)return [];
+  var local=[];
   try{
-    var raw=JSON.parse(localStorage.getItem(KEY)||"null");
-    var restored=[{
-      id:"european-thanksgiving-adventure-2026",
-      name:"European Thanksgiving Adventure 2026",
-      start:"2026-11-26",
-      end:"2026-12-04",
-      status:"Upcoming",
-      occasion:"Thanksgiving · Family · Christmas markets",
-      travelers:3,
-      destinations:["Trnava","Prague","Pilsen","Hluboká nad Vltavou","Vienna"],
-      homeBase:"Trnava / Prague / Pilsen / Vienna Airport",
-      transport:"Rental car + walking",
-      stay:"Confirmed lodging",
-      stayLink:"",
-      flights:"Confirmed",
-      flightLink:"",
-      plan:[
-        {date:"2026-11-26",morning:"Arrive Vienna 8:00 AM and drive to Trnava",afternoon:"Family visit in Trnava",evening:"Thanksgiving family time with parents"},
-        {date:"2026-11-27",morning:"Trnava family day",afternoon:"Explore Trnava historic center",evening:"Family dinner"},
-        {date:"2026-11-28",morning:"Trnava / family time",afternoon:"Local Christmas atmosphere",evening:"Saturday late-afternoon dinner with family"},
-        {date:"2026-11-29",morning:"Final family morning",afternoon:"Drive toward Prague",evening:"Prague evening"},
-        {date:"2026-11-30",morning:"Prague Old Town",afternoon:"Christmas markets + historic center",evening:"Prague dinner"},
-        {date:"2026-12-01",morning:"Prague Castle area",afternoon:"Charles Bridge + Old Town",evening:"Christmas market evening"},
-        {date:"2026-12-02",morning:"Prague departure",afternoon:"Drive to Pilsen",evening:"Pilsner Urquell brewery experience"},
-        {date:"2026-12-03",morning:"Pilsen morning",afternoon:"Hluboká Castle / Český Krumlov lunch stop",evening:"Arrive Vienna Airport hotel"},
-        {date:"2026-12-04",morning:"10:00 AM return flight from Vienna",afternoon:"Travel home",evening:"—"}
-      ],
-      mustSee:["Trnava historic center","Prague Old Town & Charles Bridge","Prague Castle","Prague Christmas markets","Pilsner Urquell Brewery","Hluboká Castle","Vienna Airport"],
-      food:["Local Slovak family favorites","Prague Czech cuisine","Pilsner Urquell brewery experience"],
-      notes:"Flights and rental car are user-entered/confirmed. Rental car actual cost €488 (~$569). Flights total $2,764.65 for three travelers.",
-      stays:[
-        {name:"Trnava Airbnb",dates:"Nov 26–30",cost:431.50},
-        {name:"Ruterra Red Roofs View",dates:"Nov 30–Dec 2",cost:283.10},
-        {name:"Spa Beerland - At The Golden Lamb",dates:"Dec 2–3",cost:162},
-        {name:"Moxy Vienna Airport",dates:"Dec 3–4",cost:257.04}
-      ],
-      budget:{flights:2764.65,rentalCar:569,lodging:1133.64},
-      isPromoted:true
-    }];
-    if(!Array.isArray(raw))raw=[];
-    var cleaned=cleanSavedTrips(raw);
-    if(!cleaned.some(function(t){return t&&t.id==="european-thanksgiving-adventure-2026"})){
-      cleaned.unshift(restored[0]);
-    }
-    if(JSON.stringify(cleaned)!==JSON.stringify(raw))localStorage.setItem(KEY,JSON.stringify(cleaned));
-    return cleaned;
-  }catch(e){return[]}
+    var raw=JSON.parse(localStorage.getItem(KEY)||"[]");
+    local=cleanSavedTrips(Array.isArray(raw)?raw:[]);
+  }catch(e){local=[]}
+  return accountTripsCache.map(function(serverTrip){
+    var serverId=String(serverTrip.supabaseId||serverTrip.id||"");
+    var match=local.find(function(t){
+      return serverId && String(t.supabaseId||t.id||"")===serverId;
+    });
+    if(!match)return serverTrip;
+    var merged=Object.assign({},serverTrip,match);
+    merged.supabaseId=serverId;
+    if(!merged.name)merged.name=serverTrip.name;
+    return merged;
+  });
 }
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 function tripHref(t){
@@ -430,7 +417,7 @@ var seasonEl=document.getElementById("suggestSeason");
 if(seasonEl)seasonEl.textContent="Published destinations · approved photography only";
 box.innerHTML="<div class='exploreStatus' role='status'>Loading approved destinations from the RoamSonio master library…</div>";
 var editorialUrl="https://vqtqchxoecrahtrnoocy.supabase.co/rest/v1/roamsonio_editorial_destinations?status=eq.published&select=id,name,status,type,seasons,activities,build_destination,tagline,metadata,roamsonio_editorial_photos(url,role,sort_order,approved)&order=name.asc";
-fetch(editorialUrl,{headers:{apikey:"sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy",Authorization:"Bearer sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy"},cache:"no-store"}).then(function(res){if(!res.ok)throw new Error("Editorial library request failed ("+res.status+")");return res.json();}).then(function(rows){
+fetch(editorialUrl,{headers:{apikey:"sb_publishable_DyiQBLmIyGMBXCeJ9KKgSg_TFWO5vsy"},cache:"no-store"}).then(function(res){if(!res.ok)throw new Error("Editorial library request failed ("+res.status+")");return res.json();}).then(function(rows){
   var easternParts=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());var easternToday=easternParts.find(function(p){return p.type==="year"}).value+"-"+easternParts.find(function(p){return p.type==="month"}).value+"-"+easternParts.find(function(p){return p.type==="day"}).value;var approved=(rows||[]).filter(function(row){var release=String((row.metadata||{}).homepage_eligible_from||"");return String(row.status||"").toLowerCase()==="published"&&(!release||release<=easternToday);}).map(function(row){
     var photos=(row.roamsonio_editorial_photos||[]).filter(function(p){return p&&p.approved===true&&p.url&&/^https:\/\//i.test(p.url);}).sort(function(a,b){var ar=a.role==="hero"?0:a.role==="secondary"?1:2,br=b.role==="hero"?0:b.role==="secondary"?1:2;return ar-br||(Number(a.sort_order)||0)-(Number(b.sort_order)||0);});
     if(!row.name||!photos.length)return null;
@@ -580,6 +567,7 @@ function renderHomeRoamSonio(){
 try{buildSuggestions();}catch(e){console.error('RoamSonio Explore failed to initialize',e);}
 try{renderDashboard();}catch(e){console.error('RoamSonio trip dashboard failed to initialize',e);}
 try{renderHomeRoamSonio();}catch(e){console.error('RoamSonio saved experiences failed to initialize',e);}
+window.addEventListener("roamsonio-auth-updated",function(){try{renderDashboard();}catch(e){}try{renderHomeRoamSonio();}catch(e){}});
 setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio trip dashboard refresh failed',e);}},60000);
 })();
 </script>
@@ -597,13 +585,46 @@ setInterval(function(){try{renderDashboard();}catch(e){console.error('RoamSonio 
     var account=document.getElementById("rsAccountLink"), auth=document.getElementById("rsAuthLink");
     if(!account||!auth) return;
     var page=location.pathname.split("/").pop()||"index.html";
+    async function refreshAccountTrips(session){
+      accountTripsCache=[];
+      accountTripsLoaded=false;
+      if(!session){
+        window.dispatchEvent(new Event("roamsonio-auth-updated"));
+        return;
+      }
+      try{
+        var result=await client.rpc("roamsonio_recover_trip_candidates");
+        if(result.error)throw result.error;
+        var rows=result.data;
+        if(typeof rows==="string"){try{rows=JSON.parse(rows)}catch(e){rows=[]}}
+        if(!Array.isArray(rows))rows=[];
+        accountTripsCache=rows.filter(function(row){
+          return row&&row.id&&row.trip_snapshot&&typeof row.trip_snapshot==="object";
+        }).map(function(row){
+          var trip=JSON.parse(JSON.stringify(row.trip_snapshot));
+          trip.id=trip.id||row.id;
+          trip.supabaseId=String(row.id);
+          trip.name=trip.name||row.name||"RoamSonio Trip";
+          return trip;
+        });
+        accountTripsLoaded=true;
+      }catch(e){
+        /* Fail closed: an RPC/network error must never fall back to shared localStorage. */
+        accountTripsCache=[];
+        accountTripsLoaded=false;
+        console.warn("Could not load owner-authorized trips:",e);
+      }
+      window.dispatchEvent(new Event("roamsonio-auth-updated"));
+    }
     function render(session){
       var signedIn=!!session;
+      document.body.classList.toggle("rsAuthenticated",signedIn);
       account.href=signedIn?"account.html":"login.html?return=account.html";
       auth.textContent=signedIn?"Sign Out":"Sign In";
       auth.href=signedIn?"#":"login.html?return="+encodeURIComponent(page);
+      refreshAccountTrips(session);
     }
-    client.auth.getSession().then(function(r){render(r.data&&r.data.session);});
+    client.auth.getSession().then(function(r){render(r.data&&r.data.session);}).catch(function(){render(null);});
     client.auth.onAuthStateChange(function(event,session){render(session);});
     auth.addEventListener("click",async function(e){
       if(auth.textContent==="Sign Out"){
