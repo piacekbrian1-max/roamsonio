@@ -336,53 +336,10 @@ function cleanSavedTrips(a){
   return out;
 }
 function loadPersistentTrips(){
+  /* Never seed a personal trip into the public homepage. Only render trips already stored in this browser. */
   try{
-    var raw=JSON.parse(localStorage.getItem(KEY)||"null");
-    var restored=[{
-      id:"european-thanksgiving-adventure-2026",
-      name:"European Thanksgiving Adventure 2026",
-      start:"2026-11-26",
-      end:"2026-12-04",
-      status:"Upcoming",
-      occasion:"Thanksgiving · Family · Christmas markets",
-      travelers:3,
-      destinations:["Trnava","Prague","Pilsen","Hluboká nad Vltavou","Vienna"],
-      homeBase:"Trnava / Prague / Pilsen / Vienna Airport",
-      transport:"Rental car + walking",
-      stay:"Confirmed lodging",
-      stayLink:"",
-      flights:"Confirmed",
-      flightLink:"",
-      plan:[
-        {date:"2026-11-26",morning:"Arrive Vienna 8:00 AM and drive to Trnava",afternoon:"Family visit in Trnava",evening:"Thanksgiving family time with parents"},
-        {date:"2026-11-27",morning:"Trnava family day",afternoon:"Explore Trnava historic center",evening:"Family dinner"},
-        {date:"2026-11-28",morning:"Trnava / family time",afternoon:"Local Christmas atmosphere",evening:"Saturday late-afternoon dinner with family"},
-        {date:"2026-11-29",morning:"Final family morning",afternoon:"Drive toward Prague",evening:"Prague evening"},
-        {date:"2026-11-30",morning:"Prague Old Town",afternoon:"Christmas markets + historic center",evening:"Prague dinner"},
-        {date:"2026-12-01",morning:"Prague Castle area",afternoon:"Charles Bridge + Old Town",evening:"Christmas market evening"},
-        {date:"2026-12-02",morning:"Prague departure",afternoon:"Drive to Pilsen",evening:"Pilsner Urquell brewery experience"},
-        {date:"2026-12-03",morning:"Pilsen morning",afternoon:"Hluboká Castle / Český Krumlov lunch stop",evening:"Arrive Vienna Airport hotel"},
-        {date:"2026-12-04",morning:"10:00 AM return flight from Vienna",afternoon:"Travel home",evening:"—"}
-      ],
-      mustSee:["Trnava historic center","Prague Old Town & Charles Bridge","Prague Castle","Prague Christmas markets","Pilsner Urquell Brewery","Hluboká Castle","Vienna Airport"],
-      food:["Local Slovak family favorites","Prague Czech cuisine","Pilsner Urquell brewery experience"],
-      notes:"Flights and rental car are user-entered/confirmed. Rental car actual cost €488 (~$569). Flights total $2,764.65 for three travelers.",
-      stays:[
-        {name:"Trnava Airbnb",dates:"Nov 26–30",cost:431.50},
-        {name:"Ruterra Red Roofs View",dates:"Nov 30–Dec 2",cost:283.10},
-        {name:"Spa Beerland - At The Golden Lamb",dates:"Dec 2–3",cost:162},
-        {name:"Moxy Vienna Airport",dates:"Dec 3–4",cost:257.04}
-      ],
-      budget:{flights:2764.65,rentalCar:569,lodging:1133.64},
-      isPromoted:true
-    }];
-    if(!Array.isArray(raw))raw=[];
-    var cleaned=cleanSavedTrips(raw);
-    if(!cleaned.some(function(t){return t&&t.id==="european-thanksgiving-adventure-2026"})){
-      cleaned.unshift(restored[0]);
-    }
-    if(JSON.stringify(cleaned)!==JSON.stringify(raw))localStorage.setItem(KEY,JSON.stringify(cleaned));
-    return cleaned;
+    var raw=JSON.parse(localStorage.getItem(KEY)||"[]");
+    return cleanSavedTrips(Array.isArray(raw)?raw:[]);
   }catch(e){return[]}
 }
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
