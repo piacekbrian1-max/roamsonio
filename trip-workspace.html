@@ -728,6 +728,31 @@ safetySnapshot();
 if(id==="trip-template"){
   trip={id:"trip-template",name:"New Trip",title:"New Trip",destinations:[],travelers:1,start:"",end:"",days:1,status:"Planning",groupType:"Individual traveler",pace:"Balanced",transport:"Walk + transit",homeBase:"Downtown / city center",preferences:[],mustSee:[],localFood:[],food:[],sights:[],areas:[],resources:[],weatherQuery:"",eventQuery:"",camsQuery:"",foodBudget:"",mobility:"",energy:"",evening:"",plan:[],originalPlan:[],smartVersion:2,masterTemplate:"roamwell-trip-master-v1"};
 }
+/* Load a missing saved trip from the signed-in owner's protected Supabase snapshot. */
+if(!trip && (serverId || id)){
+  try{
+    var genericId=serverId||id;
+    var genericResult=await rsWorkspaceAuth.rpc("roamsonio_recover_trip",{p_trip_id:genericId});
+    if(genericResult && !genericResult.error){
+      var genericPayload=genericResult.data;
+      if(typeof genericPayload==="string"){try{genericPayload=JSON.parse(genericPayload)}catch(e){}}
+      var genericSnapshot=genericPayload&&genericPayload.trip_snapshot;
+      if(genericSnapshot && typeof genericSnapshot==="object" && !Array.isArray(genericSnapshot)){
+        trip=JSON.parse(JSON.stringify(genericSnapshot));
+        trip.id=id||trip.id||genericId;
+        trip.supabaseId=genericPayload.id||genericId;
+        if(!trip.name && genericPayload.name)trip.name=genericPayload.name;
+        var genericTrips=load();
+        var genericIndex=genericTrips.findIndex(function(t){return t.id===trip.id});
+        if(genericIndex>=0)genericTrips[genericIndex]=trip;else genericTrips.push(trip);
+        localStorage.setItem(KEY,JSON.stringify(genericTrips));
+        sessionStorage.setItem("openTripId",trip.id);
+      }
+    }else if(genericResult && genericResult.error){
+      console.warn("Saved trip could not be loaded:",genericResult.error.message||genericResult.error);
+    }
+  }catch(genericError){console.warn("Saved trip load failed:",genericError)}
+}
 if(!trip){location.href="my-trips.html";return}
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 window.recoverFullTrip=async function recoverFullTrip(){
