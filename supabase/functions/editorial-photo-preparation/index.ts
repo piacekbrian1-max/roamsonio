@@ -221,11 +221,14 @@ Deno.serve(async (req) => {
         // all destinations also receive general scenic and activity-aware searches.
         const activityText = String(entry.activities || entry.type || "").split(/[;,|]/).map((x: string) => x.trim()).filter(Boolean);
         const basePlace = String(entry.build_destination || destination || name).replace(/&/g, " ").trim();
+        const compactPlace = norm(basePlace).split(" ").filter((token: string) => token.length >= 3 && !stop.has(token)).join(" ");
+        const compactName = norm(name).split(" ").filter((token: string) => token.length >= 3 && !stop.has(token)).join(" ");
         const queries = [
-          ...(aliases.length ? [aliases[0] + " landscape"] : []),
-          basePlace + " landscape",
-          name + " " + (activityText[0] || "landmark photograph")
-        ].filter((query: string, index: number, all: string[]) => query && all.indexOf(query) === index).slice(0, 3);
+          ...aliases.slice(0, 2).map((alias: string) => alias + " landscape"),
+          compactPlace,
+          compactPlace + " landmark photograph",
+          compactName + " " + (activityText[0] || "scenic view")
+        ].map((query: string) => query.trim()).filter((query: string, index: number, all: string[]) => query && all.indexOf(query) === index).slice(0, 4);
         const results: any[] = [];
         for (const query of [...new Set(queries)]) {
           const found = await commonsSearch(query);
@@ -258,10 +261,13 @@ Deno.serve(async (req) => {
           existingRows = freshRows || [];
           alreadyFilled = new Set(existingRows.filter((p: any) => p.url && p.source_url && p.credit && p.alt_text).map((p: any) => String(p.role || "").toLowerCase()));
         }
-        const roles = requestOptions && !item.replaceExisting ? [] : ["hero","secondary","mobile"].filter(role => !alreadyFilled.has(role));
+        const roles = ["hero","secondary","mobile"].filter(role => !alreadyFilled.has(role));
         const usedUrls = new Set(existingRows.map((p: any) => p.url).filter(Boolean));
         let attachedForEntry = 0;
-        for (const role of roles) {
+        // Only auto-assign when enough distinct accepted candidates exist to fill every missing role.
+        // Otherwise preserve candidates for manual review rather than silently making a partial set.
+        const rolesToAttach = unique.length >= roles.length ? roles : [];
+        for (const role of rolesToAttach) {
           const candidate = unique.find((p: any) => !usedUrls.has(p.url));
           if (!candidate) continue;
           const alt = "Photograph of " + destination + (candidate.description ? ": " + candidate.description.slice(0, 150) : "");
@@ -329,7 +335,7 @@ Deno.serve(async (req) => {
         needsAttention++;
       }
     }
-    const result = { startedAt, finishedAt:new Date().toISOString(), batchLimit:1, draftsReviewed:candidates.length, processed, photosAttached, readyForApproval, needsAttention, failures, published:0, tripRecordsChanged:0, status:failures.length ? "completed_with_warnings" : "completed" };
+    const result = { startedAt, finishedAt:new Date().toISOString(), batchLimit:1, draftsReviewed:candidates.length, processed, photosAttached, readyForApprovalTotal:readyForApproval, needsAttention, failures, published:0, tripRecordsChanged:0, status:failures.length ? "completed_with_warnings" : "completed" };
     await supabase.from("roamsonio_admin_audit_log").insert({ action:"editorial_photo_preparation", details:result });
     return json(result);
   } catch (e) {
