@@ -929,35 +929,28 @@ function suggestionSlug(value){
     const type=String(entry.type||"").toLowerCase();
     // Use a few destination-specific searches, not a large batch of broad queries.
     // Broad Commons queries return unrelated scans, geology close-ups and generic travel files.
-    const photoSearchMap=[
-      [/hawaii|kauai|maui/i,["Na Pali Coast Kauai panorama","Waimea Canyon Kauai panorama","Haleakala National Park Maui summit landscape"]],
-      [/colorado.*aspens|colorado rockies/i,["Maroon Bells Colorado landscape","Colorado aspen grove mountain landscape","Rocky Mountain National Park Colorado panorama"]],
-      [/canadian rockies/i,["Moraine Lake Canadian Rockies landscape","Lake Louise Banff mountain panorama","Icefields Parkway Canadian Rockies scenery"]],
-      [/banff|lake louise/i,["Moraine Lake Banff landscape","Lake Louise Canadian Rockies panorama","Banff National Park mountain lake"]],
-      [/dolomites/i,["Tre Cime di Lavaredo landscape","Seceda Dolomites panorama","Alpe di Siusi Dolomites scenery"]],
-      [/french alps|chamonix/i,["Chamonix Mont Blanc panorama","Aiguille du Midi French Alps landscape","Annecy French Alps lake mountain"]],
-      [/christmas markets?/i,["Strasbourg Christmas market square","Vienna Christmas market Rathausplatz","Nuremberg Christmas market old town"]],
-      [/kyoto/i,["Kyoto temple garden landscape","Kyoto Kiyomizu dera scenery","Kyoto Arashiyama bamboo grove"]],
-      [/patagonia/i,["Mount Fitz Roy El Chalten Patagonia panorama","Torres del Paine National Park Patagonia mountains","Perito Moreno Glacier Patagonia landscape","Cerro Torre Patagonia mountain lake"]],
-      [/raja ampat/i,["Raja Ampat island lagoon aerial landscape","Raja Ampat karst islands panorama","Raja Ampat turquoise sea islands"]],
-      [/costa rica|monteverde/i,["Monteverde Costa Rica cloud forest landscape","Costa Rica Arenal volcano panorama","Costa Rica rainforest waterfall landscape"]],
-      [/new orleans/i,["New Orleans French Quarter architecture","New Orleans Jackson Square panorama","New Orleans Garden District historic houses"]],
-      [/savannah/i,["Savannah Georgia historic squares oak trees","Savannah River Street waterfront","Savannah historic district architecture"]],
-      [/oaxaca/i,["Oaxaca historic center architecture","Oaxaca market square Mexico","Oaxaca mountain villages landscape"]],
-      [/cappadocia/i,["Cappadocia fairy chimneys panorama","Cappadocia valley landscape","Cappadocia hot air balloons landscape"]],
-      [/madeira/i,["Madeira levada forest landscape","Madeira coastal cliffs panorama","Madeira mountain landscape"]],
-      [/santorini/i,["Santorini Oia blue domes caldera","Santorini cliffside village panorama","Santorini coastline landscape"]],
-      [/alaska|southcentral alaska/i,["Matanuska Glacier Alaska landscape panorama","Exit Glacier Kenai Fjords National Park Alaska","Portage Glacier Turnagain Arm Alaska landscape","Knik Glacier Chugach Mountains Alaska aerial panorama"]]
-    ];
-    const mapped=photoSearchMap.find(([re])=>re.test(destination+" "+entry.name));
-    // Apply the same multi-query strategy to every destination. Use curated landmark phrases
-    // where available, then destination-specific variants so unmapped places get equal coverage.
+    // One shared destination-photo search strategy for every suggestion.
+    // Do not maintain one-off rules for each destination: infer search language from the
+    // destination, category, activities and trip type, then apply the same editorial filters.
     const activityTerms=String(entry.activities||entry.type||"").split(/[,;|]/).map(x=>x.trim()).filter(Boolean);
+    const category=String(entry.category||"").trim();
+    const type=String(entry.type||"").toLowerCase();
+    const destinationLabel=destination+" "+String(entry.name||"");
+    const context=[category,...activityTerms].filter(Boolean).join(" ");
+    const sceneryTerm=/coast|island|beach|ocean|waterfront|fjord|harbor/i.test(destinationLabel+" "+context)
+      ?"coastal scenery coastline aerial landscape"
+      :/glacier|wildlife|national park|mountain|hiking|outdoor|ski|snow/i.test(destinationLabel+" "+context)
+      ?"glacier mountain national park landscape"
+      :/market|festival|seasonal|christmas/i.test(destinationLabel+" "+context)
+      ?"historic square landmark architecture"
+      :/city|culture|history|architecture|food/i.test(type+" "+context)
+      ?"historic district landmark architecture"
+      :"famous landmark scenic landscape";
     const generatedQueries=[
-      ...(mapped?mapped[1]:[]),
-      destination+" "+(activityTerms[0]||"landscape"),
-      destination+" scenic panorama",
-      (entry.name&&entry.name!==destination?entry.name+" "+destination+" landscape":destination+" famous landmark scenery")
+      destination+" "+context+" "+sceneryTerm,
+      destination+" famous landmark landscape panorama",
+      destination+" iconic scenery aerial view",
+      destination+" national park landmark architecture scenic view"
     ];
     const queries=[...new Set(generatedQueries.map(q=>q.trim()).filter(Boolean))].slice(0,4);
     grid.textContent="Finding a wider range of photo choices for "+destination+"…";
@@ -1024,27 +1017,6 @@ function suggestionSlug(value){
       const adultCaption=/\b(nude|nudity|naked|porn|pornography|erotic|sexually explicit|sexual content|adult content|lingerie|underwear|bikini model|boudoir|onlyfans|xxx|fetish|breasts|genitals|stripper|strip club)\b/i;
       const preferVisual=/\b(landscape|scenic|mountain|mountains|valley|waterfall|lake|forest|ridge|summit|panorama|national park|trail|river|coast|sunrise|sunset|overlook|viewpoint|meadow|alpine|nature|wilderness|beach|island|waterfront|castle|cathedral|bridge|old town|historic|plaza|square|palace|temple|pagoda|harbor|harbour|market|lighthouse|dunes|desert|glacier|fjord|village|skyline|architecture|cityscape|aerial view|street view|garden|bay|cliff|volcano|water|church|fortress|ruins|bamboo grove|caldera|blue domes|river street|historic district|aspen grove)\b/i;
       const genericLocationTerms=new Set(["united","states","america","usa","canada","italy","france","japan","portugal","norway","slovakia","switzerland","spain","morocco","mexico","jordan","georgia","virginia","carolina","oregon","maine","kentucky","colorado","new","south","north","western","central","eastern","southern","alberta","massachusetts","country","coast","island","region","city","town","mountain","mountains","national","park","travel","photography","landscape","scenic","view","famous","places","nature","experience","escape","adventure","journey","route","weekend","winter","summer","fall","spring"]);
-      const specialMatchMap=[
-        [/hawaii|kauai|maui/i,["na pali coast","waimea canyon","haleakala","road to hana","hawaii volcanoes national park","diamond head","kauai coastline","maui coastline"]],
-        [/colorado.*aspens|colorado rockies/i,["maroon bells","rocky mountain national park","aspen grove","colorado rockies"]],
-        [/canadian rockies/i,["moraine lake","lake louise","jasper national park","icefields parkway","peyto lake","banff national park"]],
-        [/banff|lake louise/i,["moraine lake","lake louise","bow lake","banff national park","icefields parkway","peyto lake"]],
-        [/dolomites/i,["tre cime di lavaredo","seceda","alpe di siusi","lago di braies","val di funes"]],
-        [/french alps|chamonix/i,["chamonix","mont blanc","aiguille du midi","mer de glace","annecy"]],
-        [/christmas markets?/i,["strasbourg christmas market","vienna christmas market","prague christmas market","nuremberg christmas market","colmar christmas market"]],
-        [/kyoto/i,["kiyomizu dera","arashiyama","fushimi inari","kyoto temple","kyoto garden"]],
-        [/patagonia/i,["fitz roy","torres del paine","perito moreno glacier","cerro torre","los glaciares national park","laguna de los tres","grey glacier","el chalten"]],
-        [/raja ampat/i,["raja ampat","wayag","piaynemo"]],
-        [/costa rica|monteverde/i,["monteverde","arenal volcano","costa rica rainforest"]],
-        [/new orleans/i,["french quarter","jackson square","garden district","new orleans riverfront"]],
-        [/savannah/i,["savannah historic district","savannah river street","forsyth park","savannah historic square"]],
-        [/oaxaca/i,["oaxaca historic center","santo domingo oaxaca","oaxaca market"]],
-        [/cappadocia/i,["cappadocia fairy chimneys","goreme","cappadocia valley"]],
-        [/madeira/i,["madeira levada","madeira cliffs","pico do arieiro"]],
-        [/santorini/i,["oia","fira","blue dome","caldera","santorini sunset","imerovigli"]],
-        [/alaska|southcentral alaska/i,["matanuska glacier","exit glacier","kenai fjords national park","portage glacier","turnagain arm","knik glacier","chugach mountains","harding icefield","prince william sound"]]
-      ];
-      const special=specialMatchMap.find(([re])=>re.test(destination+" "+entry.name));
       const placeTerms=normPhotoText(destination+" "+entry.name).split(" ").filter(term=>term.length>=4&&!genericLocationTerms.has(term));
       photoCandidates=found.filter(x=>{
         const raw=x.title+" "+x.alt_text+" "+(x._description||"");
@@ -1053,10 +1025,12 @@ function suggestionSlug(value){
         const titleText=normPhotoText(x.title);
         const descriptionText=normPhotoText(x._description||x.alt_text);
         const evidence=titleText+" "+descriptionText;
-        // Broad destinations must match a named landmark in the file title/real description.
-        // Do not use generated alt text or the search query itself as proof of relevance.
-        if(special)return special[1].some(landmark=>evidence.includes(normPhotoText(landmark)));
-        return placeTerms.length>0&&placeTerms.some(term=>evidence.includes(term));
+        // The same evidence rule applies to every destination: require a real destination
+        // term in the file title/description plus a scenic/architectural subject. Never trust
+        // the search query or generated alt text as proof that a file is relevant.
+        const destinationEvidence=placeTerms.some(term=>term.length>=4&&evidence.includes(term));
+        const describedSubject=preferVisual.test(x.title+" "+(x._description||""));
+        return destinationEvidence&&describedSubject;
       }).map((x,i)=>{
         const evidence=normPhotoText(x.title+" "+(x._description||""));
         const match=placeTerms.some(term=>evidence.includes(term));
