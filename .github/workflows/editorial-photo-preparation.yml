@@ -1,10 +1,8 @@
 name: RoamSonio Editorial Photo Preparation
 
 on:
-  # Process queued photo retries automatically in small, sequential batches.
-  # Manual trigger remains available for an immediate run.
-  schedule:
-    - cron: "*/30 * * * *"
+  # Automatic scheduling is temporarily paused while photo matching and queue
+  # behavior are reviewed. Run manually from GitHub Actions when needed.
   workflow_dispatch:
 
 permissions:
@@ -29,9 +27,9 @@ jobs:
             echo "::error::Add the EDITORIAL_JOB_SECRET repository Actions secret."
             exit 1
           fi
-          # Each function invocation now handles one destination with throttled/retried Commons requests.
-          # Repeat sequentially with a longer cooldown to avoid rate-limit bursts.
-          for batch in $(seq 1 15); do
+          # Keep manual test runs bounded while photo matching is under review.
+          # One invocation handles one draft; run at most three sequential batches.
+          for batch in $(seq 1 3); do
             echo "::group::Editorial photo batch $batch of 15"
             response=$(curl --fail-with-body --silent --show-error \
               --request POST \
