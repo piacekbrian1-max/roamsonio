@@ -128,7 +128,7 @@ async function commonsSearch(query: string) {
   // Commons is sensitive to bursts. Space requests even when a previous request succeeded.
   await wait(10000);
   const detailsUrl = new URL("https://commons.wikimedia.org/w/api.php");
-  detailsUrl.search = new URLSearchParams({ action:"query", pageids:hits.map(h=>String(h.pageid)).join("|"), prop:"imageinfo", iiprop:"url|extmetadata", iiurlwidth:"1200", format:"json", origin:"*" }).toString();
+  detailsUrl.search = new URLSearchParams({ action:"query", pageids:hits.map(h=>String(h.pageid)).join("|"), prop:"imageinfo", iiprop:"url|extmetadata|size", iiurlwidth:"1600", format:"json", origin:"*" }).toString();
   const detailsResponse = await commonsRequest(detailsUrl);
   if (!detailsResponse.ok) throw new Error("Wikimedia image details failed (" + detailsResponse.status + ")");
   const detailData = await detailsResponse.json();
@@ -145,13 +145,15 @@ async function commonsSearch(query: string) {
     return {
       pageid: String(p.pageid || ""),
       title,
+      width: Number(info.width || 0),
+      height: Number(info.height || 0),
       url: String(info.thumburl || info.url || ""),
       source_url: "https://commons.wikimedia.org/wiki/" + encodeURIComponent(title.replace(/ /g, "_")),
       credit: [artist, license ? "License: " + license : ""].filter(Boolean).join(" · "),
       license_url: licenseUrl,
       description
     };
-  }).filter((p: any) => p.url.startsWith("https://") && p.source_url.startsWith("https://") && p.credit && p.license_url && p.title && p.description);
+  }).filter((p: any) => p.url.startsWith("https://") && p.source_url.startsWith("https://") && p.credit && p.license_url && p.title && p.description && Math.max(p.width,p.height) >= 1600 && Math.min(p.width,p.height) >= 800);
   await wait(3500);
   return candidates;
 }
@@ -195,15 +197,17 @@ Deno.serve(async (req) => {
       let rows = photoRows || [];
       const roles = ["hero","secondary","mobile"];
       const replaceExisting = entry.metadata?.photo_preparation_force_replace === true;
-      if (roles.every(role => rows.some((p: any) => String(p.role || "").toLowerCase() === role && p.url && p.source_url && p.credit && p.alt_text)) && !replaceExisting) {
+      const requestOptions = entry.metadata?.photo_preparation_options_requested === true;
+      if (roles.every(role => rows.some((p: any) => String(p.role || "").toLowerCase() === role && p.url && p.source_url && p.credit && p.alt_text)) && !replaceExisting && !requestOptions) {
         readyForApproval++;
         continue;
       }
-      candidates.push({ entry, rows, replaceExisting });
+      candidates.push({ entry, rows, replaceExisting, requestOptions });
     }
 
     for (const item of candidates) {
       const entry = item.entry;
+      const requestOptions = item.requestOptions === true;
       const destination = String(entry.build_destination || entry.name || "").trim();
       const name = String(entry.name || "").trim();
       let existingRows = item.rows || [];
@@ -254,7 +258,7 @@ Deno.serve(async (req) => {
           existingRows = freshRows || [];
           alreadyFilled = new Set(existingRows.filter((p: any) => p.url && p.source_url && p.credit && p.alt_text).map((p: any) => String(p.role || "").toLowerCase()));
         }
-        const roles = ["hero","secondary","mobile"].filter(role => !alreadyFilled.has(role));
+        const roles = requestOptions && !item.replaceExisting ? [] : ["hero","secondary","mobile"].filter(role => !alreadyFilled.has(role));
         const usedUrls = new Set(existingRows.map((p: any) => p.url).filter(Boolean));
         let attachedForEntry = 0;
         for (const role of roles) {
@@ -284,6 +288,8 @@ Deno.serve(async (req) => {
         const candidateOptions = unique.slice(0, 9).map((candidate: any) => ({
           title: String(candidate.title || "").replace(/^File:/, ""),
           description: String(candidate.description || "").slice(0, 500),
+          width: Number(candidate.width || 0),
+          height: Number(candidate.height || 0),
           url: String(candidate.url || ""),
           source_url: String(candidate.source_url || ""),
           credit: String(candidate.credit || "") + " · Wikimedia Commons",
@@ -297,6 +303,7 @@ Deno.serve(async (req) => {
           photo_preparation_retry_requested_at: null,
           photo_preparation_source: "Wikimedia Commons",
           photo_preparation_candidates: candidateOptions,
+          photo_preparation_options_requested: false,
           photo_preparation_policy: "magazine-quality destination-specific options; source and license evidence retained; all photos unapproved"
         });
         const { error: updateError } = await supabase.rpc("roamsonio_worker_update_draft_metadata", {
