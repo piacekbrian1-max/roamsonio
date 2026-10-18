@@ -934,7 +934,6 @@ function suggestionSlug(value){
     // destination, category, activities and trip type, then apply the same editorial filters.
     const activityTerms=String(entry.activities||entry.type||"").split(/[,;|]/).map(x=>x.trim()).filter(Boolean);
     const category=String(entry.category||"").trim();
-    const type=String(entry.type||"").toLowerCase();
     const destinationLabel=destination+" "+String(entry.name||"");
     const context=[category,...activityTerms].filter(Boolean).join(" ");
     const sceneryTerm=/coast|island|beach|ocean|waterfront|fjord|harbor/i.test(destinationLabel+" "+context)
