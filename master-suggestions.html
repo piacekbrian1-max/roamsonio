@@ -87,7 +87,7 @@ async function queuePhotoRetry(id,button){
  const x=entries.find(e=>String(e.id)===String(id));if(!x)return;
  if(retryCooldownUntil(x)){say(x.name+" is already queued or recently retried. Please wait "+retryCountdown(retryCooldownUntil(x)-Date.now())+".","");updateRetryTimers();return;}
  button.disabled=true;button.textContent="Queuing…";
- try{await setPhotoRetry(x);renderQueue();renderDetail();updateRetryTimers();say("Queued "+x.name+" for the automatic photo-preparation cycle. Retry is locked for 30 minutes to prevent duplicate pushes.","success");}
+ try{await setPhotoRetry(x);renderQueue();renderDetail();updateRetryTimers();say("Queued "+x.name+" for the next manual photo-preparation run. Automatic processing is paused while photo matching is reviewed. Retry is locked for 30 minutes.","success");}
  catch(e){say("Could not queue "+x.name+": "+(e.message||"Unknown error"),"error");}
  finally{button.disabled=false;button.textContent="Retry photos";}
 }
@@ -100,7 +100,7 @@ $("queueMissingPhotos").addEventListener("click",async()=>{
  button.disabled=true;button.textContent="Queuing…";let queued=0,failed=[];
  for(const x of rows){try{await setPhotoRetry(x);queued++;}catch(e){failed.push(x.name+": "+(e.message||"error"));}}
  renderQueue();renderDetail();
- say("Queued "+queued+" of "+rows.length+" eligible drafts."+(cooling?" Skipped "+cooling+" already queued/in cooldown.":"")+(failed.length?" Some failed: "+failed.slice(0,3).join("; "):" They will be picked up by the automatic photo-preparation cycle."),failed.length?"error":"success");updateRetryTimers();
+ say("Queued "+queued+" of "+rows.length+" eligible drafts."+(cooling?" Skipped "+cooling+" already queued/in cooldown.":"")+(failed.length?" Some failed: "+failed.slice(0,3).join("; "):" Run the photo-preparation workflow manually to process this queue."),failed.length?"error":"success");updateRetryTimers();
  button.disabled=false;button.textContent="Queue missing photos";
 });
 $("signOut").addEventListener("click",async e=>{e.preventDefault();const {error}=await client.auth.signOut({scope:"local"});if(error){say("Sign out failed. Please retry.","error");return;}location.replace("master-admin-login.html");});
