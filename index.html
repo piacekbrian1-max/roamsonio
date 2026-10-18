@@ -348,15 +348,17 @@ function cleanSavedTrips(a){
   return out;
 }
 function loadPersistentTrips(){
-  /* Only render trips returned by the owner-filtered account recovery RPC.
-     Browser copies may enrich a matching server-owned trip, but never create
-     a visible trip on their own. Unlinked legacy copies remain untouched. */
-  if(!document.body.classList.contains("rsAuthenticated")||!accountTripsLoaded)return [];
+  /* Private homepage fallback mirrors My Trips: browser copies may be shown
+     only in an authenticated session. Signed-out visitors never see them.
+     Durable account snapshots take precedence whenever available. */
+  if(!document.body.classList.contains("rsAuthenticated"))return [];
   var local=[];
   try{
     var raw=JSON.parse(localStorage.getItem(KEY)||"[]");
     local=cleanSavedTrips(Array.isArray(raw)?raw:[]);
   }catch(e){local=[]}
+  if(!accountTripsLoaded)return [];
+  if(!accountTripsCache.length)return local;
   function tripIdentity(t){
     t=t||{};
     var name=String(t.name||"").trim().toLowerCase();
