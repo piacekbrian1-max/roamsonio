@@ -281,12 +281,23 @@ Deno.serve(async (req) => {
         if (refreshError) throw refreshError;
         const refreshedRows = refreshed || [];
         const isReady = ["hero","secondary","mobile"].every(role => refreshedRows.some((p: any) => String(p.role || "").toLowerCase() === role && p.url && p.source_url && p.credit && p.alt_text));
+        const candidateOptions = unique.slice(0, 9).map((candidate: any) => ({
+          title: String(candidate.title || "").replace(/^File:/, ""),
+          description: String(candidate.description || "").slice(0, 500),
+          url: String(candidate.url || ""),
+          source_url: String(candidate.source_url || ""),
+          credit: String(candidate.credit || "") + " · Wikimedia Commons",
+          license_url: String(candidate.license_url || ""),
+          alt_text: "Photograph of " + destination + (candidate.description ? ": " + String(candidate.description).slice(0, 150) : ""),
+          score: Number(candidate.match?.score || 0)
+        }));
         const metadata = Object.assign({}, entry.metadata || {}, {
           photo_preparation_status: isReady ? "ready_for_approval" : (attachedForEntry ? "preparing" : "needs_attention"),
           photo_preparation_checked_at: new Date().toISOString(),
           photo_preparation_retry_requested_at: null,
           photo_preparation_source: "Wikimedia Commons",
-          photo_preparation_policy: "strict destination/landmark match; rejects uncertain files; all photos unapproved"
+          photo_preparation_candidates: candidateOptions,
+          photo_preparation_policy: "magazine-quality destination-specific options; source and license evidence retained; all photos unapproved"
         });
         const { error: updateError } = await supabase.rpc("roamsonio_worker_update_draft_metadata", {
           p_id: entry.id, p_metadata: metadata
@@ -311,7 +322,7 @@ Deno.serve(async (req) => {
         needsAttention++;
       }
     }
-    const result = { startedAt, finishedAt:new Date().toISOString(), batchLimit:3, draftsReviewed:candidates.length, processed, photosAttached, readyForApproval, needsAttention, failures, published:0, tripRecordsChanged:0, status:failures.length ? "completed_with_warnings" : "completed" };
+    const result = { startedAt, finishedAt:new Date().toISOString(), batchLimit:1, draftsReviewed:candidates.length, processed, photosAttached, readyForApproval, needsAttention, failures, published:0, tripRecordsChanged:0, status:failures.length ? "completed_with_warnings" : "completed" };
     await supabase.from("roamsonio_admin_audit_log").insert({ action:"editorial_photo_preparation", details:result });
     return json(result);
   } catch (e) {
