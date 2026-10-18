@@ -1010,7 +1010,7 @@ function suggestionSlug(value){
         }catch(err){warnings.push(queries[qi]+": "+(err.message||"request failed"));}
         if(qi<queries.length-1&&found.length<80)await new Promise(resolve=>setTimeout(resolve,1600));
       }
-      const rejectVisual=/\.(pdf|djvu|tif|tiff|svg)\b|\b(scan|book cover|book page|postcard|poster|map of|map showing|brochure|document|manuscript|painting|drawing|illustration|logo|coat of arms|fossil|concretion|mineral specimen|rock specimen|geological sample|geology close up|geology close-up|museum specimen|stereograph|glass negative|lantern slide|portrait|headshot|selfie|group of people|specimen|diagram|chart|flag|close up rock|close-up rock|microscope|thin section|core sample|rock texture|person|people|tourist|tourists|hiker|hikers|family photo|vacation photo|travel selfie|photo of us|our trip|nude|nudity|naked|porn|pornography|erotic|sexually explicit|sexual content|adult content|lingerie|underwear|bikini model|boudoir|onlyfans|xxx|fetish|breasts|genitals|penis|vagina|stripper|strip club)\b/i;
+      const rejectVisual=/\.(pdf|djvu|tif|tiff|svg)\b|\b(scan|book cover|book page|postcard|poster|map of|map showing|brochure|document|manuscript|painting|drawing|illustration|logo|coat of arms|fossil|concretion|mineral specimen|rock specimen|geological sample|geology close up|geology close-up|museum specimen|stereograph|glass negative|lantern slide|portrait|headshot|selfie|group of people|specimen|diagram|chart|flag|close up rock|close-up rock|microscope|thin section|core sample|rock texture|person|people|man|men|woman|women|girl|girls|boy|boys|child|children|tourist|tourists|hiker|hikers|family photo|vacation photo|travel selfie|photo of us|our trip|nude|nudity|naked|porn|pornography|erotic|sexually explicit|sexual content|adult content|lingerie|underwear|bikini model|boudoir|onlyfans|xxx|fetish|breasts|genitals|penis|vagina|stripper|strip club|naturist|nudist|topless|sex act)\b/i;
       const personalCaption=/^File:\s*[A-Z][a-z]{1,24},|^File:\s*[A-Z][a-z]{1,24}\s+(?:and|with)\s+[A-Z][a-z]{1,24}\b|^File:\s*(?:DSC|IMG|PXL|PHOTO|DCIM|WP_\d|VID[_-]?\d|Screenshot|WhatsApp|Snapchat|Facebook|Instagram)[\s_\-\d.]/i;
       const personNameCaption=/^File:\s*[A-Z][a-z]{1,24},\s+.{0,80}\b(?:arch|national park|beach|waterfall|mountain|trail|canyon|lake|landmark)\b/i;
       const adultCaption=/\b(nude|nudity|naked|porn|pornography|erotic|sexually explicit|sexual content|adult content|lingerie|underwear|bikini model|boudoir|onlyfans|xxx|fetish|breasts|genitals|stripper|strip club)\b/i;
@@ -1079,6 +1079,9 @@ function suggestionSlug(value){
   }
   function photoPreview(url){
     const box=document.getElementById("photoPreview"); if(!box)return;
+    const selected=editorialPhotos.find(p=>String(p.id)===String(selectedPhotoId));
+    const safety=selected?photoSafetyIssue(selected):"";
+    if(safety){box.innerHTML="<span style=\"padding:12px;text-align:center;color:#9b352b\">"+esc(safety)+". Replace this image before approval.</span>";return;}
     box.innerHTML=url ? "<img src=\""+esc(url)+"\" alt=\"Photo preview\" onerror=\"this.parentNode.innerHTML='<span>Preview unavailable</span>'\">" : "<span>Photo preview</span>";
   }
   function photoFill(x){
@@ -1099,10 +1102,10 @@ function suggestionSlug(value){
   // Metadata/filename checks help catch unsafe material but do not replace human visual review.
   function photoSafetyIssue(p){
     const text=[p&&p.url,p&&p.source_url,p&&p.alt_text,p&&p.credit,p&&p.title].map(v=>String(v||"")).join(" ").toLowerCase().replace(/[_%+.-]+/g," ");
-    const adult=/\b(nude|nudity|naked|porn|pornography|erotic|sexually explicit|sexual content|adult content|lingerie|underwear|boudoir|onlyfans|xxx|fetish|breasts|genitals|penis|vagina|stripper|strip club|naturist|nudist|topless|sex act)\b/i;
-    const personal=/\b(selfie|portrait|headshot|family photo|vacation photo|travel selfie|photo of us|our trip|people posing|group photo)\b/i;
+    const adult=/\b(nude|nudity|naked|porn|pornography|erotic|sexually explicit|sexual content|adult content|lingerie|underwear|boudoir|onlyfans|xxx|fetish|breasts|genitals|penis|vagina|stripper|strip club|naturist|nudist|topless|sex act|sexually suggestive)\b/i;
+    const people=/\b(person|people|man|men|woman|women|girl|girls|boy|boys|child|children|tourist|tourists|hiker|hikers|model|models|couple|group of people|family photo|vacation photo|travel selfie|selfie|portrait|headshot|people posing|photo of us|our trip)\b/i;
     if(adult.test(text))return "Blocked: adult/nudity-related metadata";
-    if(personal.test(text))return "Blocked: personal-photo metadata";
+    if(people.test(text))return "Blocked: people-focused image metadata";
     return "";
   }
   function photoRender(){
