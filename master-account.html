@@ -924,6 +924,17 @@ function suggestionSlug(value){
     const destination=String(entry.build_destination||entry.buildDestination||entry.name||"").trim();
     if(!destination){box.hidden=false;grid.textContent="Add a destination name before searching for photos.";return;}
     document.getElementById("photoEditor").hidden=false;box.hidden=false;
+    // Use the worker's saved results first so the background process and Studio share candidates.
+    const prepared=Array.isArray(entry.metadata?.photo_preparation_candidates)?entry.metadata.photo_preparation_candidates:[];
+    if(prepared.length){
+      photoCandidates=prepared.filter(x=>x&&typeof x.url==="string"&&x.url.startsWith("https://")&&x.source_url&&x.credit&&x.license_url&&!photoSafetyIssue(x));
+      if(photoCandidates.length){
+        grid.innerHTML=photoCandidates.map((x,i)=>"<button type='button' class='photoCandidate' data-index='"+i+"'><img src='"+esc(x.url)+"' alt='"+esc(x.alt_text||x.title||destination)+"' loading='lazy'><small>"+esc(x.title||"Destination photograph")+"<br>"+esc(x.credit)+"</small></button>").join("");
+        grid.querySelectorAll(".photoCandidate").forEach(b=>{const img=b.querySelector("img");img.addEventListener("error",()=>{img.alt="Image unavailable — choose another candidate";img.style.background="#eef1f4";});b.addEventListener("click",()=>photoUseCandidate(photoCandidates[Number(b.dataset.index)]));});
+        photoSetStatus("Showing "+photoCandidates.length+" saved candidates from the shared photo-preparation worker for "+destination+". Visually review every image and its source before saving; none is approved automatically.");
+        return;
+      }
+    }
     const activities=Array.isArray(entry.activities)?entry.activities.join(" "):String(entry.activities||"");
     const activity=(activities.split(/[,;|]/)[0]||entry.type||"travel").trim();
     const type=String(entry.type||"").toLowerCase();
