@@ -264,9 +264,10 @@ Deno.serve(async (req) => {
         const roles = ["hero","secondary","mobile"].filter(role => !alreadyFilled.has(role));
         const usedUrls = new Set(existingRows.map((p: any) => p.url).filter(Boolean));
         let attachedForEntry = 0;
-        // Only auto-assign when enough distinct accepted candidates exist to fill every missing role.
-        // Otherwise preserve candidates for manual review rather than silently making a partial set.
-        const rolesToAttach = unique.length >= roles.length ? roles : [];
+        // Attach every accepted, distinct candidate that can safely fill a missing role.
+        // A partial set is still useful: the draft remains unapproved and is flagged for review
+        // until Hero, Secondary, and Mobile are all present. Keep all remaining candidates in metadata.
+        const rolesToAttach = unique.length > 0 ? roles.slice(0, Math.min(unique.length, roles.length)) : [];
         for (const role of rolesToAttach) {
           const candidate = unique.find((p: any) => !usedUrls.has(p.url));
           if (!candidate) continue;
