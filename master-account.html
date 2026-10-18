@@ -946,7 +946,8 @@ function suggestionSlug(value){
       [/oaxaca/i,["Oaxaca historic center architecture","Oaxaca market square Mexico","Oaxaca mountain villages landscape"]],
       [/cappadocia/i,["Cappadocia fairy chimneys panorama","Cappadocia valley landscape","Cappadocia hot air balloons landscape"]],
       [/madeira/i,["Madeira levada forest landscape","Madeira coastal cliffs panorama","Madeira mountain landscape"]],
-      [/santorini/i,["Santorini Oia blue domes caldera","Santorini cliffside village panorama","Santorini coastline landscape"]]
+      [/santorini/i,["Santorini Oia blue domes caldera","Santorini cliffside village panorama","Santorini coastline landscape"]],
+      [/alaska|southcentral alaska/i,["Matanuska Glacier Alaska landscape panorama","Exit Glacier Kenai Fjords National Park Alaska","Portage Glacier Turnagain Arm Alaska landscape","Knik Glacier Chugach Mountains Alaska aerial panorama"]]
     ];
     const mapped=photoSearchMap.find(([re])=>re.test(destination+" "+entry.name));
     // Apply the same multi-query strategy to every destination. Use curated landmark phrases
@@ -1040,7 +1041,8 @@ function suggestionSlug(value){
         [/oaxaca/i,["oaxaca historic center","santo domingo oaxaca","oaxaca market"]],
         [/cappadocia/i,["cappadocia fairy chimneys","goreme","cappadocia valley"]],
         [/madeira/i,["madeira levada","madeira cliffs","pico do arieiro"]],
-        [/santorini/i,["oia","fira","blue dome","caldera","santorini sunset","imerovigli"]]
+        [/santorini/i,["oia","fira","blue dome","caldera","santorini sunset","imerovigli"]],
+        [/alaska|southcentral alaska/i,["matanuska glacier","exit glacier","kenai fjords national park","portage glacier","turnagain arm","knik glacier","chugach mountains","harding icefield","prince william sound"]]
       ];
       const special=specialMatchMap.find(([re])=>re.test(destination+" "+entry.name));
       const placeTerms=normPhotoText(destination+" "+entry.name).split(" ").filter(term=>term.length>=4&&!genericLocationTerms.has(term));
