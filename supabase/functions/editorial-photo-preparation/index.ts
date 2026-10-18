@@ -102,7 +102,7 @@ function relevance(item: any, destination: string, name: string) {
   const destinationSpecific = specialDestination ? iconicHit : meaningfulPlaceHits.length >= 1;
   const queryMatches = queryHits.length > 0 || descQueryHits.length >= 1 || meaningfulPlaceHits.length >= 1;
   const score = queryHits.length * 3 + descQueryHits.length * 2 + placeHits.length * 3 + (iconicHit ? 12 : 0) + (visual ? 8 : 0);
-  return { ok: destinationSpecific && queryMatches && visual, score };
+  return { ok: destinationSpecific && queryMatches && (visual || iconicHit), score };
 }
 async function commonsRequest(url: URL) {
   const headers = { "User-Agent": "RoamSonioPhotoPreparation/1.0 (destination-specific editorial review)" };
