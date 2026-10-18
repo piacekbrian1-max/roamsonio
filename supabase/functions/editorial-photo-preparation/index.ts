@@ -61,7 +61,9 @@ function relevance(item: any, destination: string, name: string) {
   const scenicWords = ["landscape","coast","coastal","beach","waterfall","volcano","crater","lava","ocean","sea","island","mountain","cliff","valley","forest","tropical","lagoon","reef","sunset","sunrise","panorama","scenic","national park","bay","shore","canyon","ridge","viewpoint","castle","cathedral","church","bridge","old town","historic center","plaza","square","palace","temple","pagoda","monastery","harbor","harbour","lake","waterfront","ski resort","alpine","market square","christmas market","lighthouse","dunes","desert","glacier","fjord"];
   const visual = scenicWords.some(t => combined.includes(norm(t)));
   const blockedWords = ["plaque","inscription","memorial marker","commemorative tablet","information board","museum label","document","manuscript","book page","stamp","postcard","painting","drawing","illustration","logo","coat of arms","fossil","mineral specimen","rock specimen","geological sample","geology close up","geology close-up","close up rock","close-up rock","microscope","thin section","core sample","hotel room","office tower","construction site","parking lot","license plate"];
-  if (blockedWords.some(t => combined.includes(norm(t))) || !visual) return { ok: false, score: 0 };
+  // Exclude clearly unsuitable files immediately, but do not reject an exact landmark
+  // merely because its caption lacks a generic visual word such as "landscape".
+  if (blockedWords.some(t => combined.includes(norm(t)))) return { ok: false, score: 0 };
   const label = norm(destination + " " + name);
   const iconic: Record<string, string[]> = {
     hawaii: ["na pali coast","waimea canyon","haleakala","road to hana","hawaii volcanoes national park","diamond head"],
@@ -87,6 +89,9 @@ function relevance(item: any, destination: string, name: string) {
   let iconicHit = false;
   for (const [key, values] of Object.entries(iconic)) if (label.includes(key) && values.some(t => combined.includes(norm(t)))) iconicHit = true;
   const specialDestination = /hawaii|colorado.*aspens|canadian rockies|banff|lake louise|dolomites|french alps|chamonix|christmas markets?|kyoto|patagonia|raja ampat|costa rica|monteverde|new orleans|savannah|oaxaca|cappadocia|madeira|santorini/i.test(destination + " " + name);
+  // An exact known landmark is itself visual evidence; otherwise require descriptive evidence
+  // that the file is a place photograph, rather than accepting a generic destination tag.
+  if (!visual && !iconicHit) return { ok: false, score: 0 };
   // A matching search phrase is not proof of relevance: Commons may return neighboring or loosely tagged files.
   // Require a recognizable destination landmark for broad/ambiguous destinations; otherwise require two meaningful
   // destination words in the file's own title/description. If metadata cannot prove relevance, reject the image.
@@ -215,8 +220,7 @@ Deno.serve(async (req) => {
         const queries = [
           ...(aliases.length ? [aliases[0] + " landscape"] : []),
           basePlace + " landscape",
-          basePlace + " scenic panorama",
-          name + " " + (activityText[0] || "scenery")
+          name + " " + (activityText[0] || "landmark photograph")
         ].filter((query: string, index: number, all: string[]) => query && all.indexOf(query) === index).slice(0, 3);
         const results: any[] = [];
         for (const query of [...new Set(queries)]) {
