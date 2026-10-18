@@ -824,7 +824,7 @@ if(masterSignOutLink){
     if(!current){edSetStatus("Save and reload this draft before approving it.");return;}
     const roles=["hero","secondary","mobile"];
     const set=roles.map(role=>editorialPhotos.find(p=>String(p.role||"").toLowerCase()===role));
-    if(set.some(p=>!p||!p.id||!p.url||!String(p.url).toLowerCase().startsWith("https://")||!p.source_url||!String(p.source_url).toLowerCase().startsWith("https://")||!p.credit||!p.alt_text)){
+    if(set.some(p=>!p||!p.id||!p.url||!String(p.url).toLowerCase().startsWith("https://")||!p.source_url||!String(p.source_url).toLowerCase().startsWith("https://")||!p.credit||!p.alt_text||photoSafetyIssue(p))){
       edSetStatus("Approval stopped: this draft needs all three HTTPS images, each with source URL, credit and alt text. No changes were published.");return;
     }
     if(!confirm("Approve the draft and its reviewed Hero, Secondary and Mobile images, then publish "+entry.name+" to Explore? This does not modify any saved trips."))return;
@@ -1020,7 +1020,7 @@ function suggestionSlug(value){
       photoCandidates=found.filter(x=>{
         const raw=x.title+" "+x.alt_text+" "+(x._description||"");
         // Editorial gallery: exclude personal/trip photos and low-resolution files even if their caption mentions the landmark.
-        if(rejectVisual.test(raw)||adultCaption.test(raw)||personalCaption.test(x.title)||personNameCaption.test(x.title)||!preferVisual.test(raw)||Math.max(x.width||0,x.height||0)<2000||Math.min(x.width||0,x.height||0)<1000)return false;
+        if(rejectVisual.test(raw)||adultCaption.test(raw)||personalCaption.test(x.title)||personNameCaption.test(x.title)||!preferVisual.test(raw)||Math.max(x.width||0,x.height||0)<1600||Math.min(x.width||0,x.height||0)<800)return false;
         const titleText=normPhotoText(x.title);
         const descriptionText=normPhotoText(x._description||x.alt_text);
         const evidence=titleText+" "+descriptionText;
@@ -1095,13 +1095,24 @@ function suggestionSlug(value){
     photoPreview(x.url||"");
     document.querySelectorAll(".photoItem").forEach(b=>b.classList.toggle("active",String(b.dataset.id)===String(selectedPhotoId)));
   }
+  // Shared safety gate for saved photos, candidate previews, and approval actions.
+  // Metadata/filename checks help catch unsafe material but do not replace human visual review.
+  function photoSafetyIssue(p){
+    const text=[p&&p.url,p&&p.source_url,p&&p.alt_text,p&&p.credit,p&&p.title].map(v=>String(v||"")).join(" ").toLowerCase().replace(/[_%+.-]+/g," ");
+    const adult=/\b(nude|nudity|naked|porn|pornography|erotic|sexually explicit|sexual content|adult content|lingerie|underwear|boudoir|onlyfans|xxx|fetish|breasts|genitals|penis|vagina|stripper|strip club|naturist|nudist|topless|sex act)\b/i;
+    const personal=/\b(selfie|portrait|headshot|family photo|vacation photo|travel selfie|photo of us|our trip|people posing|group photo)\b/i;
+    if(adult.test(text))return "Blocked: adult/nudity-related metadata";
+    if(personal.test(text))return "Blocked: personal-photo metadata";
+    return "";
+  }
   function photoRender(){
     const list=document.getElementById("photoList");list.innerHTML="";
     const roles=["hero","secondary","mobile"];
     const roleRows=roles.map(role=>editorialPhotos.find(p=>String(p.role||"").toLowerCase()===role));
     const complete=roleRows.every(Boolean);
     const metadataReady=complete&&roleRows.every(p=>p.url&&p.source_url&&p.credit&&p.alt_text);
-    const allApproved=complete&&roleRows.every(p=>p.approved===true);
+    const safetyIssues=roleRows.filter(Boolean).filter(p=>photoSafetyIssue(p));
+    const allApproved=complete&&roleRows.every(p=>p.approved===true)&&!safetyIssues.length;
     const approveBtn=document.getElementById("approvePhotoSetBtn");
     approveBtn.disabled=!metadataReady||allApproved||!selectedEditorialId;
     approveBtn.textContent=allApproved?"Complete Set Approved":"Approve Complete Set";
@@ -1109,8 +1120,9 @@ function suggestionSlug(value){
     if(!editorialPhotos.length){list.innerHTML='<div class="row"><span>No photography added yet. Add Hero, Secondary and Mobile images.</span></div>';return;}
     roles.forEach((role,i)=>{
       const p=roleRows[i],b=document.createElement("button");b.type="button";b.className="photoItem";
-      b.innerHTML="<strong>"+role+"</strong><small>"+(p?(p.approved?"✓ Approved":"Needs approval")+" · "+esc(p.credit||"Credit missing")+(p.source_url?"":" · Source missing"):"Missing image")+"</small>";
-      if(p){b.dataset.id=p.id;b.onclick=()=>photoFill(p);}else{b.disabled=true;b.style.opacity=".6";}
+      const safety=p?photoSafetyIssue(p):"";
+      b.innerHTML="<strong>"+role+"</strong><small>"+(p?(safety?"⚠ "+esc(safety):p.approved?"✓ Approved":"Needs approval")+" · "+esc(p.credit||"Credit missing")+(p.source_url?"":" · Source missing"):"Missing image")+"</small>";
+      if(p){b.dataset.id=p.id;b.onclick=()=>photoFill(p);if(safety)b.style.borderColor="#B44739";}else{b.disabled=true;b.style.opacity=".6";}
       list.appendChild(b);
     });
     editorialPhotos.filter(p=>!roles.includes(String(p.role||"").toLowerCase())).forEach(p=>{
@@ -1119,7 +1131,7 @@ function suggestionSlug(value){
       b.onclick=()=>photoFill(p);list.appendChild(b);
     });
     const note=document.createElement("div");note.className="editorialStatus";
-    note.textContent=allApproved?"All three image roles are approved.":!complete?"Set incomplete: add the missing roles.":!metadataReady?"Set needs review: each image needs source URL, credit and alt text.":"Complete set ready for one-click approval.";
+    note.textContent=safetyIssues.length?"Safety hold: "+safetyIssues.length+" photo(s) match adult/personal-content metadata. Replace them before approval.":allApproved?"All three image roles are approved.":!complete?"Set incomplete: add the missing roles.":!metadataReady?"Set needs review: each image needs source URL, credit and alt text.":"Complete set ready for one-click approval.";
     list.appendChild(note);
   }
   async function photoLoad(){
@@ -1137,6 +1149,7 @@ function suggestionSlug(value){
   async function photoSave(){
     if(!selectedEditorialId){photoSetStatus("Select an editorial destination first.");return;}
     const x=photoReadForm(); if(!x.url){photoSetStatus("Photo URL is required.");return;}
+    const safety=photoSafetyIssue(x);if(safety){photoSetStatus(safety+". Choose a different destination image; this photo was not saved.");return;}
     try{
       const {data,error}=await client.rpc("roamsonio_admin_upsert_editorial_photo",{
         p_photo_id:selectedPhotoId,p_destination_id:selectedEditorialId,p_url:x.url,p_alt_text:x.alt_text,
