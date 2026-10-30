@@ -515,4 +515,43 @@ if(qs.get("inspiration")&&suggestedDestination){setTimeout(function(){try{buildL
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initPersistentNav);else initPersistentNav();
 })();
-</script></body></html>
+</script>
+<script>
+/* ROAMSONIO_BUILDER_DIAGNOSTICS_V1: make Build My Trip failures visible instead of silently doing nothing. */
+(function () {
+  function installBuilderDiagnostics() {
+    var button = document.querySelector('button[onclick="buildTrip()"]');
+    var status = document.getElementById("status");
+    if (!button || !status) return;
+    button.onclick = async function () {
+      status.textContent = "Starting the trip builder…";
+      button.disabled = true;
+      try {
+        if (typeof window.buildTrip !== "function") {
+          status.textContent = "The trip builder did not finish loading. Please refresh this page and try again. If this message returns, the builder needs a code fix.";
+          console.error("ROAMSONIO_BUILDER_DIAGNOSTICS_V1: window.buildTrip is not available.");
+          return;
+        }
+        await window.buildTrip();
+      } catch (error) {
+        console.error("ROAMSONIO_BUILDER_DIAGNOSTICS_V1: Build My Trip failed.", error);
+        status.textContent = "The trip builder hit an error: " + (error && error.message ? error.message : "unknown error") + ". Your trip has not been confirmed as saved.";
+      } finally {
+        button.disabled = false;
+      }
+    };
+    window.addEventListener("unhandledrejection", function (event) {
+      console.error("ROAMSONIO_BUILDER_DIAGNOSTICS_V1: unhandled promise rejection.", event.reason);
+      if (status && /Starting the trip builder|Identifying your destination|Building destination knowledge|Loading Editorial Library knowledge|Saving your RoamSonio trip/.test(status.textContent)) {
+        status.textContent = "The trip builder stopped because a background step failed. Please try again later; your trip has not been confirmed as saved.";
+      }
+    });
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", installBuilderDiagnostics);
+  } else {
+    installBuilderDiagnostics();
+  }
+})();
+</script>
+</body></html>
