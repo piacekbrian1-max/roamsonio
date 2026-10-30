@@ -522,6 +522,13 @@ if(qs.get("inspiration")&&suggestedDestination){setTimeout(function(){try{buildL
   function installBuilderDiagnostics() {
     var button = document.querySelector('button[onclick="buildTrip()"]');
     var status = document.getElementById("status");
+    window.addEventListener("error", function (event) {
+      var message = event && event.message ? event.message : "unknown script error";
+      console.error("ROAMSONIO_BUILDER_DIAGNOSTICS_V2: page script error.", event);
+      if (status && typeof window.buildTrip !== "function") {
+        status.textContent = "The trip builder could not load its code: " + message + ". Please send this message to support.";
+      }
+    });
     if (!button || !status) return;
     button.onclick = async function () {
       status.textContent = "Starting the trip builder…";
