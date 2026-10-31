@@ -243,6 +243,17 @@ weather:"New Orleans January 2027 weather",
 cams:"New Orleans French Quarter webcam",
 resources:["https://www.neworleans.com/plan/january-in-new-orleans/","https://www.neworleans.com/plan/neighborhoods/","https://www.neworleans.com/events/","https://nola.eater.com/maps/neighborhood-restaurant-bars-bakeries-new-orleans-locals-guide"],
 holiday:true};
+if(s.indexOf("montana")>=0||s==="big sky country")return {
+city:"Montana",statewide:true,
+areas:["Glacier National Park & West Glacier","Whitefish & Flathead Valley","Missoula & Bitterroot Valley","Helena & Gates of the Mountains","Bozeman & Gallatin Valley","Yellowstone's Montana gateways","Little Bighorn & southeast Montana"],
+sights:["Going-to-the-Sun Road and Glacier National Park","Lake McDonald and Apgar Village","Whitefish Mountain Resort and downtown Whitefish","Flathead Lake State Park","Missoula's historic downtown and Clark Fork Riverfront","National Bison Range near Moiese","Montana State Capitol and Last Chance Gulch in Helena","Gates of the Mountains boat tour","Museum of the Rockies in Bozeman","Downtown Bozeman and the Museum of the Rockies area","Gardiner and Yellowstone National Park's North Entrance","Lamar Valley wildlife viewing (season and road access permitting)","Little Bighorn Battlefield National Monument","Makoshika State Park near Glendive"],
+food:["Whitefish downtown restaurants","Kalispell and Flathead Valley local restaurants","Missoula downtown cafés and restaurants","Helena's Last Chance Gulch dining","Bozeman Main Street restaurants","Gardiner restaurants near Yellowstone's North Entrance","Billings local restaurants"],
+local:["Whitefish downtown","Flathead Valley farm stands and local markets","Missoula Clark Fork Riverfront","Helena Last Chance Gulch","Bozeman Main Street","Gardiner Yellowstone gateway","Billings downtown"],
+events:"Montana local events calendar",
+weather:"Montana weather by destination and season",
+cams:"Montana Glacier National Park and Yellowstone webcams",
+resources:["https://www.nps.gov/glac/index.htm","https://stateparks.mt.gov/","https://www.nps.gov/yell/","https://www.visitmt.com/"],
+holiday:false};
 return {city:dest,areas:[dest+" historic center","central neighborhood","local market district","arts / culture district","scenic or outdoor area"],sights:["Historic center","Signature landmark","Main museum or cultural site","Local neighborhood walk","Scenic viewpoint or park","Local market or food hall","Signature cultural experience"],food:["Traditional local restaurant","Neighborhood restaurant","Market / casual food stop","Independent café or bakery","Destination dinner","Special-occasion option"],local:["Neighborhood favorite","Local café or bakery","Independent restaurant","Local market","Current events / local calendar"],events:dest+" events",weather:dest+" weather",cams:dest+" live webcam",resources:[],holiday:false}
 }
 /* Generic destination knowledge layer.
@@ -366,6 +377,7 @@ for(var i=0;i<d;i++){
  if(family&&i%2===1)focus="Family-friendly highlight + neighborhood";
  if(evening.indexOf("Nightlife")>=0&&i>0)food=food+" · add a live-music or evening option";
  var note=mobility.indexOf("Easy")>=0?"Keep this day flexible with shorter walking segments and breaks.":energy.indexOf("Easygoing")>=0?"Start later and leave room for cafés, photos and wandering.":pace.indexOf("Relaxed")>=0?"Leave open time for wandering, cafés and unexpected finds.":"Group nearby stops to reduce backtracking.";
+ if(c.statewide)note+=" Montana is a large state: these regions are far apart. Treat this as a route framework, confirm seasonal road access, and plan overnight stays rather than attempting every region as a day trip.";
  if(family)note+=" "+(ages.length?"Use the kids' ages ("+ages.join(", ")+") to fine-tune attraction timing.":"Favor shorter activity blocks and easy breaks.");
  out.push({day:i+1,title:area+" · "+focus,morning:a,afternoon:b,lunch:c.food[(i*2)%c.food.length],dinner:c.food[(i*2+1)%c.food.length],evening:(c.local&&c.local.length?c.local[i%c.local.length]:"Flexible evening · explore the neighborhood"),area:area,note:note})
 }return out}
