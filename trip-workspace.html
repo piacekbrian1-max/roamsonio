@@ -2841,7 +2841,8 @@ var mtTrip=slug([urlDestination,trip.destination,trip.name].concat(trip.destinat
 var mtDates=dates();
 var mtExpected=(isFinite(mtDates.n)&&mtDates.n>0)?mtDates.n:Math.max(1,Number(trip.days)||3);
 var mtHasUsablePlan=Array.isArray(trip.plan)&&trip.plan.length>=mtExpected&&trip.plan.every(function(d){return d&&String(d.morning||"").trim()&&String(d.afternoon||"").trim()&&String(d.evening||"").trim()&&String(d.morning).trim().toLowerCase()!=="a"&&String(d.afternoon).trim().toLowerCase()!=="b"&&String(d.evening).trim().toLowerCase()!=="c"});
-if(mtTrip&&!mtHasUsablePlan){
+var mtOldFallback=Array.isArray(trip.plan)&&trip.plan.some(function(d){return /Montana scenic region|Starter plan|Montana · Day/i.test(String(d&&d.area||"")+" "+String(d&&d.note||"")+" "+String(d&&d.title||""))});
+if(mtTrip&&(!mtHasUsablePlan||mtOldFallback)){
   try{
     if(!isFinite(mtDates.n)||!isFinite(mtDates.a.getTime())||!isFinite(mtDates.b.getTime())){
       var mtStart=new Date();mtStart.setHours(12,0,0,0);
@@ -2870,78 +2871,6 @@ if(mtTrip&&!mtHasUsablePlan){
   }
 }
 renderHeader();renderRoute();renderDestinations();renderPlan();renderGuide();renderEvents();renderWeather();renderCams();renderTravel();renderBudget();renderMemories();renderResources();initEditTripShell();var shareTripButton=document.getElementById("shareTripButton");if(shareTripButton)shareTripButton.href="share-trip.html?id="+encodeURIComponent(trip.id);if(window.rsWorkspaceBootComplete)window.rsWorkspaceBootComplete();
-})();
-</script>
-<script>
-/* Independent Montana itinerary recovery: keep the day cards visible even if the workspace planner fails. */
-(function(){
-  function recoverMontanaItinerary(){
-    try{
-      var params=new URLSearchParams(location.search);
-      var diag=document.getElementById("rsMontanaRecoveryDiag");
-      if(!diag){diag=document.createElement("div");diag.id="rsMontanaRecoveryDiag";diag.style.cssText="position:fixed;z-index:999999;left:8px;right:8px;bottom:8px;padding:10px 12px;background:#102d46;color:#fff;border:2px solid #d4a85a;border-radius:8px;font:12px/1.4 Arial,sans-serif;box-shadow:0 4px 18px #0005";document.body.appendChild(diag)}
-      var diagRoot=document.getElementById("smartPlan");
-      var diagTrips=[];try{diagTrips=JSON.parse(localStorage.getItem("big-thanksgiving-trips-v1")||"[]")}catch(de){}
-      var diagId=params.get("id")||sessionStorage.getItem("openTripId")||"";
-      var diagTrip=diagTrips.find(function(t){return String(t.id)===String(diagId)});
-      diag.textContent="ROAMSONIO DIAGNOSTIC · destination="+(params.get("destination")||"(missing)")+" · container="+(diagRoot?"found":"MISSING")+" · local trip="+(diagTrip?"found":"NOT FOUND")+" · current cards="+(diagRoot?diagRoot.querySelectorAll(".smartDay").length:"n/a")+" · URL="+location.pathname;
-      setTimeout(function(){if(diag&&diag.parentNode)diag.parentNode.removeChild(diag)},60000);
-      var destination=String(params.get("destination")||"").toLowerCase();
-      if(destination.indexOf("montana")<0)return;
-      var root=document.getElementById("smartPlan");
-      if(!root)return;
-      /* Montana recovery intentionally replaces generic/template day cards with destination-specific starter days. */
-      root.style.display="block";root.style.visibility="visible";
-      var key="big-thanksgiving-trips-v1",trips=JSON.parse(localStorage.getItem(key)||"[]");
-      var id=params.get("id")||sessionStorage.getItem("openTripId");
-      var trip=trips.find(function(t){return String(t.id)===String(id)})||trips.find(function(t){return String(t.name||"").toLowerCase().indexOf("montana")>=0||(t.destinations||[]).some(function(d){return String(d).toLowerCase().indexOf("montana")>=0})});
-      var start=trip&&trip.start?new Date(trip.start+"T12:00:00"):new Date();
-      if(!isFinite(start.getTime()))start=new Date();
-      var end=trip&&trip.end?new Date(trip.end+"T12:00:00"):new Date(start);
-      var count=Math.round((end-start)/86400000)+1;
-      if(!isFinite(count)||count<1||count>14)count=5;
-      var ideas=[
-        ["Scenic drive and local coffee","Explore a nearby mountain town","Dinner at a local Montana restaurant"],
-        ["National park or scenic overlook","Short nature trail or visitor center","Sunset viewpoint and relaxed dinner"],
-        ["Historic downtown stroll","Local museum or wildlife center","Regional food and an evening walk"],
-        ["Lake, river, or mountain scenery","Choose a hike or scenic byway","Dinner near your overnight base"],
-        ["Local breakfast or market","Souvenir stop and final viewpoint","Relaxed farewell meal"]
-      ];
-      var plan=[];
-      for(var i=0;i<count;i++){
-        var d=new Date(start);d.setDate(d.getDate()+i);
-        var date=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
-        var a=ideas[i%ideas.length];
-        plan.push({day:i+1,date:date,destination:"Montana",area:"Montana scenic region",title:"Montana · Day "+(i+1),morning:a[0],afternoon:a[1],evening:a[2],lunch:"Local café or casual lunch",dinner:"Montana restaurant near your base",note:"Starter plan — confirm distances, seasonal access and road conditions before travel."});
-      }
-      if(trip){
-        trip.plan=plan;trip.originalPlan=JSON.parse(JSON.stringify(plan));trip.days=plan.length;
-        var idx=trips.findIndex(function(t){return String(t.id)===String(trip.id)});
-        if(idx>=0)trips[idx]=trip;else trips.push(trip);
-        localStorage.setItem(key,JSON.stringify(trips));
-      }
-      root.innerHTML=plan.map(function(d,i){
-        var date=new Date(d.date+"T12:00:00").toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
-        return "<article class='smartDay'><div class='smartDayHead'><div><div class='kicker'>Day "+(i+1)+" · "+date+"</div><h3>"+d.title+"</h3><p>"+d.area+" · starter itinerary</p></div><span class='tag'>Montana plan</span></div><div class='smartSlots'><div class='smartSlot'><div class='time'>Morning</div><h4>"+d.morning+"</h4></div><div class='smartSlot'><div class='time'>Lunch</div><h4>"+d.lunch+"</h4></div><div class='smartSlot'><div class='time'>Afternoon</div><h4>"+d.afternoon+"</h4></div><div class='smartSlot'><div class='time'>Dinner</div><h4>"+d.dinner+"</h4></div><div class='smartSlot'><div class='time'>Evening</div><h4>"+d.evening+"</h4><p>"+d.note+"</p></div></div></article>";
-      }).join("");
-      var explain=document.getElementById("smartExplain");
-      if(explain)explain.textContent="A starter Montana itinerary has been restored. Confirm park access, seasonal road conditions and driving distances before travel.";
-    }catch(e){console.error("Independent Montana itinerary recovery failed:",e)}
-  }
-  /* Retry after the async workspace render so it cannot overwrite Montana day cards. */
-  var rsMontanaAttempts=0;
-  var rsMontanaRetry=setInterval(function(){
-    rsMontanaAttempts++;
-    var p=new URLSearchParams(location.search);
-    if(String(p.get("destination")||"").toLowerCase().indexOf("montana")<0||rsMontanaAttempts>24){clearInterval(rsMontanaRetry);return;}
-    try{
-      var r=document.getElementById("smartPlan");
-      if(r&&Array.prototype.some.call(r.querySelectorAll(".smartDay .tag"),function(t){return /Montana plan/i.test(t.textContent)})){clearInterval(rsMontanaRetry);return;}
-    }catch(e){}
-    recoverMontanaItinerary();
-  },1000);
-  setTimeout(recoverMontanaItinerary,1800);
-  setTimeout(recoverMontanaItinerary,5000);
 })();
 </script>
 </body></html>
