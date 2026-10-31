@@ -1334,12 +1334,8 @@ try{var opts=Object.assign({},options||{});if(ctl)opts.signal=ctl.signal;var res
 finally{if(timer)clearTimeout(timer)}
 }
 async function worldPlannerOverpass(query){
-var endpoints=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"],last;
-for(var i=0;i<endpoints.length;i++){
-try{return await worldPlannerFetchJson(endpoints[i],{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:"data="+encodeURIComponent(query)},9000)}
-catch(e){last=e}
-}
-throw last||Error("Place discovery unavailable");
+var endpoints=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
+return await Promise.any(endpoints.map(function(endpoint){return worldPlannerFetchJson(endpoint,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:"data="+encodeURIComponent(query)},7000)}));
 }
 async function worldPlannerResolve(place){
 var rows=await worldPlannerFetchJson("https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&q="+encodeURIComponent(place),{headers:{"Accept-Language":"en"}},8000);
@@ -1413,9 +1409,9 @@ if(!hubs.length)hubs=[{name:place.name,lat:place.lat,lon:place.lon}];
 for(var i=0;i<dayCount;i++){
 var hub=hubs[i%hubs.length],items;
 try{items=await worldPlannerNearby(hub)}catch(e){items=[]}
-var used=usedPlaces,attraction=worldPlannerPick(items,/attraction|museum|gallery|viewpoint|zoo|aquarium|theme park|artwork|historic|park|nature reserve|garden|peak|waterfall|beach|cave|hot spring|place/.test.bind(/attraction|museum|gallery|viewpoint|zoo|aquarium|theme park|artwork|historic|park|nature reserve|garden|peak|waterfall|beach|cave|hot spring|place/),used);
-var culture=worldPlannerPick(items,/museum|gallery|historic|theatre|arts centre|artwork/.test.bind(/museum|gallery|historic|theatre|arts centre|artwork/),used.concat(attraction?[worldPlannerSlug(attraction.name)]:[]));
-var outdoor=worldPlannerPick(items,/park|nature reserve|garden|viewpoint|peak|waterfall|beach|hot spring|attraction/.test.bind(/park|nature reserve|garden|viewpoint|peak|waterfall|beach|hot spring|attraction/),used.concat(attraction?[worldPlannerSlug(attraction.name)]:[]).concat(culture?[worldPlannerSlug(culture.name)]:[]));
+var used=usedPlaces,attraction=worldPlannerPick(items,{test:function(s){return /attraction|museum|gallery|viewpoint|zoo|aquarium|theme park|artwork|historic|park|nature reserve|garden|peak|waterfall|beach|cave|hot spring|place/.test(s)}},used);
+var culture=worldPlannerPick(items,{test:function(s){return /museum|gallery|historic|theatre|arts centre|artwork/.test(s)}},used.concat(attraction?[worldPlannerSlug(attraction.name)]:[]));
+var outdoor=worldPlannerPick(items,{test:function(s){return /park|nature reserve|garden|viewpoint|peak|waterfall|beach|hot spring|attraction/.test(s)}},used.concat(attraction?[worldPlannerSlug(attraction.name)]:[]).concat(culture?[worldPlannerSlug(culture.name)]:[]));
 var restaurants=items.filter(function(x){return /restaurant|cafe/.test(x.kind)}),food=restaurants[0],dinner=restaurants.filter(function(x){return x!==food})[0];
 if(attraction)usedPlaces.push(worldPlannerSlug(attraction.name));if(culture)usedPlaces.push(worldPlannerSlug(culture.name));if(outdoor)usedPlaces.push(worldPlannerSlug(outdoor.name));
 function label(x,fallback){return x?x.name+" ("+x.distance.toFixed(1)+" km from "+hub.name+")":fallback}
