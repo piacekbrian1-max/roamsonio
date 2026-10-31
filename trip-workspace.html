@@ -2772,7 +2772,7 @@ if(slug(d).indexOf("new orleans")>=0){rs[0]=["New Orleans & Company","https://ww
 e.innerHTML="";for(var i=0;i<rs.length;i++){var a=document.createElement("a");a.className="link";a.target="_blank";a.href=rs[i][1];a.innerHTML="<b>"+esc(rs[i][0])+"</b><small>Open resource</small>";e.appendChild(a)}}
 
 ensureRoamsonioFramework();ensureOriginalPlan();
-var mtTrip=slug(urlDestination||((trip.destinations||[])[0]||""))==="montana";
+var mtTrip=slug([urlDestination,trip.destination,trip.name].concat(trip.destinations||[]).filter(Boolean).join(" ")).indexOf("montana")>=0;
 var mtDates=dates();
 var mtExpected=(isFinite(mtDates.n)&&mtDates.n>0)?mtDates.n:Math.max(1,Number(trip.days)||3);
 var mtHasUsablePlan=Array.isArray(trip.plan)&&trip.plan.length>=mtExpected&&trip.plan.every(function(d){return d&&String(d.morning||"").trim()&&String(d.afternoon||"").trim()&&String(d.evening||"").trim()&&String(d.morning).trim().toLowerCase()!=="a"&&String(d.afternoon).trim().toLowerCase()!=="b"&&String(d.evening).trim().toLowerCase()!=="c"});
