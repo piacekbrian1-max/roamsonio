@@ -2860,6 +2860,18 @@ renderHeader();renderRoute();renderDestinations();renderPlan();renderGuide();ren
       if(explain)explain.textContent="A starter Montana itinerary has been restored. Confirm park access, seasonal road conditions and driving distances before travel.";
     }catch(e){console.error("Independent Montana itinerary recovery failed:",e)}
   }
+  /* Retry after the async workspace render so it cannot overwrite Montana day cards. */
+  var rsMontanaAttempts=0;
+  var rsMontanaRetry=setInterval(function(){
+    rsMontanaAttempts++;
+    var p=new URLSearchParams(location.search);
+    if(String(p.get("destination")||"").toLowerCase().indexOf("montana")<0||rsMontanaAttempts>24){clearInterval(rsMontanaRetry);return;}
+    try{
+      var r=document.getElementById("smartPlan");
+      if(r&&Array.prototype.some.call(r.querySelectorAll(".smartDay .tag"),function(t){return /Montana plan/i.test(t.textContent)})){clearInterval(rsMontanaRetry);return;}
+    }catch(e){}
+    recoverMontanaItinerary();
+  },1000);
   setTimeout(recoverMontanaItinerary,1800);
   setTimeout(recoverMontanaItinerary,5000);
 })();
