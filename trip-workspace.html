@@ -1322,9 +1322,129 @@ function ensureOriginalPlan(){
   /* A missing original plan is data to recover, not permission to generate and save over it. */
   return Array.isArray(trip.originalPlan)?trip.originalPlan:[];
 }
-function buildSmartPlan(){
-var plan=makeOriginalPlan();
-trip.plan=clonePlan(plan);trip.originalPlan=clonePlan(plan);trip.homeBase=baseLabel();trip.days=plan.length;trip.smartVersion=2;save();renderPlan();document.getElementById("smartExplain").textContent="Rebuilt "+plan.length+" days around "+trip.homeBase+". Each day now has a geographic area, three time blocks, interest matching and date-specific event checks.";
+function worldPlannerSlug(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g," ").trim()}
+function worldPlannerDistance(a,b){
+var r=6371,rad=Math.PI/180,dLat=(b.lat-a.lat)*rad,dLon=(b.lon-a.lon)*rad;
+var q=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(a.lat*rad)*Math.cos(b.lat*rad)*Math.sin(dLon/2)*Math.sin(dLon/2);
+return 2*r*Math.atan2(Math.sqrt(q),Math.sqrt(Math.max(0,1-q)));
+}
+async function worldPlannerFetchJson(url,options,timeoutMs){
+var ctl=typeof AbortController!=="undefined"?new AbortController():null,timer=ctl?setTimeout(function(){ctl.abort()},timeoutMs||7000):null;
+try{var opts=Object.assign({},options||{});if(ctl)opts.signal=ctl.signal;var res=await fetch(url,opts);if(!res.ok)throw Error("Travel data source returned "+res.status);return await res.json()}
+finally{if(timer)clearTimeout(timer)}
+}
+async function worldPlannerOverpass(query){
+var endpoints=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"],last;
+for(var i=0;i<endpoints.length;i++){
+try{return await worldPlannerFetchJson(endpoints[i],{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:"data="+encodeURIComponent(query)},9000)}
+catch(e){last=e}
+}
+throw last||Error("Place discovery unavailable");
+}
+async function worldPlannerResolve(place){
+var rows=await worldPlannerFetchJson("https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&q="+encodeURIComponent(place),{headers:{"Accept-Language":"en"}},8000);
+if(!Array.isArray(rows)||!rows.length)throw Error("Could not resolve the destination name");
+var norm=worldPlannerSlug(place),best=rows.slice().sort(function(a,b){
+function score(x){var n=worldPlannerSlug(x.name||x.display_name||"");return (n===norm?12:0)+(n.indexOf(norm)>=0||norm.indexOf(n)>=0?5:0)+(["state","region","country","county","province","island","archipelago"].indexOf(String(x.addresstype||"").toLowerCase())>=0?2:0)}
+return score(b)-score(a)
+})[0];
+var bb=(best.boundingbox||[]).map(Number);
+return {name:best.name||place,displayName:best.display_name||place,lat:Number(best.lat),lon:Number(best.lon),osmType:best.osm_type,osmId:Number(best.osm_id),type:best.type||"",category:best.category||"",addressType:best.addresstype||"",bbox:bb.length===4?{south:bb[0],north:bb[1],west:bb[2],east:bb[3]}:null};
+}
+function worldPlannerIsBroad(place){
+var t=String(place.addressType||"").toLowerCase(),b=place.bbox;
+if(/country|state|region|province|county|island|archipelago|territory|administrative/.test(t))return true;
+if(b&&((Math.abs(b.north-b.south)>1.25)||(Math.abs(b.east-b.west)>1.8)))return true;
+return false;
+}
+async function worldPlannerHubs(place,days){
+var b=place.bbox;if(!b) return [{name:place.name,lat:place.lat,lon:place.lon}];
+var query='[out:json][timeout:12];(node["place"~"city|town"]( '+b.south+','+b.west+','+b.north+','+b.east+' ););out tags center;';
+var data=await worldPlannerOverpass(query),seen={},hubs=(data.elements||[]).map(function(e){
+var t=e.tags||{},lat=Number(e.lat||(e.center&&e.center.lat)),lon=Number(e.lon||(e.center&&e.center.lon)),name=t["name:en"]||t.int_name||t.name;
+if(!name||!isFinite(lat)||!isFinite(lon))return null;
+var key=worldPlannerSlug(name);if(seen[key])return null;seen[key]=1;
+return {name:name,lat:lat,lon:lon,population:Number(String(t.population||"").replace(/[^\d]/g,""))||0,placeType:t.place||"town"};
+}).filter(Boolean);
+if(!hubs.length)return [{name:place.name,lat:place.lat,lon:place.lon}];
+hubs.sort(function(a,b){return b.population-a.population});
+var chosen=[hubs[0]],limit=Math.max(1,Math.min(days,10));
+while(chosen.length<limit&&chosen.length<hubs.length){
+var best=null,bestScore=-1;
+for(var i=0;i<hubs.length;i++){
+var candidate=hubs[i];if(chosen.some(function(x){return worldPlannerSlug(x.name)===worldPlannerSlug(candidate.name)}))continue;
+var nearest=Math.min.apply(null,chosen.map(function(x){return worldPlannerDistance(x,candidate)}));
+var popBoost=Math.min(100,Math.log10(candidate.population+1)*12);
+var score=nearest+popBoost;
+if(score>bestScore){bestScore=score;best=candidate}
+}
+if(!best)break;chosen.push(best)
+}
+return chosen;
+}
+async function worldPlannerNearby(hub){
+var lat=hub.lat,lon=hub.lon,around=18000;
+var query='[out:json][timeout:10];('+
+'nwr["tourism"~"attraction|museum|gallery|viewpoint|zoo|aquarium|theme_park|artwork"](around:'+around+','+lat+','+lon+');'+
+'nwr["historic"](around:'+around+','+lat+','+lon+');'+
+'nwr["leisure"~"park|nature_reserve|garden"](around:'+around+','+lat+','+lon+');'+
+'nwr["natural"~"peak|waterfall|beach|cave|hot_spring"](around:'+around+','+lat+','+lon+');'+
+'nwr["amenity"~"restaurant|cafe|theatre|arts_centre"](around:'+around+','+lat+','+lon+');'+
+');out center tags;';
+var data=await worldPlannerOverpass(query),seen={},items=(data.elements||[]).map(function(e){
+var t=e.tags||{},name=t["name:en"]||t["official_name:en"]||t.int_name||t.name;
+var p={lat:Number(e.lat||(e.center&&e.center.lat)),lon:Number(e.lon||(e.center&&e.center.lon))};
+if(!name||!isFinite(p.lat)||!isFinite(p.lon))return null;
+var kind=t.tourism||t.historic||t.leisure||t.natural||t.amenity||"place",key=worldPlannerSlug(name);
+if(seen[key])return null;seen[key]=1;
+return {name:name,kind:String(kind).replace(/_/g," "),lat:p.lat,lon:p.lon,distance:worldPlannerDistance(hub,p),cuisine:t.cuisine||"",openingHours:t.opening_hours||"",website:t.website||t["contact:website"]||"",wikidata:t.wikidata||"",maps:"https://www.google.com/maps/search/"+encodeURIComponent(name+" "+hub.name)};
+}).filter(Boolean);
+items.sort(function(a,b){return a.distance-b.distance});
+return items;
+}
+function worldPlannerPick(items,pattern,used){
+var choices=items.filter(function(x){return pattern.test(x.kind)&&used.indexOf(worldPlannerSlug(x.name))<0});
+if(!choices.length)choices=items.filter(function(x){return used.indexOf(worldPlannerSlug(x.name))<0&&!/restaurant|cafe|theatre|arts centre/.test(x.kind)});
+return choices[0]||null;
+}
+async function worldPlannerBuild(destination,dayCount){
+var place=await worldPlannerResolve(destination),broad=worldPlannerIsBroad(place),hubs=broad?await worldPlannerHubs(place,dayCount):[{name:place.name,lat:place.lat,lon:place.lon}],plans=[],usedPlaces=[];
+if(!hubs.length)hubs=[{name:place.name,lat:place.lat,lon:place.lon}];
+for(var i=0;i<dayCount;i++){
+var hub=hubs[i%hubs.length],items;
+try{items=await worldPlannerNearby(hub)}catch(e){items=[]}
+var used=usedPlaces,attraction=worldPlannerPick(items,/attraction|museum|gallery|viewpoint|zoo|aquarium|theme park|artwork|historic|park|nature reserve|garden|peak|waterfall|beach|cave|hot spring|place/.test.bind(/attraction|museum|gallery|viewpoint|zoo|aquarium|theme park|artwork|historic|park|nature reserve|garden|peak|waterfall|beach|cave|hot spring|place/),used);
+var culture=worldPlannerPick(items,/museum|gallery|historic|theatre|arts centre|artwork/.test.bind(/museum|gallery|historic|theatre|arts centre|artwork/),used.concat(attraction?[worldPlannerSlug(attraction.name)]:[]));
+var outdoor=worldPlannerPick(items,/park|nature reserve|garden|viewpoint|peak|waterfall|beach|hot spring|attraction/.test.bind(/park|nature reserve|garden|viewpoint|peak|waterfall|beach|hot spring|attraction/),used.concat(attraction?[worldPlannerSlug(attraction.name)]:[]).concat(culture?[worldPlannerSlug(culture.name)]:[]));
+var restaurants=items.filter(function(x){return /restaurant|cafe/.test(x.kind)}),food=restaurants[0],dinner=restaurants.filter(function(x){return x!==food})[0];
+if(attraction)usedPlaces.push(worldPlannerSlug(attraction.name));if(culture)usedPlaces.push(worldPlannerSlug(culture.name));if(outdoor)usedPlaces.push(worldPlannerSlug(outdoor.name));
+function label(x,fallback){return x?x.name+" ("+x.distance.toFixed(1)+" km from "+hub.name+")":fallback}
+var date=isoDay(i),dest=destination;
+var morning=label(attraction,"Start at the local visitor information centre in "+hub.name);
+var afternoon=label(culture,"Explore the main historic district and local cultural sights in "+hub.name);
+var evening=label(outdoor,"Choose a nearby scenic walk or a relaxed town-centre evening in "+hub.name);
+var note=(broad?"Regional road-trip day. Overnight base suggestion: "+hub.name+". ":"Local discovery day based in "+hub.name+". ")+
+"Places discovered from OpenStreetMap. Check opening hours, seasonal access and travel time before departure; distances are straight-line estimates, not driving distances.";
+plans.push({day:i+1,date:date,destination:dest,area:hub.name,title:hub.name+" · day "+(i+1),morning:morning,afternoon:afternoon,evening:evening,lunch:food?food.name:"Find a well-reviewed lunch near "+hub.name,dinner:dinner?dinner.name:"Find a well-reviewed dinner near "+hub.name,note:note,event:null,refreshCount:0,worldGenerated:true,source:"OpenStreetMap",hub:{name:hub.name,lat:hub.lat,lon:hub.lon},places:items.slice(0,30).map(function(x){return {name:x.name,kind:x.kind,lat:x.lat,lon:x.lon,distanceKm:Number(x.distance.toFixed(1)),maps:x.maps}})});
+}
+return {plans:plans,place:place,broad:broad,hubs:hubs};
+}
+async function buildSmartPlan(){
+var explain=document.getElementById("smartExplain"),destination=(trip.destinations||[])[0]||trip.name||"";
+var dayCount=Math.max(1,Math.min(21,dates().n||Number(trip.days)||5));
+if(explain)explain.textContent="Finding the destination, identifying regional bases, and researching real places for each day…";
+try{
+var result=await worldPlannerBuild(destination,dayCount),plan=result.plans;
+if(!plan.some(function(d){return d.worldGenerated&&d.places&&d.places.length>=2})){
+throw Error("The destination was resolved, but the place data source returned too few named places to build a reliable itinerary.");
+}
+trip.plan=clonePlan(plan);trip.originalPlan=clonePlan(plan);trip.homeBase=result.broad?(trip.homeBase&&trip.homeBase!=="Downtown / city center"?trip.homeBase:result.hubs[0].name):baseLabel();trip.days=plan.length;trip.smartVersion=3;trip.destinationKnowledge=trip.destinationKnowledge||{};trip.destinationKnowledge.resolved={name:result.place.name,displayName:result.place.displayName,addressType:result.place.addressType,broad:result.broad,bbox:result.place.bbox,source:"OpenStreetMap / Nominatim",updatedAt:new Date().toISOString()};trip.destinationKnowledge.regionalHubs=result.hubs.map(function(h){return {name:h.name,lat:h.lat,lon:h.lon}});
+await save();renderHeader();renderRoute();renderDestinations();renderPlan();
+if(explain)explain.textContent="Built "+plan.length+" destination-aware days using real places. "+(result.broad?"This is a regional road-trip plan with a different suggested base town on each day.":"This plan starts from the resolved destination and clusters nearby places. " )+"Place data: OpenStreetMap. Confirm current opening hours, seasonal access and driving times.";
+}catch(e){
+console.warn("RoamSonio worldwide itinerary generation failed:",e);
+if(explain)explain.textContent="Live destination planning could not complete: "+(e&&e.message?e.message:"place data unavailable")+". Your saved itinerary was not overwritten. Check your connection and use Refresh smart itinerary again.";
+}
 }
 window.buildSmartPlan=buildSmartPlan;
 window.saveSmartSettings=function(){trip.homeBase=document.getElementById("homeBase").value.trim()||"Downtown / city center";trip.transport=document.getElementById("smartTransport").value;trip.walkingRadius=document.getElementById("smartRadius").value;save();buildSmartPlan()};
