@@ -2822,9 +2822,7 @@ renderHeader();renderRoute();renderDestinations();renderPlan();renderGuide();ren
       if(destination.indexOf("montana")<0)return;
       var root=document.getElementById("smartPlan");
       if(!root)return;
-      var existing=root.querySelectorAll(".smartDay");
-      var existingVisible=Array.prototype.some.call(existing,function(el){return !!(el.getClientRects().length&&el.textContent.trim()&&getComputedStyle(el).visibility!=="hidden"&&getComputedStyle(el).display!=="none")});
-      if(existingVisible)return;
+      /* Montana recovery intentionally replaces generic/template day cards with destination-specific starter days. */
       root.style.display="block";root.style.visibility="visible";
       var key="big-thanksgiving-trips-v1",trips=JSON.parse(localStorage.getItem(key)||"[]");
       var id=params.get("id")||sessionStorage.getItem("openTripId");
