@@ -1374,12 +1374,13 @@ if(!hubs.length)return [{name:place.name,lat:place.lat,lon:place.lon}];
 hubs.sort(function(a,b){return b.population-a.population});
 var chosen=[hubs[0]],limit=Math.max(1,Math.min(days,10));
 while(chosen.length<limit&&chosen.length<hubs.length){
-var best=null,bestScore=-1;
+var best=null,bestScore=-Infinity,current=chosen[chosen.length-1];
 for(var i=0;i<hubs.length;i++){
 var candidate=hubs[i];if(chosen.some(function(x){return worldPlannerSlug(x.name)===worldPlannerSlug(candidate.name)}))continue;
-var nearest=Math.min.apply(null,chosen.map(function(x){return worldPlannerDistance(x,candidate)}));
-var popBoost=Math.min(100,Math.log10(candidate.population+1)*12);
-var score=nearest+popBoost;
+var leg=worldPlannerDistance(current,candidate);
+var popBoost=Math.min(24,Math.log10(candidate.population+1)*4);
+var distanceFit=-Math.abs(leg-180)*0.08;
+var score=popBoost+distanceFit-(leg>450?(leg-450)*0.12:0);
 if(score>bestScore){bestScore=score;best=candidate}
 }
 if(!best)break;chosen.push(best)
@@ -1401,9 +1402,14 @@ var p={lat:Number(e.lat||(e.center&&e.center.lat)),lon:Number(e.lon||(e.center&&
 if(!name||!isFinite(p.lat)||!isFinite(p.lon))return null;
 var kind=t.tourism||t.historic||t.leisure||t.natural||t.amenity||"place",key=worldPlannerSlug(name);
 if(seen[key])return null;seen[key]=1;
-return {name:name,kind:String(kind).replace(/_/g," "),lat:p.lat,lon:p.lon,distance:worldPlannerDistance(hub,p),cuisine:t.cuisine||"",openingHours:t.opening_hours||"",website:t.website||t["contact:website"]||"",wikidata:t.wikidata||"",maps:"https://www.google.com/maps/search/"+encodeURIComponent(name+" "+hub.name)};
+var distance=worldPlannerDistance(hub,p),importance=0;
+if(t.wikidata)importance+=8;if(t.wikipedia)importance+=12;if(t.heritage)importance+=5;
+if(t.tourism==="attraction"||t.tourism==="museum"||t.tourism==="viewpoint")importance+=5;
+if(t.historic==="monument"||t.historic==="castle"||t.historic==="archaeological_site")importance+=4;
+if(t.amenity==="restaurant"||t.amenity==="cafe")importance+=2;
+return {name:name,kind:String(kind).replace(/_/g," "),lat:p.lat,lon:p.lon,distance:distance,score:importance-distance/14,cuisine:t.cuisine||"",openingHours:t.opening_hours||"",website:t.website||t["contact:website"]||"",wikidata:t.wikidata||"",wikipedia:t.wikipedia||"",maps:"https://www.google.com/maps/search/"+encodeURIComponent(name+" "+hub.name)};
 }).filter(Boolean);
-items.sort(function(a,b){return a.distance-b.distance});
+items.sort(function(a,b){return b.score-a.score||a.distance-b.distance});
 return items;
 }
 function worldPlannerPick(items,pattern,used){
