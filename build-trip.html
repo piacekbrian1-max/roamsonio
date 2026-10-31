@@ -297,7 +297,8 @@ async function fetchDestinationKnowledge(identity){
       knowledge.sources.push("OpenStreetMap / Overpass");
     }
   }catch(e){}
-  knowledge.food=uniqueNamed(knowledge.food).slice(0,24);\n  knowledge.entertainment=uniqueNamed(knowledge.entertainment).slice(0,20);
+  knowledge.food=uniqueNamed(knowledge.food).slice(0,24);
+  knowledge.entertainment=uniqueNamed(knowledge.entertainment).slice(0,20);
   knowledge.thingsToDo=uniqueNamed(knowledge.thingsToDo).slice(0,30);
   knowledge.areas=uniqueNamed(knowledge.areas).slice(0,12);
   try{
