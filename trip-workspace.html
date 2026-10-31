@@ -2813,6 +2813,11 @@ renderHeader();renderRoute();renderDestinations();renderPlan();renderGuide();ren
   function recoverMontanaItinerary(){
     try{
       var params=new URLSearchParams(location.search);
+      var diag=document.getElementById("rsMontanaRecoveryDiag");
+      if(!diag){diag=document.createElement("div");diag.id="rsMontanaRecoveryDiag";diag.style.cssText="position:fixed;z-index:999999;left:8px;right:8px;bottom:8px;padding:10px 12px;background:#102d46;color:#fff;border:2px solid #d4a85a;border-radius:8px;font:12px/1.4 Arial,sans-serif;box-shadow:0 4px 18px #0005";document.body.appendChild(diag)}
+      var diagRoot=document.getElementById("smartPlan");
+      diag.textContent="WORKSPACE DIAGNOSTIC · build af841fe · destination="+(params.get("destination")||"(missing)")+" · itinerary container="+(diagRoot?"found":"MISSING")+" · URL="+location.pathname;
+      setTimeout(function(){if(diag&&diag.parentNode)diag.parentNode.removeChild(diag)},15000);
       var destination=String(params.get("destination")||"").toLowerCase();
       if(destination.indexOf("montana")<0)return;
       var root=document.getElementById("smartPlan");
