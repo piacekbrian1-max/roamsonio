@@ -2771,7 +2771,40 @@ function renderResources(){var e=document.getElementById("resourceGrid"),d=(trip
 if(slug(d).indexOf("new orleans")>=0){rs[0]=["New Orleans & Company","https://www.neworleans.com/"];rs[2]=["January / event guide","https://www.neworleans.com/plan/january-in-new-orleans/"];rs[3]=["Eater New Orleans","https://nola.eater.com/"];rs.push(["Mardi Gras parade schedule","https://www.neworleans.com/events/holidays-seasonal/mardi-gras/mardi-gras-parade-schedule/"])}
 e.innerHTML="";for(var i=0;i<rs.length;i++){var a=document.createElement("a");a.className="link";a.target="_blank";a.href=rs[i][1];a.innerHTML="<b>"+esc(rs[i][0])+"</b><small>Open resource</small>";e.appendChild(a)}}
 
-ensureRoamsonioFramework();ensureOriginalPlan();var mtTrip=slug(urlDestination||((trip.destinations||[])[0]||""))==="montana";var mtDates=dates();var mtHasUsablePlan=Array.isArray(trip.plan)&&trip.plan.length>=((isFinite(mtDates.n)&&mtDates.n>0)?mtDates.n:Math.max(1,Number(trip.days)||3))&&trip.plan.every(function(d){return d&&String(d.morning||"").trim()&&String(d.afternoon||"").trim()&&String(d.evening||"").trim()&&String(d.morning).trim().toLowerCase()!=="a"&&String(d.afternoon).trim().toLowerCase()!=="b"&&String(d.evening).trim().toLowerCase()!=="c"});if(mtTrip&&!mtHasUsablePlan){if(!isFinite(mtDates.n)||!isFinite(mtDates.a.getTime())||!isFinite(mtDates.b.getTime())){var mtStart=new Date();mtStart.setHours(12,0,0,0);var mtEnd=new Date(mtStart);mtEnd.setDate(mtEnd.getDate()+Math.max(1,Number(trip.days)||3)-1);trip.start=mtStart.toISOString().slice(0,10);trip.end=mtEnd.toISOString().slice(0,10)}buildSmartPlan();}renderHeader();renderRoute();renderDestinations();renderPlan();renderGuide();renderEvents();renderWeather();renderCams();renderTravel();renderBudget();renderMemories();renderResources();initEditTripShell();var shareTripButton=document.getElementById("shareTripButton");if(shareTripButton)shareTripButton.href="share-trip.html?id="+encodeURIComponent(trip.id);if(window.rsWorkspaceBootComplete)window.rsWorkspaceBootComplete();
+ensureRoamsonioFramework();ensureOriginalPlan();
+var mtTrip=slug(urlDestination||((trip.destinations||[])[0]||""))==="montana";
+var mtDates=dates();
+var mtExpected=(isFinite(mtDates.n)&&mtDates.n>0)?mtDates.n:Math.max(1,Number(trip.days)||3);
+var mtHasUsablePlan=Array.isArray(trip.plan)&&trip.plan.length>=mtExpected&&trip.plan.every(function(d){return d&&String(d.morning||"").trim()&&String(d.afternoon||"").trim()&&String(d.evening||"").trim()&&String(d.morning).trim().toLowerCase()!=="a"&&String(d.afternoon).trim().toLowerCase()!=="b"&&String(d.evening).trim().toLowerCase()!=="c"});
+if(mtTrip&&!mtHasUsablePlan){
+  try{
+    if(!isFinite(mtDates.n)||!isFinite(mtDates.a.getTime())||!isFinite(mtDates.b.getTime())){
+      var mtStart=new Date();mtStart.setHours(12,0,0,0);
+      var mtEnd=new Date(mtStart);mtEnd.setDate(mtEnd.getDate()+Math.max(1,Number(trip.days)||3)-1);
+      trip.start=mtStart.toISOString().slice(0,10);trip.end=mtEnd.toISOString().slice(0,10);
+    }
+    buildSmartPlan();
+  }catch(mtPlanError){console.error("Montana smart plan generation failed:",mtPlanError)}
+  if(!Array.isArray(trip.plan)||!trip.plan.length){
+    var mtCount=dates().n;if(!isFinite(mtCount)||mtCount<1||mtCount>30)mtCount=Math.max(1,Math.min(14,Number(trip.days)||5));
+    var mtFallback=[];
+    var mtActivities=[
+      ["Scenic drive and local coffee","Explore the nearest mountain town","Dinner at a local Montana restaurant"],
+      ["Visit a national park or scenic overlook","Short nature trail or visitor center","Sunset viewpoint and relaxed dinner"],
+      ["Discover a historic downtown","Local museum or wildlife center","Regional food and evening stroll"],
+      ["Lake, river, or mountain scenery","Choose a moderate hike or scenic byway","Dinner near your overnight base"],
+      ["Farmers market or local breakfast","Souvenir stop and one final viewpoint","Relaxed farewell meal"]
+    ];
+    for(var mi=0;mi<mtCount;mi++){
+      var md=new Date(dates().a);md.setDate(md.getDate()+mi);
+      var mdate=isFinite(md.getTime())?md.toISOString().slice(0,10):new Date().toISOString().slice(0,10);
+      var ma=mtActivities[mi%mtActivities.length];
+      mtFallback.push({day:mi+1,date:mdate,destination:"Montana",area:"Montana scenic region",title:"Montana · Day "+(mi+1),morning:ma[0],afternoon:ma[1],evening:ma[2],lunch:"Local café or casual lunch",dinner:"Montana restaurant near your base",note:"Starter itinerary created because the smart planner returned no day cards. Confirm park access, seasonal road conditions and distances before travel.",event:null,refreshCount:0});
+    }
+    trip.plan=clonePlan(mtFallback);trip.originalPlan=clonePlan(mtFallback);trip.days=mtFallback.length;trip.homeBase=trip.homeBase||"Downtown / city center";save();
+  }
+}
+renderHeader();renderRoute();renderDestinations();renderPlan();renderGuide();renderEvents();renderWeather();renderCams();renderTravel();renderBudget();renderMemories();renderResources();initEditTripShell();var shareTripButton=document.getElementById("shareTripButton");if(shareTripButton)shareTripButton.href="share-trip.html?id="+encodeURIComponent(trip.id);if(window.rsWorkspaceBootComplete)window.rsWorkspaceBootComplete();
 })();
 </script>
 </body></html>
