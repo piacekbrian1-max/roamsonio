@@ -1146,7 +1146,72 @@ var europeDaily={trnava:{areas:{"Historic Centre":{morning:["Trojičné námesti
 function isEuropeanDestination(name){var s=slug(name);return /trnava|prague|praha|pilsen|plzen|hluboka|vienna|wien/.test(s)}
 function europeanKey(name){var s=slug(name);if(s.indexOf("trnava")>=0)return "trnava";if(s.indexOf("prague")>=0||s.indexOf("praha")>=0)return "prague";if(s.indexOf("pilsen")>=0||s.indexOf("plzen")>=0)return "pilsen";if(s.indexOf("hlub")>=0)return "hluboka";if(s.indexOf("vienna")>=0||s.indexOf("wien")>=0)return "vienna";return null}
 function planningDestinationForDay(dayIndex){var ds=trip.destinations||[],first=ds[0]||"";if(!ds.length)return "";if(!isEuropeanDestination(first))return first;var date=isoDay(dayIndex),stays=Array.isArray(trip.stayRecords)?trip.stayRecords:[];for(var i=0;i<stays.length;i++){var s=stays[i];if(!s||!s.destination)continue;var raw=String(s.dates||"").match(/(d{4}-d{2}-d{2})/g)||[];if(raw.length>=2&&date>=raw[0]&&date<=raw[1])return s.destination}if(/trnava/i.test(ds.join(" "))&&/prague/i.test(ds.join(" "))&&/pilsen/i.test(ds.join(" "))&&/hlub/i.test(ds.join(" "))&&/vienna/i.test(ds.join(" "))&&/^2026-11-2[6-9]$|^2026-11-30$/.test(date))return ds.find(function(x){return /trnava/i.test(x)})||ds[0];if(/2026-12-0[1-2]/.test(date))return ds.find(function(x){return /prague/i.test(x)})||ds[0];if(date==="2026-12-03")return ds.find(function(x){return /pilsen/i.test(x)})||ds[0];var idx=Math.min(ds.length-1,Math.floor(dayIndex*ds.length/dates().n));return ds[idx]||ds[0]}
-function planningProfile(destination){var k=europeanKey(destination);if(k)return europeDaily[k];var d=slug(destination);if(d.indexOf("new orleans")>=0||d.indexOf("nola")>=0)return profile.neworleans;if(d.indexOf("atlanta")>=0)return profile.atlanta;return cityProfile()}
+function generalDestinationProfile(destination){
+  var label=String(destination||"Your destination").trim()||"Your destination";
+  var key=slug(label);
+  if(key.indexOf("montana")>=0){
+    return {areas:{
+      "Montana · choose one region":{
+        desc:"Montana is very large. Pick one base region for a five-day trip instead of trying to combine distant parks.",
+        morning:[
+          "Choose your base region: Bozeman / Yellowstone gateway, Whitefish / Glacier gateway, Missoula, or Billings",
+          "Start with the visitor center or historic downtown nearest your overnight base",
+          "Check current National Park Service and Montana road conditions before choosing a route",
+          "Explore the main street and local coffee shops in your chosen base town",
+          "Use a relaxed breakfast to confirm the day's seasonal access and driving time"
+        ],
+        afternoon:[
+          "Plan one nearby scenic stop within a comfortable drive of your base",
+          "Choose a local museum, cultural attraction, or short accessible nature walk near your base",
+          "Keep the day within one region; verify park roads, trail access, and daylight before departing",
+          "Visit a nearby lake, riverfront, or viewpoint only if local access is open",
+          "Leave room for weather changes and an early sunset in November"
+        ],
+        evening:[
+          "Dinner in your base town; check seasonal hours before setting out",
+          "Enjoy a relaxed local dinner and review the next day's road conditions",
+          "Choose a nearby community event or local restaurant rather than a long night drive",
+          "Return before dark if the day's scenic stops involved rural roads",
+          "Keep the final evening flexible for weather and departure logistics"
+        ]
+      }
+    },meals:{Lunch:["Casual café near your base","Local diner or café near your route","Visitor-center area lunch if services are open"],Dinner:["Local restaurant in your overnight town","Montana-style grill or regional restaurant near your base","Early dinner close to your lodging"]}};
+  }
+  return {areas:{
+    [label+" · local highlights"]:{
+      desc:"A flexible starter profile for a destination without a curated local guide. Keep activities close to the chosen home base and verify exact venues and seasonal access.",
+      morning:[
+        "Explore the main historic district or town center near your base",
+        "Start at the local visitor center to identify current highlights and opening hours",
+        "Enjoy a neighborhood walk and a nearby café breakfast",
+        "Choose the destination's best-known cultural or heritage site near your base",
+        "Start with a scenic viewpoint or accessible outdoor area close to your base"
+      ],
+      afternoon:[
+        "Visit a local museum, cultural attraction, or landmark close to the morning area",
+        "Choose a well-reviewed attraction within a short drive of your base",
+        "Explore a local market, shopping street, or distinctive neighborhood",
+        "Pick an accessible nature walk or public garden after checking current conditions",
+        "Keep the afternoon flexible for a recommendation from the local visitor center"
+      ],
+      evening:[
+        "Dinner at a well-reviewed local restaurant near your base",
+        "Take an evening walk through a lively central neighborhood",
+        "Look for a local performance or community event; confirm the schedule first",
+        "Choose a relaxed regional-food dinner close to your lodging",
+        "Keep the final evening flexible for packing and departure timing"
+      ]
+    }
+  },meals:{Lunch:["Local café near your base","Casual regional restaurant near today's stops"],Dinner:["Well-reviewed local restaurant near your base","Regional cuisine in the town or neighborhood where you are staying"]}};
+}
+function planningProfile(destination){
+  var k=europeanKey(destination);if(k)return europeDaily[k];
+  var d=slug(destination);
+  if(d.indexOf("new orleans")>=0||d.indexOf("nola")>=0)return profile.neworleans;
+  if(d.indexOf("atlanta")>=0)return profile.atlanta;
+  var known=cityProfile();if(known)return known;
+  return generalDestinationProfile(destination||((trip.destinations||[])[0]||"Your destination"));
+}
 function dailyMeal(destination,category,index){var p=planningProfile(destination),list=p&&p.meals&&p.meals[category];return list&&list.length?list[index%list.length]:"";}
 function cityProfile(){
 var d=slug((trip.destinations||[])[0]||""),n=slug(trip.name||"");
@@ -1159,7 +1224,7 @@ var k=slug(name),tn=slug(trip.name||""),photos=Array.isArray(trip.heroPhotos)?tr
 /* Photo rule: use the destination's approved/stored photo first; never substitute Prague for an unrelated place. */
 if(photos.length){var selected=photos[i%photos.length];if(typeof selected==="string"&&selected.indexOf("https://")===0)return selected;}
 if(knowledgePhotos.length){var p=knowledgePhotos[i%knowledgePhotos.length],u=typeof p==="string"?p:p&&p.url;if(typeof u==="string"&&u.indexOf("https://")===0)return u;}
-if(k.indexOf("new orleans")<0&&tn.indexOf("new orleans")>=0)k="new orleans";if(k.indexOf("atlanta")<0&&tn.indexOf("atlanta")>=0)k="atlanta";if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return i%3===0?imgs.neworleans:i%3===1?imgs.neworleans2:imgs.neworleans3;
+if(k.indexOf("montana")>=0)return "https://commons.wikimedia.org/wiki/Special:FilePath/Glacier_National_Park.jpg?width=1800";if(k.indexOf("new orleans")<0&&tn.indexOf("new orleans")>=0)k="new orleans";if(k.indexOf("atlanta")<0&&tn.indexOf("atlanta")>=0)k="atlanta";if(k.indexOf("new orleans")>=0||k.indexOf("nola")>=0)return i%3===0?imgs.neworleans:i%3===1?imgs.neworleans2:imgs.neworleans3;
 if(k.indexOf("prague")>=0||k.indexOf("praha")>=0)return imgs.prague;if(k.indexOf("trnava")>=0)return imgs.trnava;if(k.indexOf("pilsen")>=0||k.indexOf("plzen")>=0)return imgs.pilsen;if(k.indexOf("hlub")>=0)return imgs.hluboka;if(k.indexOf("vienna")>=0||k.indexOf("wien")>=0)return imgs.vienna;if(k.indexOf("kyoto")>=0)return imgs.kyoto;if(k.indexOf("oktoberfest")>=0||k.indexOf("munich")>=0)return imgs.oktoberfest;if(k.indexOf("gatlinburg")>=0||k.indexOf("smoky mountains")>=0)return imgs.gatlinburg;if(k.indexOf("atlanta")>=0)return imgs.atlanta;return "";}
 function baseLabel(){return (trip.homeBase||document.getElementById("homeBase").value||trip.stay||"").trim()||"Downtown / city center"}
 function interestScore(area,slot){
