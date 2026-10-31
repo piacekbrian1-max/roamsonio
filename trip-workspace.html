@@ -1448,8 +1448,9 @@ var dayCount=Math.max(1,Math.min(21,dates().n||Number(trip.days)||5));
 if(explain)explain.textContent="Finding the destination, identifying regional bases, and researching real places for each day…";
 try{
 var tripStyle=document.getElementById("tripStyle")?document.getElementById("tripStyle").value:(trip.tripStyle||"home-base");trip.tripStyle=tripStyle;
-var routeStops=tripStyle==="multi-stop"&&document.getElementById("routeStops")?document.getElementById("routeStops").value.split(/[\n,;]+/).map(function(x){return x.trim()}).filter(Boolean):(trip.routeStops||[]);trip.routeStops=routeStops;
-var result=await worldPlannerBuild(destination,dayCount,tripStyle,routeStops),plan=result.plans;
+var routeStops=tripStyle==="multi-stop"&&document.getElementById("routeStops")?document.getElementById("routeStops").value.split(/[\n;]+/).map(function(x){return x.trim()}).filter(Boolean):(trip.routeStops||[]);trip.routeStops=routeStops;
+var routeOrigin=tripStyle==="multi-stop"&&trip.homeBase&&trip.homeBase!=="Downtown / city center"?trip.homeBase:destination;
+var result=await worldPlannerBuild(routeOrigin,dayCount,tripStyle,routeStops),plan=result.plans;
 if(!plan.some(function(d){return d.worldGenerated&&d.places&&d.places.length>=2})){
 throw Error("The destination was resolved, but the place data source returned too few named places to build a reliable itinerary.");
 }
