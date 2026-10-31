@@ -442,7 +442,8 @@ var status=document.getElementById("status");
 status.textContent="Identifying your destination…";
 var locationIdentity;
 try{locationIdentity=await resolveDestination(dest)}catch(e){status.textContent=e&&e.message?e.message:"We couldn't identify that destination. Please refine the location.";return}
-var rawSlug=slug(dest),stateSlug=slug(locationIdentity.state),broadRegion=!!stateSlug&&rawSlug.indexOf(stateSlug)===0;\nvar resolvedName=broadRegion?dest:(locationIdentity.city||locationIdentity.name||dest);
+var rawSlug=slug(dest),stateSlug=slug(locationIdentity.state),broadRegion=!!stateSlug&&rawSlug.indexOf(stateSlug)===0;
+var resolvedName=broadRegion?dest:(locationIdentity.city||locationIdentity.name||dest);
 var c=catalog(resolvedName);
 status.textContent="Building destination knowledge…";
 var destinationKnowledge=broadRegion?null:await fetchDestinationKnowledge(locationIdentity);
