@@ -2818,7 +2818,9 @@ renderHeader();renderRoute();renderDestinations();renderPlan();renderGuide();ren
       var root=document.getElementById("smartPlan");
       if(!root)return;
       var existing=root.querySelectorAll(".smartDay");
-      if(existing.length)return;
+      var existingVisible=Array.prototype.some.call(existing,function(el){return !!(el.getClientRects().length&&el.textContent.trim()&&getComputedStyle(el).visibility!=="hidden"&&getComputedStyle(el).display!=="none")});
+      if(existingVisible)return;
+      root.style.display="block";root.style.visibility="visible";
       var key="big-thanksgiving-trips-v1",trips=JSON.parse(localStorage.getItem(key)||"[]");
       var id=params.get("id")||sessionStorage.getItem("openTripId");
       var trip=trips.find(function(t){return String(t.id)===String(id)})||trips.find(function(t){return String(t.name||"").toLowerCase().indexOf("montana")>=0||(t.destinations||[]).some(function(d){return String(d).toLowerCase().indexOf("montana")>=0})});
