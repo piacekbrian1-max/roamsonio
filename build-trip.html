@@ -243,17 +243,6 @@ weather:"New Orleans January 2027 weather",
 cams:"New Orleans French Quarter webcam",
 resources:["https://www.neworleans.com/plan/january-in-new-orleans/","https://www.neworleans.com/plan/neighborhoods/","https://www.neworleans.com/events/","https://nola.eater.com/maps/neighborhood-restaurant-bars-bakeries-new-orleans-locals-guide"],
 holiday:true};
-if(s.indexOf("montana")>=0||s==="big sky country")return {
-city:"Montana",statewide:true,
-areas:["Glacier National Park & West Glacier","Whitefish & Flathead Valley","Missoula & Bitterroot Valley","Helena & Gates of the Mountains","Bozeman & Gallatin Valley","Yellowstone's Montana gateways","Little Bighorn & southeast Montana"],
-sights:["Going-to-the-Sun Road and Glacier National Park","Lake McDonald and Apgar Village","Whitefish Mountain Resort and downtown Whitefish","Flathead Lake State Park","Missoula's historic downtown and Clark Fork Riverfront","National Bison Range near Moiese","Montana State Capitol and Last Chance Gulch in Helena","Gates of the Mountains boat tour","Museum of the Rockies in Bozeman","Downtown Bozeman and the Museum of the Rockies area","Gardiner and Yellowstone National Park's North Entrance","Lamar Valley wildlife viewing (season and road access permitting)","Little Bighorn Battlefield National Monument","Makoshika State Park near Glendive"],
-food:["Whitefish downtown restaurants","Kalispell and Flathead Valley local restaurants","Missoula downtown cafés and restaurants","Helena's Last Chance Gulch dining","Bozeman Main Street restaurants","Gardiner restaurants near Yellowstone's North Entrance","Billings local restaurants"],
-local:["Whitefish downtown","Flathead Valley farm stands and local markets","Missoula Clark Fork Riverfront","Helena Last Chance Gulch","Bozeman Main Street","Gardiner Yellowstone gateway","Billings downtown"],
-events:"Montana local events calendar",
-weather:"Montana weather by destination and season",
-cams:"Montana Glacier National Park and Yellowstone webcams",
-resources:["https://www.nps.gov/glac/index.htm","https://stateparks.mt.gov/","https://www.nps.gov/yell/","https://www.visitmt.com/"],
-holiday:false};
 return {city:dest,areas:[dest+" historic center","central neighborhood","local market district","arts / culture district","scenic or outdoor area"],sights:["Historic center","Signature landmark","Main museum or cultural site","Local neighborhood walk","Scenic viewpoint or park","Local market or food hall","Signature cultural experience"],food:["Traditional local restaurant","Neighborhood restaurant","Market / casual food stop","Independent café or bakery","Destination dinner","Special-occasion option"],local:["Neighborhood favorite","Local café or bakery","Independent restaurant","Local market","Current events / local calendar"],events:dest+" events",weather:dest+" weather",cams:dest+" live webcam",resources:[],holiday:false}
 }
 /* Generic destination knowledge layer.
@@ -458,11 +447,16 @@ var rawSlug=slug(dest),stateSlug=slug(locationIdentity.state),broadRegion=!!stat
 var resolvedName=broadRegion?dest:(locationIdentity.city||locationIdentity.name||dest);
 var c=catalog(resolvedName);
 status.textContent="Building destination knowledge…";
-var destinationKnowledge=broadRegion?null:await fetchDestinationKnowledge(locationIdentity);
+var destinationKnowledge=await fetchDestinationKnowledge(locationIdentity);
 c=applyDestinationKnowledge(c,destinationKnowledge);
 status.textContent="Loading Editorial Library knowledge…";
 var editorialProfile=await fetchEditorialBuildProfile(dest);
 c=applyEditorialBuildProfile(c,editorialProfile);
+var genericFallback=!editorialProfile&&!destinationKnowledge;
+if(genericFallback){
+ status.textContent="We couldn't find enough verified destination information to build a useful itinerary. Please try again later or choose a more specific destination. Nothing has been saved.";
+ return;
+}
 var ps=selected(),must=arr(document.getElementById("must").value),avoid=arr(document.getElementById("avoid").value);
 var group=document.getElementById("groupType").value,kids=document.getElementById("kidsAges").value,energy=document.getElementById("energy").value,evening=document.getElementById("evening").value;
 var plan=dayPlan(c,d,document.getElementById("pace").value,document.getElementById("mobility").value,ps,must,group,kids,evening,energy);
