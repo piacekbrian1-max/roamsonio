@@ -475,6 +475,27 @@ body.ipad-trip-freeze .rsTop{
 </script>
 </head>
 <body>
+<div id="rsWorkspaceBootNotice" style="display:block;position:relative;z-index:99999;margin:12px auto;max-width:1400px;padding:12px 16px;background:#fff7ed;border:2px solid #b45309;border-radius:8px;color:#7c2d12;font:14px/1.5 system-ui,sans-serif">RoamSonio is loading this trip workspace… If this message stays here, the workspace script did not finish loading.</div>
+<script>
+(function(){
+  function show(message){
+    var p=document.getElementById("rsWorkspaceBootNotice");
+    if(!p)return;
+    p.style.display="block";
+    p.textContent="RoamSonio workspace loading error: "+String(message||"Unknown error");
+  }
+  window.addEventListener("error",function(e){
+    show((e.message||"JavaScript error")+(e.filename?" — "+e.filename.split("/").pop():"")+(e.lineno?":"+e.lineno:""));
+  });
+  window.addEventListener("unhandledrejection",function(e){
+    var r=e.reason;show(r&&r.message?r.message:String(r||"Unhandled loading error"));
+  });
+  window.rsWorkspaceBootComplete=function(){
+    var p=document.getElementById("rsWorkspaceBootNotice");
+    if(p)p.style.display="none";
+  };
+})();
+</script>
 <!-- RoamSonio workspace banner deployment marker: current global navigation + iPad freeze -->
 <header class="rsTop"><div class="rsNav"><a class="rsBrand" href="index.html" aria-label="RoamSonio home"><span class="rsMark"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#F8F5ED"/><circle cx="45" cy="18" r="8" fill="#D4A85A"/><path d="M10 46 25 29l8 9 8-12 13 20H10Z" fill="#0B2D4A"/><path d="M17 20c8-7 18-8 27-4 5 2 8 5 10 9" fill="none" stroke="#D4A85A" stroke-width="3" stroke-linecap="round"/></svg></span><span><strong><span class="rsRoam">Roam</span><span class="rsSonio">Sonio</span></strong><small>DREAM IT. PLAN IT. LIVE IT.</small></span></a><nav class="rsLinks" aria-label="Primary navigation"><a href="index.html">My RoamSonio</a><a href="my-trips.html">My Trips</a><a href="build-trip.html">Build Your Trip</a><a href="travel-desk.html">Travel Desk</a><a href="about.html">About Us</a><a href="account.html" id="rsAccountLink">My Account</a><a href="login.html?return=trip-workspace.html" id="rsAuthLink" class="rsAuthBtn">Sign In</a></nav></div></header>
 
@@ -2750,7 +2771,7 @@ function renderResources(){var e=document.getElementById("resourceGrid"),d=(trip
 if(slug(d).indexOf("new orleans")>=0){rs[0]=["New Orleans & Company","https://www.neworleans.com/"];rs[2]=["January / event guide","https://www.neworleans.com/plan/january-in-new-orleans/"];rs[3]=["Eater New Orleans","https://nola.eater.com/"];rs.push(["Mardi Gras parade schedule","https://www.neworleans.com/events/holidays-seasonal/mardi-gras/mardi-gras-parade-schedule/"])}
 e.innerHTML="";for(var i=0;i<rs.length;i++){var a=document.createElement("a");a.className="link";a.target="_blank";a.href=rs[i][1];a.innerHTML="<b>"+esc(rs[i][0])+"</b><small>Open resource</small>";e.appendChild(a)}}
 
-ensureRoamsonioFramework();ensureOriginalPlan();renderHeader();renderRoute();renderDestinations();renderPlan();renderGuide();renderEvents();renderWeather();renderCams();renderTravel();renderBudget();renderMemories();renderResources();initEditTripShell();var shareTripButton=document.getElementById("shareTripButton");if(shareTripButton)shareTripButton.href="share-trip.html?id="+encodeURIComponent(trip.id);
+ensureRoamsonioFramework();ensureOriginalPlan();renderHeader();renderRoute();renderDestinations();renderPlan();renderGuide();renderEvents();renderWeather();renderCams();renderTravel();renderBudget();renderMemories();renderResources();initEditTripShell();var shareTripButton=document.getElementById("shareTripButton");if(shareTripButton)shareTripButton.href="share-trip.html?id="+encodeURIComponent(trip.id);if(window.rsWorkspaceBootComplete)window.rsWorkspaceBootComplete();
 })();
 </script>
 </body></html>
