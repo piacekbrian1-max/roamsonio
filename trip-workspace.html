@@ -537,11 +537,12 @@ body.ipad-trip-freeze .rsTop{
 <div class="sectionHead"><div><div class="kicker">The trip brain</div><h2>Plan with help — or make it your own.</h2></div><p>Give RoamSonio your hotel, address or neighborhood. If you leave it blank, it uses <b>downtown / the city center</b> as the working home base. It then clusters each day around that base instead of scattering random attractions across the city.</p></div>
 <div class="smartPanel">
 <div class="smartGrid">
-<div class="smartField"><label>Home base / hotel / location</label><input id="homeBase" placeholder="Hotel, address or neighborhood — blank = downtown / city center"></div>
+<div class="smartField"><label>Trip style</label><select id="tripStyle" onchange="updateTripStyleHelp()"><option value="home-base">Stay in one home base</option><option value="multi-stop">Move between locations each day</option></select></div>
+<div class="smartField"><label id="homeBaseLabel">Home base / hotel / location</label><input id="homeBase" placeholder="Hotel, address or neighborhood — blank = downtown / city center"></div>
 <div class="smartField"><label>Daily movement</label><select id="smartTransport"><option>Walk + transit</option><option>Rideshare + walk</option><option>Rental car</option><option>Mostly walking</option></select></div>
 <div class="smartField"><label>Walking radius</label><select id="smartRadius"><option>Compact — keep stops close</option><option>Moderate — combine nearby areas</option><option>Wide — willing to cross the city</option></select></div>
 </div>
-<div class="smartExplain" id="smartExplain">The planner will use your saved interests, must-sees, traveler profile, dates, food preferences and home base. It also checks date-specific events where destination data is available.</div>
+<div class="smartExplain" id="smartExplain">Choose whether to stay in one base or travel onward each day. The planner uses your interests, dates, food preferences and travel pace.</div>
 <div class="smartBrainActions"><button type="button" class="btn primary" onclick="saveSmartSettings()">Save home base & rebuild</button><button type="button" class="btn" onclick="buildSmartPlan()">Refresh smart itinerary</button><button type="button" class="btn" onclick="restoreOriginalPlan()">Restore original itinerary</button></div>
 </div>
 </section>
@@ -1417,8 +1418,8 @@ var choices=items.filter(function(x){return pattern.test(x.kind)&&used.indexOf(w
 if(!choices.length)choices=items.filter(function(x){return used.indexOf(worldPlannerSlug(x.name))<0&&!/restaurant|cafe|theatre|arts centre/.test(x.kind)});
 return choices[0]||null;
 }
-async function worldPlannerBuild(destination,dayCount){
-var place=await worldPlannerResolve(destination),broad=worldPlannerIsBroad(place),hubs=broad?await worldPlannerHubs(place,dayCount):[{name:place.name,lat:place.lat,lon:place.lon}],plans=[],usedPlaces=[];
+async function worldPlannerBuild(destination,dayCount,tripStyle){
+var place=await worldPlannerResolve(destination),broad=tripStyle==="multi-stop"||worldPlannerIsBroad(place),hubs=broad?await worldPlannerHubs(place,dayCount):[{name:place.name,lat:place.lat,lon:place.lon}],plans=[],usedPlaces=[];
 if(!hubs.length)hubs=[{name:place.name,lat:place.lat,lon:place.lon}];
 for(var i=0;i<dayCount;i++){
 var hub=hubs[i%hubs.length],items;
@@ -1444,11 +1445,12 @@ var explain=document.getElementById("smartExplain"),destination=(trip.destinatio
 var dayCount=Math.max(1,Math.min(21,dates().n||Number(trip.days)||5));
 if(explain)explain.textContent="Finding the destination, identifying regional bases, and researching real places for each day…";
 try{
-var result=await worldPlannerBuild(destination,dayCount),plan=result.plans;
+var tripStyle=document.getElementById("tripStyle")?document.getElementById("tripStyle").value:(trip.tripStyle||"home-base");trip.tripStyle=tripStyle;
+var result=await worldPlannerBuild(destination,dayCount,tripStyle),plan=result.plans;
 if(!plan.some(function(d){return d.worldGenerated&&d.places&&d.places.length>=2})){
 throw Error("The destination was resolved, but the place data source returned too few named places to build a reliable itinerary.");
 }
-trip.plan=clonePlan(plan);trip.originalPlan=clonePlan(plan);trip.homeBase=result.broad?(trip.homeBase&&trip.homeBase!=="Downtown / city center"?trip.homeBase:result.hubs[0].name):baseLabel();trip.days=plan.length;trip.smartVersion=3;trip.destinationKnowledge=trip.destinationKnowledge||{};trip.destinationKnowledge.resolved={name:result.place.name,displayName:result.place.displayName,addressType:result.place.addressType,broad:result.broad,bbox:result.place.bbox,source:"OpenStreetMap / Nominatim",updatedAt:new Date().toISOString()};trip.destinationKnowledge.regionalHubs=result.hubs.map(function(h){return {name:h.name,lat:h.lat,lon:h.lon}});
+trip.plan=clonePlan(plan);trip.originalPlan=clonePlan(plan);trip.homeBase=result.broad?(tripStyle==="multi-stop"?(result.hubs[0]&&result.hubs[0].name||trip.homeBase||result.place.name):(trip.homeBase&&trip.homeBase!=="Downtown / city center"?trip.homeBase:result.hubs[0].name)):baseLabel();trip.days=plan.length;trip.smartVersion=3;trip.destinationKnowledge=trip.destinationKnowledge||{};trip.destinationKnowledge.resolved={name:result.place.name,displayName:result.place.displayName,addressType:result.place.addressType,broad:result.broad,bbox:result.place.bbox,source:"OpenStreetMap / Nominatim",updatedAt:new Date().toISOString()};trip.destinationKnowledge.regionalHubs=result.hubs.map(function(h){return {name:h.name,lat:h.lat,lon:h.lon}});
 await save();renderHeader();renderRoute();renderDestinations();renderPlan();
 if(explain)explain.textContent="Built "+plan.length+" destination-aware days using real places. "+(result.broad?"This is a regional road-trip plan with a different suggested base town on each day.":"This plan starts from the resolved destination and clusters nearby places. " )+"Place data: OpenStreetMap. Confirm current opening hours, seasonal access and driving times.";
 }catch(e){
@@ -1470,7 +1472,8 @@ if(explain)explain.textContent="Loaded a named five-day Montana starter route th
 }
 }
 window.buildSmartPlan=buildSmartPlan;
-window.saveSmartSettings=function(){trip.homeBase=document.getElementById("homeBase").value.trim()||"Downtown / city center";trip.transport=document.getElementById("smartTransport").value;trip.walkingRadius=document.getElementById("smartRadius").value;save();buildSmartPlan()};
+window.updateTripStyleHelp=function(){var multi=document.getElementById("tripStyle").value==="multi-stop",label=document.getElementById("homeBaseLabel"),input=document.getElementById("homeBase"),explain=document.getElementById("smartExplain"),button=document.querySelector(".smartBrainActions .btn.primary");if(label)label.textContent=multi?"Starting location / region":"Home base / hotel / location";if(input)input.placeholder=multi?"Starting town, region or first overnight stop":"Hotel, address or neighborhood — blank = downtown / city center";if(explain)explain.textContent=multi?"Multi-stop road trip: RoamSonio will build a route with different suggested towns for different days. Review each day and edit the overnight stop to match your bookings.":"Home-base trip: RoamSonio keeps each day clustered around one hotel or town.";if(button)button.textContent=multi?"Save route settings & rebuild":"Save home base & rebuild";};
+window.saveSmartSettings=async function(){trip.tripStyle=document.getElementById("tripStyle").value||"home-base";trip.homeBase=document.getElementById("homeBase").value.trim()||"Downtown / city center";trip.transport=document.getElementById("smartTransport").value;trip.walkingRadius=document.getElementById("smartRadius").value;await save();await buildSmartPlan()};
 function initEditTripShell(){var open=document.getElementById("editTripButton"),panel=document.getElementById("editTripShell"),close=document.getElementById("closeEditTripButton"),cancel=document.getElementById("cancelEditTripButton"),saveButton=document.getElementById("saveEditTripButton");if(!open||!panel||!close||!cancel||!saveButton)return;var name=document.getElementById("editTripName"),startDate=document.getElementById("editTripStart"),endDate=document.getElementById("editTripEnd"),destinations=document.getElementById("editTripDestinations");function loadFields(){if(name)name.value=trip.name||"";if(startDate)startDate.value=trip.start||"";if(endDate)endDate.value=trip.end||"";if(destinations)destinations.value=(trip.destinations||[]).join(", ");}function closeEditor(){panel.style.display="none";open.textContent="Edit trip";loadFields();}function show(){loadFields();panel.style.display="block";panel.scrollIntoView({behavior:"smooth",block:"start"});open.textContent="Editing trip";}async function saveEdits(){var original=JSON.parse(JSON.stringify(trip));var nextName=String(name&&name.value||"").trim(),nextStart=String(startDate&&startDate.value||"").trim(),nextEnd=String(endDate&&endDate.value||"").trim(),nextDestinations=String(destinations&&destinations.value||"").split(/[,\n]/).map(function(x){return x.trim()}).filter(Boolean);if(!nextName){alert("Trip name is required.");return;}if(!nextStart||!nextEnd){alert("Start and end dates are required.");return;}if(nextEnd<nextStart){alert("End date cannot be before start date.");return;}if(!nextDestinations.length){alert("At least one destination is required.");return;}trip.name=nextName;trip.start=nextStart;trip.end=nextEnd;trip.destinations=nextDestinations;try{await save();renderHeader();renderRoute();renderDestinations();panel.style.display="none";open.textContent="Edit trip";alert("Trip changes saved. Itinerary and suggestions were not regenerated.");}catch(e){trip=original;loadFields();alert("Trip changes could not be saved. Nothing was changed.");console.warn("Edit trip save failed:",e);}}open.addEventListener("click",show);close.addEventListener("click",closeEditor);cancel.addEventListener("click",closeEditor);saveButton.addEventListener("click",saveEdits);loadFields();}
 function destinationHeading(ds){var d=(ds||[]).filter(Boolean).join(" and ");return d?"Plan your "+d+" adventure.":"Plan your next adventure.";}
 function renderHeader(){
@@ -1484,6 +1487,7 @@ document.getElementById("tripDates").textContent=fmtDate(trip.start)+" → "+fmt
 document.getElementById("dashTitle").textContent=trip.name||"Your trip";document.getElementById("daysCount").textContent=n;document.getElementById("dashMeta").textContent=(trip.travelers||2)+" travelers · "+ds.join(" · ")+" · "+(trip.pace||"balanced");
 var overviewTitle=document.getElementById("overviewTitle");if(overviewTitle)overviewTitle.textContent=destinationHeading(ds);document.getElementById("overviewLead").textContent="Start with a practical day-by-day plan for "+(ds.join(" and ")||"your destination")+". RoamSonio helps you choose worthwhile stops, connect them into a sensible route, and understand where to begin—even if you are new to traveling.";
 document.getElementById("homeBase").value=trip.homeBase&&trip.homeBase!=="Downtown / city center"?trip.homeBase:"";
+var tripStyleSelect=document.getElementById("tripStyle");if(tripStyleSelect)tripStyleSelect.value=trip.tripStyle||"home-base";if(window.updateTripStyleHelp)window.updateTripStyleHelp();
 document.getElementById("smartTransport").value=trip.transport||"Walk + transit";document.getElementById("smartRadius").value=trip.walkingRadius||"Moderate — combine nearby areas";
 var d0=ds[0]||"",samplePhoto=trip.heroPhoto||new URLSearchParams(location.search).get("photo")||"";document.getElementById("heroMain").src=/^https:\/\//i.test(samplePhoto)?samplePhoto:destinationImage(d0,0);document.getElementById("heroMain").alt=d0;
 document.getElementById("heroSide1").src=destinationImage(d0,1);document.getElementById("heroSide2").src=destinationImage(d0,2);document.getElementById("side1Label").textContent=d0+" · local character";document.getElementById("side2Label").textContent=d0+" · seasonal atmosphere";
@@ -1492,7 +1496,7 @@ document.getElementById("routeMap").href="https://www.google.com/maps/dir/"+enco
 }
 function renderRoute(){
 var ds=trip.destinations||[],e=document.getElementById("routeLine");e.innerHTML="";for(var i=0;i<ds.length;i++){var x=document.createElement("div");x.className="stop";x.innerHTML="<div class='dot'></div><b>"+esc(ds[i])+"</b><small>"+(i===0?"Home base":i===ds.length-1?"Final stop":"Stop "+(i+1))+"</small>";e.appendChild(x)}
-document.getElementById("routeIntro").textContent=ds.length>1?"The route follows your saved destinations; daily planning stays clustered around the active home base.":"Your daily planner will work outward from "+baseLabel()+".";
+document.getElementById("routeIntro").textContent=trip.tripStyle==="multi-stop"?"Multi-stop route: each day can use a different town or overnight base. Review the daily route and adjust stops to fit your plans.":ds.length>1?"The route follows your saved destinations; daily planning stays clustered around the active home base.":"Your daily planner will work outward from "+baseLabel()+".";
 }
 function renderDestinations(){
 var e=document.getElementById("destGrid"),ds=trip.destinations||[];e.innerHTML="";
