@@ -1355,8 +1355,16 @@ return false;
 }
 async function worldPlannerHubs(place,days){
 var b=place.bbox;if(!b) return [{name:place.name,lat:place.lat,lon:place.lon}];
-var query='[out:json][timeout:12];(node["place"~"city|town"]( '+b.south+','+b.west+','+b.north+','+b.east+' ););out tags center;';
-var data=await worldPlannerOverpass(query),seen={},hubs=(data.elements||[]).map(function(e){
+var query;
+if(place.osmType==="relation"&&place.osmId){var areaId=3600000000+place.osmId;query='[out:json][timeout:12];area('+areaId+')->.destinationArea;(node["place"~"city|town"](area.destinationArea););out tags center;';}
+else{query='[out:json][timeout:12];(node["place"~"city|town"]('+b.south+','+b.west+','+b.north+','+b.east+'););out tags center;';}
+var data;
+try{data=await worldPlannerOverpass(query)}catch(primaryError){
+  if(!b)throw primaryError;
+  var bboxQuery='[out:json][timeout:12];(node["place"~"city|town"]('+b.south+','+b.west+','+b.north+','+b.east+'););out tags center;';
+  data=await worldPlannerOverpass(bboxQuery);
+}
+var seen={},hubs=(data.elements||[]).map(function(e){
 var t=e.tags||{},lat=Number(e.lat||(e.center&&e.center.lat)),lon=Number(e.lon||(e.center&&e.center.lon)),name=t["name:en"]||t.int_name||t.name;
 if(!name||!isFinite(lat)||!isFinite(lon))return null;
 var key=worldPlannerSlug(name);if(seen[key])return null;seen[key]=1;
